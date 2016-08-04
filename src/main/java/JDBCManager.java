@@ -5,18 +5,19 @@ import java.util.Date;
 public class JDBCManager implements AutoCloseable {
 
     private String connectionUrl;
-
     private Connection con;
     private Statement stmt;
     private ResultSet rs;
 
     JDBCManager() throws ClassNotFoundException, SQLException{
+
         //prepare and establish a connection
         connectionUrl = "jdbc:sqlserver://localhost:1433;" +
                 "databaseName=test;user=tester;password=test";
 
         Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
         con = DriverManager.getConnection(connectionUrl);
+        con.setAutoCommit(false);
     }
 
     public List<User> getData() throws SQLException{
@@ -49,6 +50,6 @@ public class JDBCManager implements AutoCloseable {
     public void close() throws Exception {
         if (rs != null) try { rs.close(); } catch(Exception e) {}
         if (stmt != null) try { stmt.close(); } catch(Exception e) {}
-        if (con != null) try { con.close(); } catch(Exception e) {}
+        if (con != null) try { con.rollback(); con.close(); } catch(Exception e) {}
     }
 }
