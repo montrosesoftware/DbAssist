@@ -10,40 +10,50 @@ import java.util.List;
 public class DBDataTest {
 
     HibernateManager hibernateManager;
-    JDBCManager jdbcManager;
+    //JDBCManager jdbcManager;
 
     @Before
     public void prepareManagers(){
         hibernateManager = new HibernateManager();
-        jdbcManager = new JDBCManager();
+        //jdbcManager = new JDBCManager();
     }
 
     @Test
     public void dataEqualInHibernateAndJDBCMode(){
 
-        List<User> usersFromHibernate = hibernateManager.getData();
-        List<User> usersFromJDBC = jdbcManager.getData();
+        try (JDBCManager jdbcManager = new JDBCManager()) {
 
-        assertEquals("Number of objects is the same", usersFromHibernate.size(), usersFromJDBC.size());
-        //assertEquals(0,1);
-        for (int i = 0; i < usersFromHibernate.size(); i++){
-            //assertEquals("Element of id = " + i + " has to be equal in both sources.", usersFromHibernate.get(i).getCreatedAt(), usersFromJDBC.get(i).getCreatedAt());
-            User hUser = usersFromHibernate.get(i);
-            User jdbcUser = usersFromJDBC.get(i);
-            assertEquals("Expected " + DateUtils.getUtc(jdbcUser.getCreatedAt()) + " Actual " + DateUtils.getUtc(hUser.getCreatedAt()),
-                    jdbcUser.getCreatedAt(), hUser.getCreatedAt());
+            List<User> usersFromHibernate = hibernateManager.getData();
+            List<User> usersFromJDBC = jdbcManager.getData();
+
+            assertEquals("Number of objects is the same", usersFromHibernate.size(), usersFromJDBC.size());
+
+            for (int i = 0; i < usersFromHibernate.size(); i++){
+                //assertEquals("Element of id = " + i + " has to be equal in both sources.", usersFromHibernate.get(i).getCreatedAt(), usersFromJDBC.get(i).getCreatedAt());
+                User hUser = usersFromHibernate.get(i);
+                User jdbcUser = usersFromJDBC.get(i);
+                assertEquals("Expected " + DateUtils.getUtc(jdbcUser.getCreatedAt()) + " Actual " + DateUtils.getUtc(hUser.getCreatedAt()),
+                        jdbcUser.getCreatedAt(), hUser.getCreatedAt());
+            }
+
+        } catch (Exception e) {
+        e.printStackTrace();
         }
     }
 
     @Test
     public void datesInsertedAndReadAreNotEqual(){
 
-        Date expectedDate = DateUtils.getUtc("2016-06-12 14:54:15");
-        int i = 5;
-        User user = new User(i, "Adam Z", expectedDate);
-        jdbcManager.writeUserData(user);
-        List<User> usersFromJDBCUpdated = jdbcManager.getData();
-        Date actualDate = usersFromJDBCUpdated.get(i - 1).getCreatedAt();
-        assertTrue(expectedDate.compareTo(actualDate) == 0);
+        try (JDBCManager jdbcManager = new JDBCManager()) {
+            Date expectedDate = DateUtils.getUtc("2016-06-12 14:54:15");
+            int i = 5;
+            User user = new User(i, "Adam Z", expectedDate);
+            jdbcManager.writeUserData(user);
+            List<User> usersFromJDBCUpdated = jdbcManager.getData();
+            Date actualDate = usersFromJDBCUpdated.get(i - 1).getCreatedAt();
+            assertTrue(expectedDate.compareTo(actualDate) == 0);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

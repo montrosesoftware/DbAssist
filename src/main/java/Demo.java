@@ -5,11 +5,14 @@ public class Demo {
     public static void main(String[] args){
         System.out.println("Two sources:");
 
-        HibernateManager hibernateManager = new HibernateManager();
-        JDBCManager jdbcManager = new JDBCManager();
+        try (JDBCManager jdbcManager = new JDBCManager()) {
+            HibernateManager hibernateManager = new HibernateManager();
 
-        List<User> usersFromHibernate = hibernateManager.getData();
-        List<User> usersFromJDBC = jdbcManager.getData();
+            List<User> usersFromHibernate = hibernateManager.getData();
+            List<User> usersFromJDBC = jdbcManager.getData();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         System.out.println("Finished");
     }

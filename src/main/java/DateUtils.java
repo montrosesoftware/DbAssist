@@ -29,25 +29,4 @@ public class DateUtils {
 
         return format.format(date);
     }
-
-//    private static String format(String input) {
-//        int toMilis = input.lastIndexOf('.');
-//
-//        if (toMilis < 0) {
-//            // no milliseconds passed
-//            return input.substring(0, input.length() - 1) + ".000";
-//        }
-//
-//        String formated = input.substring(0, toMilis);
-//
-//        for (int i = toMilis; i < toMilis + 4; ++i) {
-//            if (i < input.length() - 1) {
-//                formated += input.charAt(i);
-//            } else {
-//                formated += "0";
-//            }
-//        }
-//
-//        return formated;
-//    }
 }
