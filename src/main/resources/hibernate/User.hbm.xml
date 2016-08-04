@@ -11,6 +11,6 @@
         </id>
 
         <property name="name" type="string" length="100" column="Name"/>
-        <property name="createdAt" type="date" column="CreatedAt"/>
+        <property name="createdAt" type="timestamp" column="CreatedAt"/>
     </class>
 </hibernate-mapping>
