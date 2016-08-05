@@ -1,5 +1,9 @@
+*/.idea/
 .idea/
-DbAssist.iml
+*.iml
 *.jar
-/lib/*.jar
-/target/*
+*/lib/*.jar
+lib/*.jar
+*/target/*
+target/*
+

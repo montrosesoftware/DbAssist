@@ -1,4 +1,4 @@
-package com.montrosesoftware;
+package com.montrosesoftware.hbm;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;

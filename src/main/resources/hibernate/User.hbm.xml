@@ -10,6 +10,6 @@
         </id>
 
         <property name="name" type="string" length="100" column="Name"/>
-        <property name="createdAt" type="com.montrosesoftware.UtcTimestampType" column="CreatedAt"/>
+        <property name="createdAt" type="com.montrosesoftware.hbm.UtcTimestampType" column="CreatedAt"/>
     </class>
 </hibernate-mapping>

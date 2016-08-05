@@ -1,4 +1,4 @@
-package com.montrosesoftware;
+package com.montrosesoftware.hbm;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -14,12 +14,12 @@ public class UtcDateType extends DateType {
     private static final long serialVersionUID = 7078663283647934682L;
     private static final TimeZone UTC = TimeZone.getTimeZone("UTC");
 
-    //@Override
+    @Override
     public Object get(ResultSet rs, String name) throws SQLException {
         return rs.getDate(name, Calendar.getInstance(UTC));
     }
 
-    //@Override
+    @Override
     public void set(PreparedStatement st, Object value, int index) throws SQLException {
         java.sql.Date sqlDate;
         if(value instanceof java.sql.Date) {
