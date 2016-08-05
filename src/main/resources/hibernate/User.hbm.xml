@@ -4,10 +4,10 @@
         "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
 
 <hibernate-mapping>
-    <class name="User" table="Users">
+    <class name="com.montrosesoftware.User" table="Users">
         <id name="id" type="integer">
             <column name="Id" />
-            <generator class="identity" />
+
         </id>
 
         <property name="name" type="string" length="100" column="Name"/>

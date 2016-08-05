@@ -1,61 +1,67 @@
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
 import org.junit.Test;
 import java.util.Date;
 import java.util.List;
+import com.montrosesoftware.*;
 
 public class DBDataTest {
 
     @Test
-    public void dataEqualInHibernateAndJDBCMode(){
+    public void dataReadInHibernateAndJDBCReadModeIsEqual(){
+        try ( HibernateManager hibernateManager = new HibernateManager()) {
 
-        try (JDBCManager jdbcManager = new JDBCManager();
-             HibernateManager hibernateManager = new HibernateManager()) {
+            //insert one user
+            String expDateString = "2016-06-12 14:54:15";
+            Date expectedDate = DateUtils.getUtc(expDateString);
+            int id = 1;
+            User user = new User(id, "Adam Z", expectedDate);
 
+            hibernateManager.writeUserDataByPlainSQL(user);
             List<User> usersFromHibernate = hibernateManager.getData();
-            List<User> usersFromJDBC = jdbcManager.getData();
+            hibernateManager.rollbackTransaction();
 
-            assertEquals("Number of objects is the same", usersFromHibernate.size(), usersFromJDBC.size());
+            assertEquals(1, usersFromHibernate.size());
+            User hibernateReadUser = usersFromHibernate.get(0);
 
-            for (int i = 0; i < usersFromHibernate.size(); i++){
-                User hUser = usersFromHibernate.get(i);
-                User jdbcUser = usersFromJDBC.get(i);
-                assertEquals("Expected " + DateUtils.getUtc(jdbcUser.getCreatedAt()) + " Actual " + DateUtils.getUtc(hUser.getCreatedAt()),
-                        jdbcUser.getCreatedAt(), hUser.getCreatedAt());
-            }
+            assertEquals("Names are not the same", user.getName(), hibernateReadUser.getName());
+            assertEquals("Dates are not the same", user.getCreatedAt(), hibernateReadUser.getCreatedAt());
 
         } catch (Exception e) {
-        e.printStackTrace();
+            e.printStackTrace();
+            throw new RuntimeException();
         }
     }
 
     @Test
-    public void datesInsertedAndReadAreEqual(){
+    public void dataInsertedAndReadIsEqual(){
 
-        try (JDBCManager jdbcManager = new JDBCManager();
-             HibernateManager hibernateManager = new HibernateManager()) {
+        try ( HibernateManager hibernateManager = new HibernateManager()) {
 
             //Prepare test user
             Date expectedDate = DateUtils.getUtc("2016-06-12 14:54:15");
-            int i = 4;
-            User user = new User(i, "Adam Z", expectedDate);
+            int id = 1;
+            User user = new User(id, "Adam Z", expectedDate);
 
-            //JDBC
-            jdbcManager.writeUserData(user);
-            List<User> usersFromJDBCUpdated = jdbcManager.getData();
-            Date actualDateJDBC = usersFromJDBCUpdated.get(i - 1).getCreatedAt();
-            assertTrue("JDBC Expected: " + expectedDate + " JDBC Actual: " + actualDateJDBC, expectedDate.compareTo(actualDateJDBC) == 0);
+            //Plain SQL
+            hibernateManager.writeUserDataByPlainSQL(user);
 
             //Hibernate
-            /*hibernateManager.writeUserData(user);
-            List<User> usersFromHibernate = hibernateManager.getData();
-            System.out.println(usersFromHibernate.size());
-            Date actualDateHibernate = usersFromHibernate.get(i - 1).getCreatedAt();*/
-            //assertEquals("Hib. Expected: " + expectedDate + " Hib. Actual: " + actualDateHibernate, expectedDate, actualDateHibernate);
+            user.setId(id + 1);
+            hibernateManager.writeUserData(user);
 
+            List<Object[]> userObjects = hibernateManager.getDataByPlainSQL();
+            hibernateManager.rollbackTransaction();
+            assertEquals(2, userObjects.size());
+
+            int columnsAmount = userObjects.get(0).length;
+            for (int i = 0; i < columnsAmount; i++) {
+                Object[] first = userObjects.get(0);
+                Object[] second = userObjects.get(1);
+                assertEquals(first[i], second[i]);
+            }
         } catch (Exception e) {
             e.printStackTrace();
+            throw new RuntimeException();
         }
     }
 }
