@@ -7,10 +7,9 @@
     <class name="com.montrosesoftware.User" table="Users">
         <id name="id" type="integer">
             <column name="Id" />
-
         </id>
 
         <property name="name" type="string" length="100" column="Name"/>
-        <property name="createdAt" type="timestamp" column="CreatedAt"/>
+        <property name="createdAt" type="com.montrosesoftware.UtcTimestampType" column="CreatedAt"/>
     </class>
 </hibernate-mapping>
