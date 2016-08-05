@@ -1,5 +1,6 @@
 package com.montrosesoftware;
 
+import com.montrosesoftware.hbm.UtcDateType;
 import org.hibernate.*;
 import org.hibernate.cfg.Configuration;
 
@@ -12,6 +13,7 @@ public class HibernateManager implements AutoCloseable {
     private Transaction transaction;
 
     public HibernateManager(){
+        UtcDateType a;
         configuration = new Configuration().configure();
         factory = configuration.buildSessionFactory();
         session = factory.getCurrentSession();

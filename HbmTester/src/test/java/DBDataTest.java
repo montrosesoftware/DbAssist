@@ -1,8 +1,12 @@
-import static org.junit.Assert.assertEquals;
+import com.montrosesoftware.DateUtils;
+import com.montrosesoftware.HibernateManager;
+import com.montrosesoftware.User;
 import org.junit.Test;
+
 import java.util.Date;
 import java.util.List;
-import com.montrosesoftware.*;
+
+import static org.junit.Assert.assertEquals;
 
 public class DBDataTest {
 
