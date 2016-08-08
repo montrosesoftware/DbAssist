@@ -1,12 +1,12 @@
 package com.montrosesoftware;
 
-import com.montrosesoftware.hbm.UtcDateType;
 import org.hibernate.*;
 import org.hibernate.cfg.Configuration;
 
 import java.util.List;
 
 public class HibernateManager implements AutoCloseable {
+
     private Configuration configuration;
     private SessionFactory factory;
     private Session session;

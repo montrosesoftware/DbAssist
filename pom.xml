@@ -56,9 +56,6 @@
                     <target>1.8</target>
                 </configuration>
             </plugin>
-
-
-
         </plugins>
     </build>
 
@@ -67,6 +64,7 @@
         <module>HbmTester</module>
         <module>DbAssist_4.3.8.Final</module>
         <module>AnnotationTester</module>
+        <module>DbAssist-Commons</module>
     </modules>
 
     <dependencies>

@@ -1,6 +1,5 @@
 package com.montrosesoftware;
 
-import com.montrosesoftware.DateUtils;
 import org.hibernate.*;
 import org.hibernate.cfg.AnnotationConfiguration;
 import org.hibernate.cfg.Configuration;

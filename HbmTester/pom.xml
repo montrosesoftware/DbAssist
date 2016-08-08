@@ -27,7 +27,7 @@
         </dependency>
         <dependency>
             <groupId>com.montrosesoftware</groupId>
-            <artifactId>DbAssistRoot</artifactId>
+            <artifactId>DbAssist-Commons</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
 
