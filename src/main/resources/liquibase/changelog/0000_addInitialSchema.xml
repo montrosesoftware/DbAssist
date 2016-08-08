@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog/1.6"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog/1.6
+         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-1.6.xsd">
+
+    <changeSet id="1" author="me">
+        <createTable tableName="Users">
+            <column name="Id" type="int">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="Name" type="varchar(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="CreatedAt" type="datetime"></column>
+        </createTable>
+
+        <createTable tableName="Certificates">
+            <column name="Id" type="int">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="Name" type="varchar(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="ExpirationDate" type="datetime"></column>
+        </createTable>
+    </changeSet>
+
+</databaseChangeLog>

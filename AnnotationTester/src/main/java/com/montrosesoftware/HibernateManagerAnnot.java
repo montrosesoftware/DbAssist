@@ -1,27 +1,28 @@
 package com.montrosesoftware;
 
-import com.montrosesoftware.hbm.UtcDateType;
+import com.montrosesoftware.DateUtils;
 import org.hibernate.*;
+import org.hibernate.cfg.AnnotationConfiguration;
 import org.hibernate.cfg.Configuration;
 
 import java.util.List;
 
-public class HibernateManager implements AutoCloseable {
+public class HibernateManagerAnnot implements AutoCloseable {
     private Configuration configuration;
     private SessionFactory factory;
     private Session session;
     private Transaction transaction;
 
-    public HibernateManager(){
-        configuration = new Configuration().configure();
+    public HibernateManagerAnnot(){
+        configuration = new AnnotationConfiguration().configure();
         factory = configuration.buildSessionFactory();
         session = factory.getCurrentSession();
         session.beginTransaction();
         transaction = session.getTransaction();
     }
 
-    public  List<User> getData(){
-        return session.createCriteria(User.class).list();
+    public List<UserAnnot> getData(){
+        return session.createCriteria(UserAnnot.class).list();
     }
 
     public List<Object[]> getDataByPlainSQL(){
@@ -30,12 +31,12 @@ public class HibernateManager implements AutoCloseable {
         return list;
     }
 
-    public void writeUserData(User user){
+    public void writeUserData(UserAnnot user){
         session.save(user);
         session.flush();
     }
 
-    public void writeUserDataByPlainSQL(User user){
+    public void writeUserDataByPlainSQL(UserAnnot user){
         String sql = "INSERT INTO Users (Id, Name, CreatedAt) VALUES (" + user.getId() +", '" + user.getName() + "', '" + DateUtils.getUtc(user.getCreatedAt()) + "')";
         Query query = session.createSQLQuery(sql);
         query.executeUpdate();
@@ -58,3 +59,4 @@ public class HibernateManager implements AutoCloseable {
         //no necessity to close session, because getCurrentSession() was used
     }
 }
+
