@@ -11,6 +11,43 @@
 
     <build>
         <plugins>
+
+            <plugin>
+                <groupId>org.commonjava.maven.plugins</groupId>
+                <artifactId>directory-maven-plugin</artifactId>
+                <version>0.1</version>
+                <executions>
+                    <execution>
+                        <id>directories</id>
+                        <goals>
+                            <goal>highest-basedir</goal>
+                        </goals>
+                        <phase>initialize</phase>
+                        <configuration>
+                            <property>main.basedir</property>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.liquibase</groupId>
+                <artifactId>liquibase-maven-plugin</artifactId>
+                <version>3.3.0</version>
+                <configuration>
+                    <propertyFile>${main.basedir}\src\main\resources\liquibase\liquibase.properties</propertyFile>
+                    <changeLogFile>${main.basedir}\src\main\resources\liquibase\changelog\ChangeLog.xml</changeLogFile>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>update</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -19,14 +56,31 @@
                     <target>1.8</target>
                 </configuration>
             </plugin>
+
+
+
         </plugins>
     </build>
+
     <modules>
-        <module>DbAssist</module>
+        <module>DbAssist_3.3.2.GA</module>
         <module>HbmTester</module>
+        <module>DbAssist_4.3.8.Final</module>
     </modules>
 
     <dependencies>
+
+        <dependency>
+            <groupId>org.liquibase</groupId>
+            <artifactId>liquibase-core</artifactId>
+            <version>3.3.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.microsoft.sqlserver</groupId>
+            <artifactId>sqljdbc4</artifactId>
+            <version>4.0</version>
+        </dependency>
 
     </dependencies>
 </project>
