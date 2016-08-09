@@ -21,7 +21,6 @@ public class App {
         SpringApplication.run(App.class, args);
     }
 
-
     @Value("${spring.datasource.driverClassName}")
     private String databaseDriverClassName;
 

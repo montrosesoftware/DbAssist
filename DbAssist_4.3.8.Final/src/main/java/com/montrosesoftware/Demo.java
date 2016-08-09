@@ -6,9 +6,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Service;
 
-/**
- * Created by Montrose Software on 2016-08-09.
- */
 @Service
 public class Demo implements CommandLineRunner {
 
