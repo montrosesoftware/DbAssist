@@ -5,6 +5,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 
 @Configuration
-@ComponentScan("com.montrosesoftware.entities, com.montrosesoftware.repositories")           //TODO may be wrong
+@ComponentScan("com.montrosesoftware.entities, com.montrosesoftware.repositories")
 @PropertySource("classpath:/config/application.properties")
 public class TestConfig {}
