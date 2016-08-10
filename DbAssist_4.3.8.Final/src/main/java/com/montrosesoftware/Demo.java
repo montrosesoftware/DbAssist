@@ -1,4 +1,4 @@
-package com.montrosesoftware.repositories;
+package com.montrosesoftware;
 
 import com.montrosesoftware.entities.User;
 import com.montrosesoftware.repositories.UserRepo;

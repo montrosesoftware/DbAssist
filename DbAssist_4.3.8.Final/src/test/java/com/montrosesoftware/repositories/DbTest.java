@@ -12,7 +12,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.util.Date;
 import java.util.List;
 
+import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 
 public class DbTest extends BaseTest{
 
@@ -33,14 +35,15 @@ public class DbTest extends BaseTest{
         uRepo.saveAsPlainSQL(userToInsert);
 
         User userReadSpring = uRepo.get(id);
-        Assert.assertNotNull(userReadSpring);
 
+        Assert.assertNotNull(userReadSpring);
         assertEquals("Names are not the same", userToInsert.getName(), userReadSpring.getName());
         assertEquals("Dates are not the same", userToInsert.getCreatedAt(), userReadSpring.getCreatedAt());
     }
 
     @Test
-    public void tempNameCriteriaBuilder(){
+    public void dataInsertedBySQLAndReadUsingCriteriaIsNotEqual(){
+        Logger.getRootLogger().setLevel(Level.ERROR);
 
         //prepare user
         String expDateString = "2016-06-12 12:10:15";
@@ -57,8 +60,31 @@ public class DbTest extends BaseTest{
         assertEquals(1, users.size());
         User userReadSpring = (User) users.get(0);
 
+        Assert.assertNotNull(userReadSpring);
         assertEquals("Names are not the same", userToInsert.getName(), userReadSpring.getName());
         assertEquals("Dates are not the same", userToInsert.getCreatedAt(), userReadSpring.getCreatedAt());
+    }
+
+    @Test
+    public void dataInsertedBySQLAndReadUsingSpecificationIsNotEqual(){
+        Logger.getRootLogger().setLevel(Level.ERROR);
+
+        //prepare user
+        String expDateString = "2016-06-12 12:10:15";
+        Date expectedDate = DateUtils.getUtc(expDateString);
+        int id = 1;
+        User userToInsert = new User(id, "Adam Spring", expectedDate);
+
+        //insert
+        Assert.assertNotNull(uRepo);
+        uRepo.saveAsPlainSQL(userToInsert);
+
+        //read
+        User userReadUsingSpecs = uRepo.getUsingSpecification(expectedDate);
+
+        Assert.assertNotNull(userReadUsingSpecs);
+        assertEquals("Names are not the same", userToInsert.getName(), userReadUsingSpecs.getName());
+        assertEquals("Dates are not the same", userToInsert.getCreatedAt(), userReadUsingSpecs.getCreatedAt());
     }
 
     @Test
