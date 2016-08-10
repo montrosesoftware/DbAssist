@@ -13,11 +13,12 @@ import javax.persistence.criteria.Root;
 import java.util.Date;
 import java.util.List;
 
-/**
- * Created by Montrose Software on 2016-08-09.
- */
 @Repository
-public class UserRepo {
+public class UserRepo extends AbstractRepository<User> {
+
+    public UserRepo() {
+        super(User.class);
+    }
 
     @PersistenceContext
     protected EntityManager entityManager;
@@ -62,7 +63,7 @@ public class UserRepo {
         Root<User> userRoot = criteriaQuery.from(User.class);
 
         String paramName = "pn";
-        Specification<User> specs = (root, query, cb) -> 
+        Specification<User> specs = (root, query, cb) ->
                 cb.equal(root.get("createdAt"), cb.parameter(Date.class, paramName));
 
         Predicate predicate = specs.toPredicate(userRoot,criteriaQuery, criteriaBuilder);
@@ -76,6 +77,20 @@ public class UserRepo {
             return null;
         }else{
             return (User) results.get(0);
+        }
+    }
+
+    public User getUsingConditions(Date utcDate){
+
+        Conditions conditions = new Conditions();
+        conditions.equal("createdAt", utcDate);
+
+        List<User> results = find(conditions, null, null);
+
+        if (results.isEmpty()){
+            return null;
+        } else {
+            return results.get(0);
         }
     }
 }

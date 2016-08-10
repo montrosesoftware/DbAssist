@@ -88,6 +88,28 @@ public class DbTest extends BaseTest{
     }
 
     @Test
+    public void dataInsertedBySQLAndReadUsingDbAssistConditions(){
+        Logger.getRootLogger().setLevel(Level.ERROR);
+
+        //prepare user
+        String expDateString = "2016-06-12 08:10:15";
+        Date expectedDate = DateUtils.getUtc(expDateString);
+        int id = 1;
+        User userToInsert = new User(id, "Joanna Spring", expectedDate);
+
+        //insert
+        Assert.assertNotNull(uRepo);
+        uRepo.saveAsPlainSQL(userToInsert);
+
+        //read
+        User userReadUsingSpecs = uRepo.getUsingConditions(expectedDate);
+
+        Assert.assertNotNull(userReadUsingSpecs);
+        assertEquals("Names are not the same", userToInsert.getName(), userReadUsingSpecs.getName());
+        assertEquals("Dates are not the same", userToInsert.getCreatedAt(), userReadUsingSpecs.getCreatedAt());
+    }
+
+    @Test
     public void dataInsertedBySpringAndReadByPlainSQLIsNotEqual(){
         Logger.getRootLogger().setLevel(Level.ERROR);
 
