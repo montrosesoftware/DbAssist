@@ -1,15 +1,11 @@
 package com.montrosesoftware.repositories;
 
 import com.montrosesoftware.DateUtils;
-import com.montrosesoftware.IsEqualToDateSpec;
 import com.montrosesoftware.entities.User;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Repository;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
-import javax.persistence.TypedQuery;
+import javax.persistence.*;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
@@ -62,16 +58,20 @@ public class UserRepo {
 
     public User getUsingSpecification(Date utcDate){
         CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
-
         CriteriaQuery<User> criteriaQuery = criteriaBuilder.createQuery(User.class);
-        Root<User> root = criteriaQuery.from(User.class);
+        Root<User> userRoot = criteriaQuery.from(User.class);
 
-        // get predicate and apply it
-        Specification<User> isEqualToDate = new IsEqualToDateSpec(utcDate);
-        Predicate predicate = isEqualToDate.toPredicate(root,criteriaQuery, criteriaBuilder);
+        String paramName = "pn";
+        Specification<User> specs = (root, query, cb) -> 
+                cb.equal(root.get("createdAt"), cb.parameter(Date.class, paramName));
+
+        Predicate predicate = specs.toPredicate(userRoot,criteriaQuery, criteriaBuilder);
         criteriaQuery.where(predicate);
 
-        List results = entityManager.createQuery(criteriaQuery).getResultList();
+        TypedQuery<User> typedQuery = entityManager.createQuery(criteriaQuery);
+        typedQuery.setParameter(paramName, utcDate);
+
+        List results = typedQuery.getResultList();
         if (results.isEmpty()){
             return null;
         }else{
