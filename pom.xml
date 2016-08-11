@@ -35,8 +35,8 @@
                 <artifactId>liquibase-maven-plugin</artifactId>
                 <version>3.3.0</version>
                 <configuration>
-                    <propertyFile>${main.basedir}\src\main\resources\liquibase\liquibase.properties</propertyFile>
-                    <changeLogFile>${main.basedir}\src\main\resources\liquibase\changelog\ChangeLog.xml</changeLogFile>
+                    <propertyFile>${main.basedir}\DbAssist-Commons\src\main\resources\liquibase\liquibase.properties</propertyFile>
+                    <changeLogFile>${main.basedir}\DbAssist-Commons\src\main\resources\liquibase\changelog\ChangeLog.xml</changeLogFile>
                 </configuration>
                 <executions>
                     <execution>

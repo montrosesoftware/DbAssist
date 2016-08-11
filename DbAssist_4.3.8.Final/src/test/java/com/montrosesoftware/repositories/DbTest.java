@@ -2,10 +2,13 @@ package com.montrosesoftware.repositories;
 
 import com.montrosesoftware.DateUtils;
 import com.montrosesoftware.config.BaseTest;
+import com.montrosesoftware.entities.Certificate;
 import com.montrosesoftware.entities.User;
+import com.montrosesoftware.repositories.CertificateRepo;
+import com.montrosesoftware.repositories.Conditions;
+import com.montrosesoftware.repositories.UserRepo;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -14,12 +17,16 @@ import java.util.List;
 
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 
 public class DbTest extends BaseTest{
 
     @Autowired
     private UserRepo uRepo;
+
+    @Autowired
+    private CertificateRepo cRepo;
 
     @Test
     public void dataInsertedByPlainSQLAndReadBySpringIsNotEqual(){
@@ -31,12 +38,12 @@ public class DbTest extends BaseTest{
         int id = 1;
         User userToInsert = new User(id, "Adam Spring", expectedDate);
 
-        Assert.assertNotNull(uRepo);
+        assertNotNull(uRepo);
         uRepo.saveAsPlainSQL(userToInsert);
 
         User userReadSpring = uRepo.get(id);
 
-        Assert.assertNotNull(userReadSpring);
+        assertNotNull(userReadSpring);
         assertEquals("Names are not the same", userToInsert.getName(), userReadSpring.getName());
         assertEquals("Dates are not the same", userToInsert.getCreatedAt(), userReadSpring.getCreatedAt());
     }
@@ -52,7 +59,7 @@ public class DbTest extends BaseTest{
         User userToInsert = new User(id, "Adam Spring", expectedDate);
 
         //insert
-        Assert.assertNotNull(uRepo);
+        assertNotNull(uRepo);
         uRepo.saveAsPlainSQL(userToInsert);
 
         //read
@@ -60,7 +67,7 @@ public class DbTest extends BaseTest{
         assertEquals(1, users.size());
         User userReadSpring = (User) users.get(0);
 
-        Assert.assertNotNull(userReadSpring);
+        assertNotNull(userReadSpring);
         assertEquals("Names are not the same", userToInsert.getName(), userReadSpring.getName());
         assertEquals("Dates are not the same", userToInsert.getCreatedAt(), userReadSpring.getCreatedAt());
     }
@@ -76,13 +83,13 @@ public class DbTest extends BaseTest{
         User userToInsert = new User(id, "Adam Spring", expectedDate);
 
         //insert
-        Assert.assertNotNull(uRepo);
+        assertNotNull(uRepo);
         uRepo.saveAsPlainSQL(userToInsert);
 
         //read
         User userReadUsingSpecs = uRepo.getUsingSpecification(expectedDate);
 
-        Assert.assertNotNull(userReadUsingSpecs);
+        assertNotNull(userReadUsingSpecs);
         assertEquals("Names are not the same", userToInsert.getName(), userReadUsingSpecs.getName());
         assertEquals("Dates are not the same", userToInsert.getCreatedAt(), userReadUsingSpecs.getCreatedAt());
     }
@@ -98,13 +105,13 @@ public class DbTest extends BaseTest{
         User userToInsert = new User(id, "Joanna Spring", expectedDate);
 
         //insert
-        Assert.assertNotNull(uRepo);
+        assertNotNull(uRepo);
         uRepo.saveAsPlainSQL(userToInsert);
 
         //read
         User userReadUsingSpecs = uRepo.getUsingConditions(expectedDate);
 
-        Assert.assertNotNull(userReadUsingSpecs);
+        assertNotNull(userReadUsingSpecs);
         assertEquals("Names are not the same", userToInsert.getName(), userReadUsingSpecs.getName());
         assertEquals("Dates are not the same", userToInsert.getCreatedAt(), userReadUsingSpecs.getCreatedAt());
     }
@@ -119,7 +126,7 @@ public class DbTest extends BaseTest{
         User userToInsert = new User(id, "Adam Spring", expectedDate);
 
         //Plain SQL
-        Assert.assertNotNull(uRepo);
+        assertNotNull(uRepo);
         uRepo.saveAsPlainSQL(userToInsert);
 
         //Spring
@@ -136,6 +143,98 @@ public class DbTest extends BaseTest{
             Object[] second = userObjects.get(1);
             assertEquals(first[i], second[i]);
         }
+    }
+
+    @Test
+    public void certificateRead(){
+        Logger.getRootLogger().setLevel(Level.ERROR);
+
+        //prepare example certificate
+        String certName = "BHP";
+        String expirationDate = "2016-06-12 14:54:15";
+        Date expectedDate = DateUtils.getUtc(expirationDate);
+        int id = 1;
+        Certificate certToInsert = new Certificate(id, certName, expectedDate);
+
+        assertNotNull(cRepo);
+        cRepo.saveAsPlainSQL(certToInsert);
+
+        Certificate certRead = cRepo.get(id);
+    }
+
+    @Test
+    public void writeAndReadByHibernateJoin(){
+        Logger.getRootLogger().setLevel(Level.DEBUG);
+
+        //prepare user
+        String expDateString = "2016-06-12 08:10:15";
+        Date expectedDate = DateUtils.getUtc(expDateString);
+        int id = 1;
+        User userToInsert = new User(id, "Joanna Spring", expectedDate);
+
+        //prepare certificates
+        String expirationDateA = "2016-06-12 14:54:15";
+        Date certDateA = DateUtils.getUtc(expirationDateA);
+        Certificate certA = new Certificate(1, "BHP", certDateA);
+
+        String expirationDateB = "2014-03-12 11:11:15";
+        Date certDateB = DateUtils.getUtc(expirationDateB);
+        Certificate certB = new Certificate(2, "Java Cert", certDateB);
+
+        userToInsert.addCertificate(certA);
+        userToInsert.addCertificate(certB);
+
+        uRepo.save(userToInsert);
+        uRepo.clearPersistenceContext();
+
+        User userRead = uRepo.get(id);
+        assertNotNull(userRead);
+
+        List<Certificate> certsRead = userRead.getCertificates();
+        assertEquals(2, certsRead.size());
+
+        assertEquals("User dates are not the same", userToInsert.getCreatedAt(), userRead.getCreatedAt());
+        assertEquals("Certificate A dates are not the same", certA.getExpirationDate(), certsRead.get(0).getExpirationDate());
+        assertEquals("Certificate B dates are not the same", certB.getExpirationDate(), certsRead.get(1).getExpirationDate());
+    }
+
+    @Test
+    public void writeByHibernateReadUsingConditionsJoin(){
+        //prepare user
+        String expDateString = "2016-06-12 08:10:15";
+        Date expectedDate = DateUtils.getUtc(expDateString);
+        int id = 1;
+        User userToInsert = new User(id, "Joanna Spring", expectedDate);
+
+        //prepare certificates
+        String expirationDateA = "2016-06-12 14:54:15";
+        Date certDateA = DateUtils.getUtc(expirationDateA);
+        Certificate certA = new Certificate(1, "BHP", certDateA);
+
+        String expirationDateB = "2014-03-12 11:11:15";
+        Date certDateB = DateUtils.getUtc(expirationDateB);
+        Certificate certB = new Certificate(2, "Java Cert", certDateB);
+
+        userToInsert.addCertificate(certA);
+        userToInsert.addCertificate(certB);
+
+        uRepo.save(userToInsert);
+        uRepo.clearPersistenceContext();
+
+        //use conditions
+        Conditions conditions = new Conditions();
+        conditions.equal("createdAt", expectedDate);
+
+        List<User> results = uRepo.find(conditions, null, null);
+        assertEquals(1,results.size());
+
+        User userRead = results.get(0);
+        List<Certificate> certsRead = userRead.getCertificates();
+        assertEquals(2, certsRead.size());
+
+        assertEquals("User dates are not the same", userToInsert.getCreatedAt(), userRead.getCreatedAt());
+        assertEquals("Certificate A dates are not the same", certA.getExpirationDate(), certsRead.get(0).getExpirationDate());
+        assertEquals("Certificate B dates are not the same", certB.getExpirationDate(), certsRead.get(1).getExpirationDate());
     }
 
 }

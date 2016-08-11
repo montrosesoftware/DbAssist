@@ -1,10 +1,9 @@
 package com.montrosesoftware.entities;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 @Entity
 @Table(name = "Users")
@@ -19,6 +18,13 @@ public class User {
 
     @Column(name = "createdat")
     private Date createdAt;
+
+    @ManyToMany(cascade = CascadeType.ALL)
+    @JoinTable(
+            name = "users_certificates",
+            joinColumns=@JoinColumn(name="user_id", referencedColumnName = "Id"),
+            inverseJoinColumns = @JoinColumn(name="cert_id", referencedColumnName = "id"))
+    private List<Certificate> certificates = new ArrayList<>();
 
     public User(){}
 
@@ -50,5 +56,21 @@ public class User {
 
     public void setCreatedAt(Date createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public List<Certificate> getCertificates() {
+        return certificates;
+    }
+
+    //TODO verify
+    public void setCertificates(List<Certificate> certificates) {
+        this.certificates = certificates;
+    }
+
+    public void addCertificate(Certificate cert){
+        this.certificates.add(cert);
+        if(!cert.getUsers().contains(this)){
+            cert.getUsers().add(this);
+        }
     }
 }

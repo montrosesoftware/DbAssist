@@ -36,6 +36,11 @@ public class UserRepo extends AbstractRepository<User> {
 
     public void save(User user){
         entityManager.persist(user);
+        entityManager.flush();
+    }
+
+    public void clearPersistenceContext(){
+        entityManager.clear();
     }
 
     public void saveAsPlainSQL(User user){
