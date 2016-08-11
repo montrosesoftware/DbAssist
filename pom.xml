@@ -31,24 +31,6 @@
             </plugin>
 
             <plugin>
-                <groupId>org.liquibase</groupId>
-                <artifactId>liquibase-maven-plugin</artifactId>
-                <version>3.3.0</version>
-                <configuration>
-                    <propertyFile>${main.basedir}\DbAssist-Commons\src\main\resources\liquibase\liquibase.properties</propertyFile>
-                    <changeLogFile>${main.basedir}\DbAssist-Commons\src\main\resources\liquibase\changelog\ChangeLog.xml</changeLogFile>
-                </configuration>
-                <executions>
-                    <execution>
-                        <phase>process-resources</phase>
-                        <goals>
-                            <goal>update</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-
-            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
@@ -56,14 +38,14 @@
                     <target>1.8</target>
                 </configuration>
             </plugin>
+
         </plugins>
     </build>
 
     <modules>
-        <module>DbAssist_3.3.2.GA</module>
-        <module>HbmTester</module>
-        <module>DbAssist_4.3.8.Final</module>
-        <module>DbAssist-Commons</module>
+        <module>DbAssist-hbm</module>
+        <module>DbAssist-hbm-tester</module>
+        <module>DbAssist-commons</module>
     </modules>
 
 </project>
