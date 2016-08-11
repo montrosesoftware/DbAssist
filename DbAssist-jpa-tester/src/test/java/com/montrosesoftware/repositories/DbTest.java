@@ -227,6 +227,7 @@ public class DbTest extends BaseTest{
         Conditions conditions = new Conditions();
         conditions.equal("createdAt", expectedDate);
 
+        //TODO
        /* Conditions joinConditions = conditions.getJoinConditions("expirationDate", JoinType.INNER);
         joinConditions.equal("expirationDate", expirationDateA);*/
 

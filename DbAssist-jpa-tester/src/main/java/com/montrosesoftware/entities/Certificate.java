@@ -6,7 +6,7 @@ import java.util.Date;
 import java.util.List;
 
 @Entity
-@Table(name = "certificates")
+@Table(name = "certificates", schema = "jpa")
 public class Certificate {
 
     @Id

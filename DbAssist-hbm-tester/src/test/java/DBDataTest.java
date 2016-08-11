@@ -10,6 +10,8 @@ import static org.junit.Assert.assertEquals;
 
 public class DBDataTest {
 
+    public DBDataTest(){}
+
     @Test
     public void dataReadInHibernateAndJDBCReadModeIsEqual(){
         try ( HibernateManager hibernateManager = new HibernateManager()) {

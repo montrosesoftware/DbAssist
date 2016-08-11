@@ -7,17 +7,27 @@
          http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-1.6.xsd">
 
     <changeSet id="1" author="me">
-        <createTable tableName="users">
-            <column name="Id" type="int">
+        <createTable schemaName="hbm" tableName="users">
+            <column name="id" type="int">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
-            <column name="Name" type="varchar(100)">
+            <column name="name" type="varchar(100)">
                 <constraints nullable="false"/>
             </column>
-            <column name="CreatedAt" type="datetime"></column>
+            <column name="created_at" type="datetime"></column>
         </createTable>
 
-        <createTable tableName="certificates">
+        <createTable schemaName="jpa" tableName="users">
+            <column name="id" type="int">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="name" type="varchar(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="datetime"></column>
+        </createTable>
+
+        <createTable schemaName="jpa" tableName="certificates">
             <column name="id" type="int">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
@@ -27,12 +37,12 @@
             <column name="expiration_date" type="datetime"></column>
         </createTable>
 
-        <createTable tableName="users_certificates">
+        <createTable schemaName="jpa" tableName="users_certificates">
             <column name="user_id" type="int">
-                <constraints nullable="false" foreignKeyName="fk_user_id" references="users(Id)"/>
+                <constraints nullable="false" foreignKeyName="fk_user_id" references="jpa.users(Id)"/>
             </column>
             <column name="cert_id" type="int">
-                <constraints nullable="false" foreignKeyName="fk_certificate_id" references="certificates(id)"/>
+                <constraints nullable="false" foreignKeyName="fk_certificate_id" references="jpa.certificates(id)"/>
             </column>
         </createTable>
 

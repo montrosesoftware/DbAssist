@@ -9,23 +9,24 @@ import java.util.Date;
 import java.util.List;
 
 @Entity
-@Table(name = "Users")
+@Table(name = "users", schema = "jpa")
 public class User {
 
     @Id
-    @Column(name = "Id")
+    @Column(name = "id")
     private int id;
 
-    @Column(name = "Name")
+    @Column(name = "name")
     private String name;
 
-    @Column(name = "createdat")
+    @Column(name = "created_at")
     private Date createdAt;
 
     @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinTable(
             name = "users_certificates",
-            joinColumns=@JoinColumn(name="user_id", referencedColumnName = "Id"),
+            schema = "jpa",
+            joinColumns=@JoinColumn(name="user_id", referencedColumnName = "id"),
             inverseJoinColumns = @JoinColumn(name="cert_id", referencedColumnName = "id"))
     private List<Certificate> certificates = new ArrayList<>();
 
@@ -65,7 +66,6 @@ public class User {
         return certificates;
     }
 
-    //TODO verify
     public void setCertificates(List<Certificate> certificates) {
         this.certificates = certificates;
     }

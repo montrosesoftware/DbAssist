@@ -4,12 +4,12 @@
         "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
 
 <hibernate-mapping>
-    <class name="com.montrosesoftware.User" table="Users">
+    <class name="com.montrosesoftware.User" table="hbm.Users">
         <id name="id" type="integer">
-            <column name="Id" />
+            <column name="id" />
         </id>
 
-        <property name="name" type="string" length="100" column="Name"/>
-        <property name="createdAt" type="com.montrosesoftware.hbm.UtcTimestampType" column="CreatedAt"/>
+        <property name="name" type="string" length="100" column="name"/>
+        <property name="createdAt" type="com.montrosesoftware.hbm.UtcTimestampType" column="created_at"/>
     </class>
 </hibernate-mapping>

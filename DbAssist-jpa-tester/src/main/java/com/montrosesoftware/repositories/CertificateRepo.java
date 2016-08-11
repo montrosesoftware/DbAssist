@@ -24,7 +24,7 @@ public class CertificateRepo extends AbstractRepository<Certificate> {
         }
 
     public void saveAsPlainSQL(Certificate cert){
-        String sql = "INSERT INTO Certificates (id, name, expiration_date) VALUES (" + cert.getId() +", '" + cert.getName() + "', '" + DateUtils.getUtc(cert.getExpirationDate()) + "')";
+        String sql = "INSERT INTO jpa.certificates (id, name, expiration_date) VALUES (" + cert.getId() +", '" + cert.getName() + "', '" + DateUtils.getUtc(cert.getExpirationDate()) + "')";
         Query query = entityManager.createNativeQuery(sql);
         query.executeUpdate();
     }

@@ -28,7 +28,7 @@ public class UserRepo extends AbstractRepository<User> {
     }
 
     public List getDataByPlainSQL(){
-        String sql = "SELECT Name, CreatedAt FROM Users";
+        String sql = "SELECT name, created_at FROM jpa.users";
         Query query = entityManager.createNativeQuery(sql);
         List users = query.getResultList();
         return users;
@@ -44,7 +44,7 @@ public class UserRepo extends AbstractRepository<User> {
     }
 
     public void saveAsPlainSQL(User user){
-        String sql = "INSERT INTO Users (Id, Name, CreatedAt) VALUES (" + user.getId() +", '" + user.getName() + "', '" + DateUtils.getUtc(user.getCreatedAt()) + "')";
+        String sql = "INSERT INTO jpa.users (id, name, created_at) VALUES (" + user.getId() +", '" + user.getName() + "', '" + DateUtils.getUtc(user.getCreatedAt()) + "')";
         Query query = entityManager.createNativeQuery(sql);
         query.executeUpdate();
     }
