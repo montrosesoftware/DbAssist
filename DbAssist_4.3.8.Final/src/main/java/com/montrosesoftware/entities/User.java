@@ -1,5 +1,8 @@
 package com.montrosesoftware.entities;
 
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
+
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.Date;
@@ -19,7 +22,7 @@ public class User {
     @Column(name = "createdat")
     private Date createdAt;
 
-    @ManyToMany(cascade = CascadeType.ALL)
+    @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinTable(
             name = "users_certificates",
             joinColumns=@JoinColumn(name="user_id", referencedColumnName = "Id"),

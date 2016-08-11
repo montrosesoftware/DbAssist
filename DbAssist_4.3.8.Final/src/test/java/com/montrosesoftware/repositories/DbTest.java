@@ -12,6 +12,7 @@ import org.apache.log4j.Logger;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import javax.persistence.criteria.JoinType;
 import java.util.Date;
 import java.util.List;
 
@@ -160,6 +161,7 @@ public class DbTest extends BaseTest{
         cRepo.saveAsPlainSQL(certToInsert);
 
         Certificate certRead = cRepo.get(id);
+        assertNotNull(certRead);
     }
 
     @Test
@@ -225,6 +227,9 @@ public class DbTest extends BaseTest{
         Conditions conditions = new Conditions();
         conditions.equal("createdAt", expectedDate);
 
+       /* Conditions joinConditions = conditions.getJoinConditions("expirationDate", JoinType.INNER);
+        joinConditions.equal("expirationDate", expirationDateA);*/
+
         List<User> results = uRepo.find(conditions, null, null);
         assertEquals(1,results.size());
 
@@ -236,5 +241,4 @@ public class DbTest extends BaseTest{
         assertEquals("Certificate A dates are not the same", certA.getExpirationDate(), certsRead.get(0).getExpirationDate());
         assertEquals("Certificate B dates are not the same", certB.getExpirationDate(), certsRead.get(1).getExpirationDate());
     }
-
 }
