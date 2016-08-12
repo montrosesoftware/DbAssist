@@ -5,14 +5,14 @@ import com.montrosesoftware.config.BaseTest;
 import com.montrosesoftware.entities.User;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.InvalidDataAccessApiUsageException;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 public class DbAssistLogicalOperationsTest extends BaseTest {
 
@@ -50,53 +50,92 @@ public class DbAssistLogicalOperationsTest extends BaseTest {
         assertEquals(0,resultsB.size());
     }
 
-    /*
     @Test
-    public void logicalOrAndCombined(){
+    public void logicalOrAndAndCombined(){
         //prepare data
         Date date = DateUtils.getUtc("2016-06-12 08:10:15");
         ArrayList<String> names = new ArrayList<>(
-                Arrays.asList("Name 1", "Name 2", "Name 3", "Name 4", "Name 4"));
-        List<User> usersToInsert = new ArrayList<>();
-        for(int i=0;i<5;i++)
-            usersToInsert.add(new User(i + 1, names.get(i), date));
-        for(User u : usersToInsert)
-            uRepo.save(u);
+                Arrays.asList("Name A", "Name A", "Name B", "Name C", "Name C"));
+        List<User> users = new ArrayList<>();
+        for(int i=0; i<5; i++)
+            users.add(new User(i + 1, names.get(i), date));
+        users.forEach(uRepo::save);
         uRepo.clearPersistenceContext();
 
-
-        //Conditions should include users with ids = 1,2 and 5
+        //Conditions should include users with ids = 1,2 and 4, 5 (because names of User 4 and 5 are the same)
         Conditions conditions = new Conditions();
         conditions.or(
-                conditions.and(conditions.greaterThanOrEqualTo("id", 1), null, conditions.lessThanOrEqualTo("id"), 2),
+                conditions.and(conditions.greaterThanOrEqualTo("id", 1), null, conditions.lessThanOrEqualTo("id", 2)),
                 null,
-                conditions.equal("name", names.get(4));
+                conditions.equal("name", names.get(4))
         );
 
         List<User> results = uRepo.find(conditions,null,null);
+        assertEquals(4, results.size());
+        results.forEach(user -> {if (user.getId() == 3) fail("User id=3 should not be included according to the conditions");});
     }
-    */
+
+    private static Date addMinutes(Date date, int minutes){
+        final long OneMinuteInMs = 60000;
+        long currentTimeInMs = date.getTime();
+        Date newDate = new Date(currentTimeInMs + (minutes * OneMinuteInMs));
+        return newDate;
+    }
 
     @Test
-    public void inRangeWithDates(){
+    public void inRangeWithDatesAndIds(){
         //prepare user data:
         Date date1 = DateUtils.getUtc("2012-06-12 08:10:15");
-        Date date2 = DateUtils.getUtc("2015-02-12 08:10:15");
-        Date date3 = DateUtils.getUtc("2018-06-12 08:10:15");
-        User user1 = new User(1, "User 1", date1);
-        User user2 = new User(2, "User 2", date2);
-        User user3 = new User(3, "User 3", date3);
-        uRepo.save(user1);
-        uRepo.save(user2);
-        uRepo.save(user3);
+        Date date2 = addMinutes(date1, 10);
+        Date date3 = addMinutes(date1, 20);
+        Date date4 = addMinutes(date1, 30);
+        List<User> users = new ArrayList<>();
+        users.add(new User(1, "User 1", date1));
+        users.add(new User(2, "User 2", date2));
+        users.add(new User(3, "User 3", date3));
+        users.add(new User(4, "User 4", date4));
+        users.forEach(uRepo::save);
         uRepo.clearPersistenceContext();
 
-        Conditions conditions = Conditions.inRangeConditions("createdAt", date2, date3);
-        List<User> results = uRepo.find(conditions, null, null);
+        //simple inRange <date1 + 10min, date1 + 21min>
+        Conditions conditionsA = new Conditions();
+        conditionsA.inRangeConditions("createdAt", date2, addMinutes(date3, 1));
+        List<User> resultsA = uRepo.find(conditionsA, null, null);
+        assertEquals(2, resultsA.size());
+        assertTrue(resultsA.get(0).getCreatedAt().compareTo(date2) == 0);
+        assertTrue(resultsA.get(1).getCreatedAt().compareTo(date3) == 0);
 
-        assertEquals(2, results.size());
-       // assertTrue(results.get(0).getCreatedAt().compareTo(date2));
-        //a/ssertTrue(results.get(1).getCreatedAt().compareTo(date3));
+        //combination of inRange for date (createdAt) and inRange for id, should return only user of id = 3
+        //we cannot reuse the previous conditions (find(...) was already executed)
+        Conditions conditionsB = new Conditions();
+        conditionsB.inRangeConditions("createdAt", date2, addMinutes(date3, 1));
+        conditionsB.inRangeConditions("id", 3, 4);
+        List<User> resultsB = uRepo.find(conditionsB, null, null);
+        assertEquals(1, resultsB.size());
+        assertEquals(3, resultsB.get(0).getId());
+
+        //incorrect boundaries set, range <date1 + 20min, date1 + 10min>
+        Conditions conditionsC = new Conditions();
+        conditionsC.inRangeConditions("createdAt", date3, date2);
+        List<User> resultsC = uRepo.find(conditionsC, null, null);
+        assertEquals(0,resultsC.size());
     }
 
+    @Test(expected = InvalidDataAccessApiUsageException.class)
+    public void conditionsAreReusableAfterFindCall(){
+        //prepare user data:
+        Date date1 = DateUtils.getUtc("2012-06-12 08:10:15");
+        Date date2 = addMinutes(date1, 10);
+        List<User> users = new ArrayList<>();
+        users.add(new User(1, "User 1", date1));
+        users.add(new User(2, "User 2", date2));
+        users.forEach(uRepo::save);
+        uRepo.clearPersistenceContext();
+
+        Conditions conditions = new Conditions();
+        conditions.inRangeConditions("id", 1, 1);
+
+        List<User> results = uRepo.find(conditions, null, null);
+        List<User> resultsAgain = uRepo.find(conditions, null, null);   //should fail
+    }
 }

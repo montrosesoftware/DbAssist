@@ -32,6 +32,15 @@ public class Conditions {
 
     public Conditions() {}
 
+    //TODO find a better way to do it
+    public Conditions(Conditions another){
+        this.joinConditions = new HashMap<>(another.joinConditions);
+        this.whereConditions = new LinkedList<>(another.whereConditions);
+        this.parameters = new HashMap<>(parameters);
+        this.joinAttribute = new String(another.joinAttribute);
+        this.joinType = another.joinType;
+    }
+
     private Conditions(String joinAttribute, JoinType joinType) {
         this.joinAttribute = joinAttribute;
         this.joinType = joinType;
@@ -53,26 +62,20 @@ public class Conditions {
         return addToWhereConditionsAndReturn((cb, root) -> cb.equal(root.get(attributeName), getExpression(cb, value, LocalDate.class)));
     }
 
-    public Condition greaterThan(String attributeName, Date value) {
-        return addToWhereConditionsAndReturn((cb, root) -> cb.greaterThan(root.get(attributeName), getExpression(cb, value, Date.class)));
+    public <T extends Comparable<T>> Condition greaterThan(String attributeName, T value){
+        return addToWhereConditionsAndReturn((cb, root) -> cb.greaterThan(root.get(attributeName), getExpression(cb, value, (Class<T>)value.getClass())));
     }
 
-    //TODO
-    /*
-    public Condition greaterThan(String attributeName, Number value) {
-        return addToWhereConditionsAndReturn((cb, root) -> cb.greaterThan(root.get(attributeName), cb.parameter(Number.class, attributeName)));
-    }*/
-
-    public Condition greaterThanOrEqualTo(String attributeName, Date value) {
-        return addToWhereConditionsAndReturn((cb, root) -> cb.greaterThanOrEqualTo(root.get(attributeName), getExpression(cb, value, Date.class)));
+    public <T extends Comparable<T>> Condition greaterThanOrEqualTo(String attributeName, T value){
+        return addToWhereConditionsAndReturn((cb, root) -> cb.greaterThanOrEqualTo(root.get(attributeName), getExpression(cb, value, (Class<T>)value.getClass())));
     }
 
-    public Condition lessThan(String attributeName, Date value) {
-        return addToWhereConditionsAndReturn((cb, root) -> cb.lessThan(root.get(attributeName), getExpression(cb, value, Date.class)));
+    public <T extends Comparable<T>> Condition lessThan(String attributeName, T value){
+        return addToWhereConditionsAndReturn((cb, root) -> cb.lessThan(root.get(attributeName), getExpression(cb, value, (Class<T>)value.getClass())));
     }
 
-    public Condition lessThanOrEqualTo(String attributeName, Date value) {
-        return addToWhereConditionsAndReturn((cb, root) -> cb.lessThanOrEqualTo(root.get(attributeName), getExpression(cb, value, Date.class)));
+    public <T extends Comparable<T>> Condition lessThanOrEqualTo(String attributeName, T value){
+        return addToWhereConditionsAndReturn((cb, root) -> cb.lessThanOrEqualTo(root.get(attributeName), getExpression(cb, value, (Class<T>)value.getClass())));
     }
 
     public <T> Condition in(String attributeName, List<T> values) {
@@ -163,14 +166,12 @@ public class Conditions {
         return conditions;
     }
 
-    public static Conditions inRangeConditions(String attributeName, Date leftBound, Date rightBound){
-        Conditions conditions = new Conditions();
-        conditions.and(
-                conditions.greaterThanOrEqualTo(attributeName, leftBound),
+    public <T extends Comparable<T>> void inRangeConditions(String attributeName, T leftBound, T rightBound){
+        this.and(
+                this.greaterThanOrEqualTo(attributeName, leftBound),
                 null,
-                conditions.lessThanOrEqualTo(attributeName, rightBound)
+                this.lessThanOrEqualTo(attributeName, rightBound)
         );
-        return conditions;
     }
 
     public void apply(CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder, Root<?> root) {
@@ -178,7 +179,7 @@ public class Conditions {
     }
 
     public TypedQuery<?> setParameters(TypedQuery<?> typedQuery) {
-        parameters.forEach((k, v) -> typedQuery.setParameter(k, v));
+        parameters.forEach(typedQuery::setParameter);
 
         if (joinConditions != null && !joinConditions.isEmpty()) {
             joinConditions.forEach((joinAttribute, joinCondition) -> joinCondition.setParameters(typedQuery));
