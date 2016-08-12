@@ -6,7 +6,19 @@
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog/1.6
          http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-1.6.xsd">
 
-    <changeSet id="1" author="me">
+    <changeSet id="44107634-6081-11e6-8b77-86f30ca893d3" author="MontroseSoftware">
+        <sql>
+            create SCHEMA hbm
+        </sql>
+    </changeSet>
+
+    <changeSet id="ad92a9d2-6082-11e6-8b77-86f30ca893d3" author="MontroseSoftware">
+        <sql>
+            create SCHEMA jpa
+        </sql>
+    </changeSet>
+
+    <changeSet id="52802eee-6081-11e6-8b77-86f30ca893d3" author="me">
         <createTable schemaName="hbm" tableName="users">
             <column name="id" type="int">
                 <constraints primaryKey="true" nullable="false"/>
@@ -16,7 +28,9 @@
             </column>
             <column name="created_at" type="datetime"></column>
         </createTable>
+    </changeSet>
 
+    <changeSet id="bcdf5ebc-6082-11e6-8b77-86f30ca893d3" author="MontroseSoftware">
         <createTable schemaName="jpa" tableName="users">
             <column name="id" type="int">
                 <constraints primaryKey="true" nullable="false"/>
@@ -26,7 +40,9 @@
             </column>
             <column name="created_at" type="datetime"></column>
         </createTable>
+    </changeSet>
 
+    <changeSet id="5af4f5aa-6081-11e6-8b77-86f30ca893d3" author="MontroseSoftware">
         <createTable schemaName="jpa" tableName="certificates">
             <column name="id" type="int">
                 <constraints primaryKey="true" nullable="false"/>
@@ -36,7 +52,9 @@
             </column>
             <column name="expiration_date" type="datetime"></column>
         </createTable>
+    </changeSet>
 
+    <changeSet id="4ac6fc36-6082-11e6-8b77-86f30ca893d3" author="MontroseSoftware">
         <createTable schemaName="jpa" tableName="users_certificates">
             <column name="user_id" type="int">
                 <constraints nullable="false" foreignKeyName="fk_user_id" references="jpa.users(Id)"/>
@@ -45,7 +63,6 @@
                 <constraints nullable="false" foreignKeyName="fk_certificate_id" references="jpa.certificates(id)"/>
             </column>
         </createTable>
-
     </changeSet>
 
 </databaseChangeLog>
