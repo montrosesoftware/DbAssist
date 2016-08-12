@@ -45,8 +45,8 @@
 
     <modules>
         <module>DbAssist-hbm</module>
-        <module>DbAssist-hbm-tester</module>
         <module>DbAssist-commons</module>
+        <module>DbAssist-hbm-tester</module>
     </modules>
 
 </project>

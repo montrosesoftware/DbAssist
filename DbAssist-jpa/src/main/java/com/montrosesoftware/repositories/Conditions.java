@@ -57,6 +57,12 @@ public class Conditions {
         return addToWhereConditionsAndReturn((cb, root) -> cb.greaterThan(root.get(attributeName), getExpression(cb, value, Date.class)));
     }
 
+    //TODO
+    /*
+    public Condition greaterThan(String attributeName, Number value) {
+        return addToWhereConditionsAndReturn((cb, root) -> cb.greaterThan(root.get(attributeName), cb.parameter(Number.class, attributeName)));
+    }*/
+
     public Condition greaterThanOrEqualTo(String attributeName, Date value) {
         return addToWhereConditionsAndReturn((cb, root) -> cb.greaterThanOrEqualTo(root.get(attributeName), getExpression(cb, value, Date.class)));
     }
@@ -154,6 +160,16 @@ public class Conditions {
             joinConditions.put(joinAttribute, conditions);
         }
 
+        return conditions;
+    }
+
+    public static Conditions inRangeConditions(String attributeName, Date leftBound, Date rightBound){
+        Conditions conditions = new Conditions();
+        conditions.and(
+                conditions.greaterThanOrEqualTo(attributeName, leftBound),
+                null,
+                conditions.lessThanOrEqualTo(attributeName, rightBound)
+        );
         return conditions;
     }
 

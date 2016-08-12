@@ -12,14 +12,11 @@ import org.apache.log4j.Logger;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import javax.persistence.criteria.JoinType;
 import java.util.Date;
 import java.util.List;
 
-import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
 
 public class DbTest extends BaseTest{
 
@@ -28,6 +25,11 @@ public class DbTest extends BaseTest{
 
     @Autowired
     private CertificateRepo cRepo;
+
+    @Test public void reposProperlyAutowiredTest(){
+        assertNotNull(uRepo);
+        assertNotNull(cRepo);
+    }
 
     @Test
     public void dataInsertedByPlainSQLAndReadBySpringIsNotEqual(){
@@ -39,7 +41,6 @@ public class DbTest extends BaseTest{
         int id = 1;
         User userToInsert = new User(id, "Adam Spring", expectedDate);
 
-        assertNotNull(uRepo);
         uRepo.saveAsPlainSQL(userToInsert);
 
         User userReadSpring = uRepo.get(id);
@@ -60,7 +61,6 @@ public class DbTest extends BaseTest{
         User userToInsert = new User(id, "Adam Spring", expectedDate);
 
         //insert
-        assertNotNull(uRepo);
         uRepo.saveAsPlainSQL(userToInsert);
 
         //read
@@ -84,7 +84,6 @@ public class DbTest extends BaseTest{
         User userToInsert = new User(id, "Adam Spring", expectedDate);
 
         //insert
-        assertNotNull(uRepo);
         uRepo.saveAsPlainSQL(userToInsert);
 
         //read
@@ -106,7 +105,6 @@ public class DbTest extends BaseTest{
         User userToInsert = new User(id, "Joanna Spring", expectedDate);
 
         //insert
-        assertNotNull(uRepo);
         uRepo.saveAsPlainSQL(userToInsert);
 
         //read
@@ -127,7 +125,6 @@ public class DbTest extends BaseTest{
         User userToInsert = new User(id, "Adam Spring", expectedDate);
 
         //Plain SQL
-        assertNotNull(uRepo);
         uRepo.saveAsPlainSQL(userToInsert);
 
         //Spring
@@ -157,7 +154,6 @@ public class DbTest extends BaseTest{
         int id = 1;
         Certificate certToInsert = new Certificate(id, certName, expectedDate);
 
-        assertNotNull(cRepo);
         cRepo.saveAsPlainSQL(certToInsert);
 
         Certificate certRead = cRepo.get(id);
@@ -200,6 +196,7 @@ public class DbTest extends BaseTest{
         assertEquals("Certificate B dates are not the same", certB.getExpirationDate(), certsRead.get(1).getExpirationDate());
     }
 
+    //TODO remake the test
     @Test
     public void writeByHibernateReadUsingConditionsJoin(){
         //prepare user
@@ -242,4 +239,6 @@ public class DbTest extends BaseTest{
         assertEquals("Certificate A dates are not the same", certA.getExpirationDate(), certsRead.get(0).getExpirationDate());
         assertEquals("Certificate B dates are not the same", certB.getExpirationDate(), certsRead.get(1).getExpirationDate());
     }
+
+
 }
