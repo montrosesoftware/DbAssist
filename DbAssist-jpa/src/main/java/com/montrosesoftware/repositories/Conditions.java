@@ -19,6 +19,8 @@ public class Conditions {
         R apply(A1 arg1, A2 arg2, A3 arg3);
     }
 
+    private boolean conditionsAlreadyUsed = false;
+
     // Per single join
     private HashMap<String, Conditions> joinConditions = new HashMap<>();
 
@@ -176,6 +178,13 @@ public class Conditions {
         );
     }
 
+    public <T extends Comparable<T>> void inRangeExclusiveConditions(String attributeName, T leftBound, T rightBound){
+        this.and(
+                this.greaterThan(attributeName, leftBound),
+                this.lessThan(attributeName, rightBound)
+        );
+    }
+
     public void apply(CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder, Root<?> root) {
         applyPredicates(getPredicates(criteriaQuery, criteriaBuilder, root), criteriaQuery, criteriaBuilder);
     }
@@ -250,5 +259,13 @@ public class Conditions {
         }
 
         return fetchParent;
+    }
+
+    public boolean isConditionsAlreadyUsed() {
+        return conditionsAlreadyUsed;
+    }
+
+    public void setConditionsAlreadyUsed() {
+        this.conditionsAlreadyUsed = true;
     }
 }

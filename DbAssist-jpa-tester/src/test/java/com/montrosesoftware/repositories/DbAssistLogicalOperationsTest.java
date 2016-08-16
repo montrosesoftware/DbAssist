@@ -70,9 +70,9 @@ public class DbAssistLogicalOperationsTest extends BaseTest {
                 c.equal("name", names.get(4))
         );
 
-        List<User> results = uRepo.find(c,null,null);
+        List<User> results = uRepo.find(c);
         assertEquals(4, results.size());
-        results.forEach(user -> {if (user.getId() == 3) fail("User id=3 should not be included according to the c");});
+        results.forEach(user -> {if (user.getId() == 3) fail("User id = 3 should not be included according to the conditions");});
     }
 
     private static Date addMinutes(Date date, int minutes){
@@ -119,5 +119,12 @@ public class DbAssistLogicalOperationsTest extends BaseTest {
         conditionsC.inRangeConditions("createdAt", date3, date2);
         List<User> resultsC = uRepo.find(conditionsC);
         assertEquals(0,resultsC.size());
+
+        // WHERE (id > 1 AND id < 3)
+        Conditions conditionsD = new Conditions();
+        conditionsD.inRangeExclusiveConditions("id",1,3);
+        List<User> resultsD = uRepo.find(conditionsD);
+        assertEquals(1, resultsD.size());
+        assertEquals(2, resultsD.get(0).getId());
     }
 }

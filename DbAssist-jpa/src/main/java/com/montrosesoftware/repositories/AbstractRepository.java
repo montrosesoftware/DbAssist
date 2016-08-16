@@ -39,6 +39,12 @@ public abstract class AbstractRepository<T> {
     }
 
     protected List<T> find(Conditions conditions, List<Function<FetchParent<?, ?>, FetchParent<?, ?>>> fetchCallbacks, OrderBy<T> orderBy) {
+        //TODO apply to other find*, count etc.
+        if(conditions.isConditionsAlreadyUsed())
+            return null;
+        else
+            conditions.setConditionsAlreadyUsed();
+
         CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
         CriteriaQuery<T> criteriaQuery = criteriaBuilder.createQuery(typeParameterClass);
         Root<T> root = criteriaQuery.from(typeParameterClass);
@@ -64,14 +70,6 @@ public abstract class AbstractRepository<T> {
 
     protected List<T> find(Conditions conditions){
         return find(conditions, null, null);
-    }
-
-    protected long count(Conditions conditions) {
-        return count(conditions, false);
-    }
-
-    protected long countDistinct(Conditions conditions) {
-        return count(conditions, true);
     }
 
     protected List<Tuple> findAttributes(SelectionList<T> selectionList,
@@ -191,19 +189,79 @@ public abstract class AbstractRepository<T> {
         }
     }
 
-    private long count(Conditions conditions, boolean countDistinct) {
-        CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
-        CriteriaQuery<Long> criteriaQuery = criteriaBuilder.createQuery(Long.class);
-        Root<T> root = criteriaQuery.from(typeParameterClass);
+    private abstract class Aggregate<N extends Number> {
+        protected CriteriaBuilder cb;
+        protected CriteriaQuery<Number> cq;
+        protected Root<T> root;
 
-        if (countDistinct) {
-            criteriaQuery.select(criteriaBuilder.countDistinct(root));
-        } else {
-            criteriaQuery.select(criteriaBuilder.count(root));
+        protected boolean countDistinct;
+
+        public Aggregate(){}
+
+        public Aggregate(boolean countDistinct){
+            this.countDistinct = countDistinct;
         }
 
-        conditions.apply(criteriaQuery, criteriaBuilder, root);
+        public abstract void prepareQuery(String attributeName);
 
-        return (Long) conditions.setParameters(entityManager.createQuery(criteriaQuery)).getSingleResult();
+        public N calculate(Conditions conditions, String attributeName, Class<N> type){
+            cb = entityManager.getCriteriaBuilder();
+            cq = cb.createQuery(Number.class);
+            root = cq.from(typeParameterClass);
+            prepareQuery(attributeName);                                                          //TODO
+            conditions.apply(cq, cb, root);
+            return type.cast(conditions.setParameters(entityManager.createQuery(cq)).getSingleResult());
+        }
+    }
+
+    protected <N extends Number> N min(Conditions conditions, String attributeName, Class<N> type){
+        Aggregate<N> agg = new Aggregate<N>(){
+            @Override
+            public void prepareQuery(String attributeName){
+                cq.select(cb.min(root.get(attributeName)));
+            }
+        };
+        return agg.calculate(conditions, attributeName, type);
+    }
+
+    protected <N extends Number> N max(Conditions conditions, String attributeName, Class<N> type){
+        Aggregate<N> agg = new Aggregate<N>(){
+          @Override
+          public void prepareQuery(String attributeName){
+              cq.select(cb.max(root.get(attributeName)));
+          }
+        };
+        return agg.calculate(conditions, attributeName, type);
+    }
+
+    protected <N extends Number> N sum(Conditions conditions, String attributeName, Class<N> type){
+        Aggregate<N> agg = new Aggregate<N>(){
+            @Override
+            public void prepareQuery(String attributeName){
+                cq.select(cb.sum(root.get(attributeName)));
+            }
+        };
+        return agg.calculate(conditions, attributeName, type);
+    }
+
+    protected <N extends Number> N count(Conditions conditions, Class<N> type, boolean countDistinct){
+        Aggregate<N> agg = new Aggregate<N>(countDistinct){
+            @Override
+            public void prepareQuery(String attributeName){
+                if (countDistinct)
+                    cq.select(cb.countDistinct(root));
+                else
+                    cq.select(cb.count(root));
+            }
+        };
+        return agg.calculate(conditions, null, type);
+    }
+
+    protected long count(Conditions conditions) {
+        return count(conditions, Long.class, false);
+    }
+
+    protected long countDistinct(Conditions conditions) {
+        return count(conditions, Long.class, true);
     }
 }

@@ -5,9 +5,9 @@ import com.montrosesoftware.config.BaseTest;
 import com.montrosesoftware.entities.User;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.InvalidDataAccessApiUsageException;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -18,7 +18,7 @@ public class DbAssistMiscellaneousTest extends BaseTest {
     @Autowired
     private UserRepo uRepo;
 
-    @Test(expected = ConditionsAlreadyUsedException.class)
+    @Test
     public void conditionsAreNotReusableAfterFindCall(){
         //prepare user data:
         Date date = DateUtils.getUtc("2012-06-12 08:10:15");
@@ -35,7 +35,9 @@ public class DbAssistMiscellaneousTest extends BaseTest {
         //Conditions can be used only once, after calling find() or findAttribute()
         //we have to create a new instance of Conditions that we want to use
         List<User> results = uRepo.find(conditions);
-        List<User> resultsAgain = uRepo.find(conditions);   //should fail
+        List<User> resultsAgain = uRepo.find(conditions);   //should fail (return null pointer)
+        assertNotNull(results);
+        assertNull(resultsAgain);
     }
 
     @Test
@@ -93,7 +95,7 @@ public class DbAssistMiscellaneousTest extends BaseTest {
     }
 
     @Test
-    public void emptyConditionsReturnAllObjects() {
+    public void emptyConditionsReturnAllRecords() {
         //prepare user data:
         Date date = DateUtils.getUtc("2012-06-12 08:10:15");
         List<User> users = new ArrayList<>();
@@ -107,24 +109,5 @@ public class DbAssistMiscellaneousTest extends BaseTest {
         Conditions c = new Conditions();
         List<User> results = uRepo.find(c);
         assertEquals(users.size(), results.size());
-    }
-
-    @Test
-    public void countUseTest() {
-        //prepare user data:
-        Date date = DateUtils.getUtc("2012-06-12 08:10:15");
-        List<User> users = new ArrayList<>();
-        users.add(new User(1, "Mont", date));
-        users.add(new User(2, "Mont", date));
-        users.add(new User(3, "Rose", date));
-        users.forEach(uRepo::save);
-        uRepo.clearPersistenceContext();
-
-        //
-        Conditions c = new Conditions();
-        c.equal("name", "Mont");
-        uRepo.count(c);
-
-        //TODO finish
     }
 }
