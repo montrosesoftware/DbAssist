@@ -5,6 +5,7 @@ import com.montrosesoftware.config.BaseTest;
 import com.montrosesoftware.entities.User;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.InvalidDataAccessApiUsageException;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -18,8 +19,11 @@ public class DbAssistLogicalOperationsTest extends BaseTest {
     @Autowired
     private UserRepo uRepo;
 
+    @Autowired
+    private CertificateRepo cRepo;
+
     @Test
-    public void logicalAndConditionsTest() throws ConditionsAlreadyUsedException {
+    public void logicalAndConditionsTest(){
         //prepare and insert user
         Date date = DateUtils.getUtc("2016-06-12 08:10:15");
         Date dateBefore = DateUtils.getUtc("2015-02-12 08:10:15");
@@ -49,7 +53,7 @@ public class DbAssistLogicalOperationsTest extends BaseTest {
     }
 
     @Test
-    public void logicalOrAndAndCombined() throws ConditionsAlreadyUsedException {
+    public void logicalOrAndAndCombined(){
         //prepare data
         Date date = DateUtils.getUtc("2016-06-12 08:10:15");
         ArrayList<String> names = new ArrayList<>(Arrays.asList("A", "A", "B", "C", "C"));
@@ -66,7 +70,7 @@ public class DbAssistLogicalOperationsTest extends BaseTest {
                 c.equal("name", names.get(4))
         );
 
-        List<User> results = uRepo.find(c);
+        List<User> results = uRepo.find(c,null,null);
         assertEquals(4, results.size());
         results.forEach(user -> {if (user.getId() == 3) fail("User id=3 should not be included according to the c");});
     }
@@ -79,7 +83,7 @@ public class DbAssistLogicalOperationsTest extends BaseTest {
     }
 
     @Test
-    public void inRangeWithDatesAndIds() throws ConditionsAlreadyUsedException {
+    public void inRangeWithDatesAndIds(){
         //prepare user data:
         Date date1 = DateUtils.getUtc("2012-06-12 08:10:15");
         Date date2 = addMinutes(date1, 10);
@@ -101,6 +105,7 @@ public class DbAssistLogicalOperationsTest extends BaseTest {
         assertTrue(resultsA.get(0).getCreatedAt().compareTo(date2) == 0);
         assertTrue(resultsA.get(1).getCreatedAt().compareTo(date3) == 0);
 
+        //we cannot reuse the previous conditions (find(...) was already executed)
         // WHERE (created_at >= ? AND created_at <= ?) AND (id >= ? AND id <= ?)
         Conditions conditionsB = new Conditions();
         conditionsB.inRangeConditions("createdAt", date2, addMinutes(date3, 1));
@@ -115,6 +120,4 @@ public class DbAssistLogicalOperationsTest extends BaseTest {
         List<User> resultsC = uRepo.find(conditionsC);
         assertEquals(0,resultsC.size());
     }
-
-
 }

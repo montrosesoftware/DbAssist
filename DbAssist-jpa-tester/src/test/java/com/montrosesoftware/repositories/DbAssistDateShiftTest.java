@@ -198,7 +198,7 @@ public class DbAssistDateShiftTest extends BaseTest{
 
     //TODO remake the test
     @Test
-    public void writeByHibernateReadUsingConditionsJoin() throws ConditionsAlreadyUsedException {
+    public void writeByHibernateReadUsingConditionsJoin(){
         //prepare user
         String expDateString = "2016-06-12 08:10:15";
         Date expectedDate = DateUtils.getUtc(expDateString);

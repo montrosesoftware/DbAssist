@@ -19,7 +19,7 @@ public class DbAssistMiscellaneousTest extends BaseTest {
     private UserRepo uRepo;
 
     @Test(expected = ConditionsAlreadyUsedException.class)
-    public void conditionsAreNotReusableAfterFindCall() throws ConditionsAlreadyUsedException {
+    public void conditionsAreNotReusableAfterFindCall(){
         //prepare user data:
         Date date = DateUtils.getUtc("2012-06-12 08:10:15");
         List<User> users = new ArrayList<>();
@@ -39,7 +39,7 @@ public class DbAssistMiscellaneousTest extends BaseTest {
     }
 
     @Test
-    public void conditionsNullAndNotNull() throws ConditionsAlreadyUsedException {
+    public void conditionsNullAndNotNull() {
         //prepare user data with null date in user 2
         Date date = DateUtils.getUtc("2012-06-12 08:10:15");
         User u1 = new User(1, "Rose", date);
@@ -66,7 +66,7 @@ public class DbAssistMiscellaneousTest extends BaseTest {
     }
 
     @Test
-    public void conditionsLikeAndNotLike() throws ConditionsAlreadyUsedException {
+    public void conditionsLikeAndNotLike() {
         //prepare user data:
         Date date = DateUtils.getUtc("2012-06-12 08:10:15");
         List<User> users = new ArrayList<>();
@@ -93,7 +93,7 @@ public class DbAssistMiscellaneousTest extends BaseTest {
     }
 
     @Test
-    public void emptyConditionsReturnAllObjects() throws ConditionsAlreadyUsedException {
+    public void emptyConditionsReturnAllObjects() {
         //prepare user data:
         Date date = DateUtils.getUtc("2012-06-12 08:10:15");
         List<User> users = new ArrayList<>();
@@ -110,7 +110,7 @@ public class DbAssistMiscellaneousTest extends BaseTest {
     }
 
     @Test
-    public void countUseTest() throws ConditionsAlreadyUsedException {
+    public void countUseTest() {
         //prepare user data:
         Date date = DateUtils.getUtc("2012-06-12 08:10:15");
         List<User> users = new ArrayList<>();
