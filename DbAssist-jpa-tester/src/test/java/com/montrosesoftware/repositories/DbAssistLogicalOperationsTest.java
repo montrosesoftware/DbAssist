@@ -33,20 +33,22 @@ public class DbAssistLogicalOperationsTest extends BaseTest {
         uRepo.save(userToInsert);
         uRepo.clearPersistenceContext();
 
-        //conditionsA should include the user
-        Conditions conditionsA = new Conditions();
-        conditionsA.and(conditionsA.greaterThan("createdAt", dateBefore),
-                null,
-                conditionsA.lessThan("createdAt", dateAfter));
-        List<User> resultsA = uRepo.find(conditionsA, null, null);
+        // WHERE created_at > dateBefore AND created_at < dateAfter
+        Conditions cA = new Conditions();
+        cA.and(
+                cA.greaterThan("createdAt", dateBefore),
+                cA.lessThan("createdAt", dateAfter)
+        );
+        List<User> resultsA = uRepo.find(cA);
         assertEquals(1, resultsA.size());
 
-        //conditionsB should not include the user
-        Conditions conditionsB = new Conditions();
-        conditionsB.and(conditionsB.greaterThan("createdAt", dateAfter),
-                null,
-                conditionsB.lessThan("createdAt", dateBefore));
-        List<User> resultsB = uRepo.find(conditionsB, null, null);
+        // WHERE created_at > dateAfter AND created_at < dateBefore
+        Conditions cB = new Conditions();
+        cB.and(
+                cB.greaterThan("createdAt", dateAfter),
+                cB.lessThan("createdAt", dateBefore)
+        );
+        List<User> resultsB = uRepo.find(cB);
         assertEquals(0,resultsB.size());
     }
 
@@ -54,26 +56,23 @@ public class DbAssistLogicalOperationsTest extends BaseTest {
     public void logicalOrAndAndCombined(){
         //prepare data
         Date date = DateUtils.getUtc("2016-06-12 08:10:15");
-        ArrayList<String> names = new ArrayList<>(
-                Arrays.asList("A", "A", "B", "C", "C"));
+        ArrayList<String> names = new ArrayList<>(Arrays.asList("A", "A", "B", "C", "C"));
         List<User> users = new ArrayList<>();
         for(int i=0; i<5; i++)
             users.add(new User(i + 1, names.get(i), date));
         users.forEach(uRepo::save);
         uRepo.clearPersistenceContext();
 
-        //Conditions should include users with ids = 1,2 and 4, 5 (because names of User 4 and 5 are the same)
-        //TODO overload or, and without joins conditions
-        Conditions conditions = new Conditions();
-        conditions.or(
-                conditions.and(conditions.greaterThanOrEqualTo("id", 1), null, conditions.lessThanOrEqualTo("id", 2)),
-                null,
-                conditions.equal("name", names.get(4))
+        // WHERE id >= 1 AND id <= 2 OR name = "C"
+        Conditions c = new Conditions();
+        c.or(
+                c.and(c.greaterThanOrEqualTo("id", 1), null, c.lessThanOrEqualTo("id", 2)),
+                c.equal("name", names.get(4))
         );
 
-        List<User> results = uRepo.find(conditions,null,null);
+        List<User> results = uRepo.find(c,null,null);
         assertEquals(4, results.size());
-        results.forEach(user -> {if (user.getId() == 3) fail("User id=3 should not be included according to the conditions");});
+        results.forEach(user -> {if (user.getId() == 3) fail("User id=3 should not be included according to the c");});
     }
 
     private static Date addMinutes(Date date, int minutes){
@@ -98,27 +97,27 @@ public class DbAssistLogicalOperationsTest extends BaseTest {
         users.forEach(uRepo::save);
         uRepo.clearPersistenceContext();
 
-        //simple inRange <date1 + 10min, date1 + 21min>
+        // WHERE created_at >= ? AND created_at <= ?
         Conditions conditionsA = new Conditions();
         conditionsA.inRangeConditions("createdAt", date2, addMinutes(date3, 1));
-        List<User> resultsA = uRepo.find(conditionsA, null, null);
+        List<User> resultsA = uRepo.find(conditionsA);
         assertEquals(2, resultsA.size());
         assertTrue(resultsA.get(0).getCreatedAt().compareTo(date2) == 0);
         assertTrue(resultsA.get(1).getCreatedAt().compareTo(date3) == 0);
 
-        //combination of inRange for date (createdAt) and inRange for id, should return only user of id = 3
         //we cannot reuse the previous conditions (find(...) was already executed)
+        // WHERE (created_at >= ? AND created_at <= ?) AND (id >= ? AND id <= ?)
         Conditions conditionsB = new Conditions();
         conditionsB.inRangeConditions("createdAt", date2, addMinutes(date3, 1));
         conditionsB.inRangeConditions("id", 3, 4);
-        List<User> resultsB = uRepo.find(conditionsB, null, null);
+        List<User> resultsB = uRepo.find(conditionsB);
         assertEquals(1, resultsB.size());
         assertEquals(3, resultsB.get(0).getId());
 
-        //incorrect boundaries set, range <date1 + 20min, date1 + 10min>
+        //incorrect boundaries
         Conditions conditionsC = new Conditions();
         conditionsC.inRangeConditions("createdAt", date3, date2);
-        List<User> resultsC = uRepo.find(conditionsC, null, null);
+        List<User> resultsC = uRepo.find(conditionsC);
         assertEquals(0,resultsC.size());
     }
 
@@ -133,13 +132,14 @@ public class DbAssistLogicalOperationsTest extends BaseTest {
         users.forEach(uRepo::save);
         uRepo.clearPersistenceContext();
 
+        //WHERE id >= 1 AND id <= 1
         Conditions conditions = new Conditions();
         conditions.inRangeConditions("id", 1, 1);
 
         //Conditions can be used only once, after calling find() or findAttribute()
         //we have to create a new instance of Conditions that we want to use
-        List<User> results = uRepo.find(conditions, null, null);
-        List<User> resultsAgain = uRepo.find(conditions, null, null);   //should fail
+        List<User> results = uRepo.find(conditions);
+        List<User> resultsAgain = uRepo.find(conditions);   //should fail
     }
 
     @Test
@@ -154,15 +154,17 @@ public class DbAssistLogicalOperationsTest extends BaseTest {
         uRepo.save(u2);
         uRepo.clearPersistenceContext();
 
+        //WHERE created_at IS NULL
         Conditions condDateNull = new Conditions();
         condDateNull.isNull("createdAt");
-        List<User> results = uRepo.find(condDateNull, null, null);
+        List<User> results = uRepo.find(condDateNull);
         assertEquals(1,results.size());
         assertEquals("Mont", results.get(0).getName());
 
+        //WHERE created_at IS NOT NULL
         Conditions condDateNotNull = new Conditions();
         condDateNotNull.isNotNull("createdAt");
-        List<User> resultsDateNotNull = uRepo.find(condDateNotNull, null, null);
+        List<User> resultsDateNotNull = uRepo.find(condDateNotNull);
         assertEquals(1,resultsDateNotNull.size());
         assertEquals("Rose", resultsDateNotNull.get(0).getName());
     }
@@ -178,9 +180,20 @@ public class DbAssistLogicalOperationsTest extends BaseTest {
         users.forEach(uRepo::save);
         uRepo.clearPersistenceContext();
 
-       /* Conditions conditionsA = new Conditions();
-        conditionsA.notLike("")
-        */
+        //WHERE name NOT LIKE 'Mont%'
+        Conditions conditionsA = new Conditions();
+        conditionsA.like("name", "Mont%");
+        List<User> resultsA = uRepo.find(conditionsA);
+        assertEquals(2, resultsA.size());
+        assertEquals("Mont", resultsA.get(0).getName());
+        assertEquals("Montrose", resultsA.get(1).getName());
+
+        // WHERE name LIKE 'Mont%'
+        Conditions conditionsB = new Conditions();
+        conditionsB.notLike("name", "Mont%");
+        List<User> resultsB = uRepo.find(conditionsB);
+        assertEquals(1, resultsB.size());
+        assertEquals("Rose", resultsB.get(0).getName());
     }
 
 }

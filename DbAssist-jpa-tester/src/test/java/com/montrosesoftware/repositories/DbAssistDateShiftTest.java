@@ -228,7 +228,7 @@ public class DbAssistDateShiftTest extends BaseTest{
        /* Conditions joinConditions = conditions.getJoinConditions("expirationDate", JoinType.INNER);
         joinConditions.equal("expirationDate", expirationDateA);*/
 
-        List<User> results = uRepo.find(conditions, null, null);
+        List<User> results = uRepo.find(conditions);
         assertEquals(1,results.size());
 
         User userRead = results.get(0);

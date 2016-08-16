@@ -62,6 +62,10 @@ public abstract class AbstractRepository<T> {
         return new ArrayList(new LinkedHashSet(typedQuery.getResultList()));
     }
 
+    protected List<T> find(Conditions conditions){
+        return find(conditions, null, null);
+    }
+
     protected long count(Conditions conditions) {
         return count(conditions, false);
     }

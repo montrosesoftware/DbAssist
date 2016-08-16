@@ -32,15 +32,6 @@ public class Conditions {
 
     public Conditions() {}
 
-    //TODO find a better way to do it
-    public Conditions(Conditions another){
-        this.joinConditions = new HashMap<>(another.joinConditions);
-        this.whereConditions = new LinkedList<>(another.whereConditions);
-        this.parameters = new HashMap<>(parameters);
-        this.joinAttribute = new String(another.joinAttribute);
-        this.joinType = another.joinType;
-    }
-
     private Conditions(String joinAttribute, JoinType joinType) {
         this.joinAttribute = joinAttribute;
         this.joinType = joinType;
@@ -102,12 +93,20 @@ public class Conditions {
         return addToWhereConditionsAndReturn((cb, root) -> root.get(attributeName).isNotNull());
     }
 
+    public Condition or(Condition leftOperandCondition, Condition rightOperandCondition) {
+        return or(leftOperandCondition, null, rightOperandCondition);
+    }
+
     public Condition or(Condition leftOperandCondition, Conditions rightOperandJoinConditions, Condition rightOperandCondition) {
         return or(this, leftOperandCondition, rightOperandJoinConditions, rightOperandCondition);
     }
 
     public Condition or(Conditions leftOperandJoinConditions, Condition leftOperandCondition, Conditions rightOperandJoinConditions, Condition rightOperandCondition) {
         return applyLogicalOperator(leftOperandJoinConditions, leftOperandCondition, rightOperandJoinConditions, rightOperandCondition, (cb, p1, p2) -> cb.or(p1, p2));
+    }
+
+    public Condition and(Condition leftOperandCondition, Condition rightOperandCondition) {
+        return and(leftOperandCondition, null, rightOperandCondition);
     }
 
     public Condition and(Condition leftOperandCondition, Conditions rightOperandJoinConditions, Condition rightOperandCondition) {
@@ -173,7 +172,6 @@ public class Conditions {
     public <T extends Comparable<T>> void inRangeConditions(String attributeName, T leftBound, T rightBound){
         this.and(
                 this.greaterThanOrEqualTo(attributeName, leftBound),
-                null,
                 this.lessThanOrEqualTo(attributeName, rightBound)
         );
     }
