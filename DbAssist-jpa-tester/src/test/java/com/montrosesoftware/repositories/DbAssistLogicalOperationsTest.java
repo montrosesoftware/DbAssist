@@ -55,7 +55,7 @@ public class DbAssistLogicalOperationsTest extends BaseTest {
         //prepare data
         Date date = DateUtils.getUtc("2016-06-12 08:10:15");
         ArrayList<String> names = new ArrayList<>(
-                Arrays.asList("Name A", "Name A", "Name B", "Name C", "Name C"));
+                Arrays.asList("A", "A", "B", "C", "C"));
         List<User> users = new ArrayList<>();
         for(int i=0; i<5; i++)
             users.add(new User(i + 1, names.get(i), date));
@@ -63,6 +63,7 @@ public class DbAssistLogicalOperationsTest extends BaseTest {
         uRepo.clearPersistenceContext();
 
         //Conditions should include users with ids = 1,2 and 4, 5 (because names of User 4 and 5 are the same)
+        //TODO overload or, and without joins conditions
         Conditions conditions = new Conditions();
         conditions.or(
                 conditions.and(conditions.greaterThanOrEqualTo("id", 1), null, conditions.lessThanOrEqualTo("id", 2)),
@@ -122,7 +123,7 @@ public class DbAssistLogicalOperationsTest extends BaseTest {
     }
 
     @Test(expected = InvalidDataAccessApiUsageException.class)
-    public void conditionsAreReusableAfterFindCall(){
+    public void conditionsAreNotReusableAfterFindCall(){
         //prepare user data:
         Date date1 = DateUtils.getUtc("2012-06-12 08:10:15");
         Date date2 = addMinutes(date1, 10);
@@ -135,7 +136,51 @@ public class DbAssistLogicalOperationsTest extends BaseTest {
         Conditions conditions = new Conditions();
         conditions.inRangeConditions("id", 1, 1);
 
+        //Conditions can be used only once, after calling find() or findAttribute()
+        //we have to create a new instance of Conditions that we want to use
         List<User> results = uRepo.find(conditions, null, null);
         List<User> resultsAgain = uRepo.find(conditions, null, null);   //should fail
     }
+
+    @Test
+    public void conditionsNullAndNotNull(){
+        //prepare user data with null date in user 2
+        Date date = DateUtils.getUtc("2012-06-12 08:10:15");
+        User u1 = new User(1, "Rose", date);
+        User u2 = new User();
+        u2.setId(2);
+        u2.setName("Mont");
+        uRepo.save(u1);
+        uRepo.save(u2);
+        uRepo.clearPersistenceContext();
+
+        Conditions condDateNull = new Conditions();
+        condDateNull.isNull("createdAt");
+        List<User> results = uRepo.find(condDateNull, null, null);
+        assertEquals(1,results.size());
+        assertEquals("Mont", results.get(0).getName());
+
+        Conditions condDateNotNull = new Conditions();
+        condDateNotNull.isNotNull("createdAt");
+        List<User> resultsDateNotNull = uRepo.find(condDateNotNull, null, null);
+        assertEquals(1,resultsDateNotNull.size());
+        assertEquals("Rose", resultsDateNotNull.get(0).getName());
+    }
+
+    @Test
+    public void conditionsLikeAndNotLike(){
+        //prepare user data:
+        Date date = DateUtils.getUtc("2012-06-12 08:10:15");
+        List<User> users = new ArrayList<>();
+        users.add(new User(1, "Mont", date));
+        users.add(new User(2, "Rose", date));
+        users.add(new User(3, "Montrose", date));
+        users.forEach(uRepo::save);
+        uRepo.clearPersistenceContext();
+
+       /* Conditions conditionsA = new Conditions();
+        conditionsA.notLike("")
+        */
+    }
+
 }

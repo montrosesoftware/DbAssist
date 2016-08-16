@@ -18,7 +18,7 @@
         </sql>
     </changeSet>
 
-    <changeSet id="52802eee-6081-11e6-8b77-86f30ca893d3" author="me">
+    <changeSet id="52802eee-6081-11e6-8b77-86f30ca893d3" author="MontroseSoftware">
         <createTable schemaName="hbm" tableName="users">
             <column name="id" type="int">
                 <constraints primaryKey="true" nullable="false"/>

@@ -18,7 +18,7 @@ import java.util.List;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-public class DbTest extends BaseTest{
+public class DbAssistDateShiftTest extends BaseTest{
 
     @Autowired
     private UserRepo uRepo;

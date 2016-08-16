@@ -86,6 +86,10 @@ public class Conditions {
         return addToWhereConditionsAndReturn((cb, root) -> getInPredicate(attributeName, values, cb, root).not());
     }
 
+    public Condition like(String attributeName, String value) {
+        return addToWhereConditionsAndReturn((cb, root) -> cb.like(root.get(attributeName), getExpression(cb, value, String.class)));
+    }
+
     public Condition notLike(String attributeName, String value) {
         return addToWhereConditionsAndReturn((cb, root) -> cb.like(root.get(attributeName), getExpression(cb, value, String.class)).not());
     }
@@ -208,14 +212,14 @@ public class Conditions {
     }
 
     private <T> ParameterExpression<T> getExpression(CriteriaBuilder cb, Object value, Class<T> typeParameterClass) {
-        String name = getRandomName();
+        String name = getRandomParamName();
         parameters.put(name, value);
 
         return cb.parameter(typeParameterClass, name);
     }
 
-    private String getRandomName() {
-        return UUID.randomUUID().toString().replaceAll("-", "").replaceAll("\\d", "");
+    private String getRandomParamName() {
+        return "param" + UUID.randomUUID().toString().replaceAll("-", "").replaceAll("\\d", "");
     }
 
     private From<?, ?> getFrom(From<?, ?> from, Conditions joinCondition) {
