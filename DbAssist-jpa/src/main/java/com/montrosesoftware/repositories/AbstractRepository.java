@@ -38,7 +38,7 @@ public abstract class AbstractRepository<T> {
         this.typeParameterClass = typeParameterClass;
     }
 
-    protected List<T> find(Conditions conditions, List<Function<FetchParent<?, ?>, FetchParent<?, ?>>> fetchCallbacks, OrderBy<T> orderBy) {
+    protected List<T> find(Conditions conditions, List<Function<FetchParent<?, ?>, FetchParent<?, ?>>> fetchCallbacks, OrderBy<T> orderBy) throws ConditionsAlreadyUsedException {
         CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
         CriteriaQuery<T> criteriaQuery = criteriaBuilder.createQuery(typeParameterClass);
         Root<T> root = criteriaQuery.from(typeParameterClass);
@@ -47,6 +47,7 @@ public abstract class AbstractRepository<T> {
 
         criteriaQuery.select(root);
 
+        verifyConditions(conditions);
         conditions = applyConditions(conditions, criteriaBuilder, criteriaQuery, root);
 
         if (orderBy != null) {
@@ -62,15 +63,22 @@ public abstract class AbstractRepository<T> {
         return new ArrayList(new LinkedHashSet(typedQuery.getResultList()));
     }
 
-    protected List<T> find(Conditions conditions){
+    private void verifyConditions(Conditions conditions) throws ConditionsAlreadyUsedException {
+        if(conditions.isConditionsAlreadyUsed())
+            throw new ConditionsAlreadyUsedException();
+        else
+            conditions.setConditionsAlreadyUsed();
+    }
+
+    protected List<T> find(Conditions conditions) throws ConditionsAlreadyUsedException {
         return find(conditions, null, null);
     }
 
-    protected long count(Conditions conditions) {
+    protected long count(Conditions conditions) throws ConditionsAlreadyUsedException {
         return count(conditions, false);
     }
 
-    protected long countDistinct(Conditions conditions) {
+    protected long countDistinct(Conditions conditions) throws ConditionsAlreadyUsedException {
         return count(conditions, true);
     }
 
@@ -78,7 +86,7 @@ public abstract class AbstractRepository<T> {
                                          Conditions conditions,
                                          List<Function<FetchParent<?, ?>, FetchParent<?, ?>>> fetchCallbacks,
                                          OrderBy<T> orderBy,
-                                         GroupBy<T> groupBy) {
+                                         GroupBy<T> groupBy) throws ConditionsAlreadyUsedException {
         CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
         CriteriaQuery<Tuple> criteriaQuery = criteriaBuilder.createTupleQuery();
         Root<T> root = criteriaQuery.from(typeParameterClass);
@@ -87,6 +95,7 @@ public abstract class AbstractRepository<T> {
 
         criteriaQuery.multiselect(selectionList.apply(criteriaBuilder, root));
 
+        verifyConditions(conditions);
         conditions = applyConditions(conditions, criteriaBuilder, criteriaQuery, root);
 
         if (orderBy != null) {
@@ -109,7 +118,7 @@ public abstract class AbstractRepository<T> {
                                         Conditions conditions,
                                         List<Function<FetchParent<?, ?>, FetchParent<?, ?>>> fetchCallbacks,
                                         OrderBy<T> orderBy,
-                                        SelectFunction<CriteriaBuilder, Path<A>, Selection<A>> selectCallback) {
+                                        SelectFunction<CriteriaBuilder, Path<A>, Selection<A>> selectCallback) throws ConditionsAlreadyUsedException {
         return findAttribute(attributeClass, attributeName, false, conditions, fetchCallbacks, orderBy, selectCallback);
     }
 
@@ -119,7 +128,7 @@ public abstract class AbstractRepository<T> {
                                                 List<Function<FetchParent<?, ?>, FetchParent<?, ?>>> fetchCallbacks,
                                                 OrderBy<T> orderBy,
                                                 SelectFunction<CriteriaBuilder,
-                                                        Path<A>, Selection<A>> selectCallback) {
+                                                        Path<A>, Selection<A>> selectCallback) throws ConditionsAlreadyUsedException {
         return findAttribute(attributeClass, attributeName, true, conditions, fetchCallbacks, orderBy, selectCallback);
     }
 
@@ -129,7 +138,7 @@ public abstract class AbstractRepository<T> {
                                       Conditions conditions,
                                       List<Function<FetchParent<?, ?>, FetchParent<?, ?>>> fetchCallbacks,
                                       OrderBy<T> orderBy,
-                                      SelectFunction<CriteriaBuilder, Path<A>, Selection<A>> selectCallback) {
+                                      SelectFunction<CriteriaBuilder, Path<A>, Selection<A>> selectCallback) throws ConditionsAlreadyUsedException {
         CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
         CriteriaQuery<A> criteriaQuery = criteriaBuilder.createQuery(attributeClass);
         Root<T> root = criteriaQuery.from(typeParameterClass);
@@ -150,6 +159,7 @@ public abstract class AbstractRepository<T> {
             criteriaQuery.distinct(true);
         }
 
+        verifyConditions(conditions);
         conditions = applyConditions(conditions, criteriaBuilder, criteriaQuery, root);
 
         if (orderBy != null) {
@@ -191,7 +201,7 @@ public abstract class AbstractRepository<T> {
         }
     }
 
-    private long count(Conditions conditions, boolean countDistinct) {
+    private long count(Conditions conditions, boolean countDistinct) throws ConditionsAlreadyUsedException {
         CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
         CriteriaQuery<Long> criteriaQuery = criteriaBuilder.createQuery(Long.class);
         Root<T> root = criteriaQuery.from(typeParameterClass);
@@ -202,6 +212,7 @@ public abstract class AbstractRepository<T> {
             criteriaQuery.select(criteriaBuilder.count(root));
         }
 
+        verifyConditions(conditions);
         conditions.apply(criteriaQuery, criteriaBuilder, root);
 
         return (Long) conditions.setParameters(entityManager.createQuery(criteriaQuery)).getSingleResult();
