@@ -48,16 +48,18 @@ public class DbAssistMiscellaneousTest extends BaseTest {
         Date dateAnother = DateUtils.getUtc("2000-03-03 11:10:15");
         List<User> users = new ArrayList<>();
         users.add(new User(1, "A", date));
-        users.add(new User(2, "B", date));
-        users.add(new User(3, "C", dateAnother));
+        users.add(new User(2, "B", dateAnother));
+        users.add(new User(3, "C", date));
         users.forEach(uRepo::save);
         uRepo.clearPersistenceContext();
 
         Conditions c = new Conditions();
         c.equal("createdAt", date);
-        List<String> names = uRepo.findAttribute(String.class, "name", c, null, null, null);
+        List<String> namesRead = uRepo.findAttribute(String.class, "name", c, null, null, null);
 
-        //TODO finish the test
+        assertEquals(namesRead.size(),2);
+        List<String> namesExpected = new ArrayList<>(Arrays.asList("A", "C"));
+        assertTrue(namesRead.containsAll(namesExpected) && namesExpected.containsAll(namesRead));
     }
 
     @Test
