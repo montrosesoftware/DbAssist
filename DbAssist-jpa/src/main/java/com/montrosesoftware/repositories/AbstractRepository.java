@@ -109,28 +109,24 @@ public abstract class AbstractRepository<T> {
         return typedQuery.getResultList();
     }
 
-    protected <A> List<A> findAttribute(Class<A> attributeClass,
-                                        String attributeName,
+    protected <A> List<A> findAttribute(String attributeName,
                                         Conditions conditions,
                                         List<Function<FetchParent<?, ?>, FetchParent<?, ?>>> fetchCallbacks,
                                         OrderBy<T> orderBy,
                                         SelectFunction<CriteriaBuilder, Path<A>, Selection<A>> selectCallback) {
-        return findAttribute(attributeClass, attributeName, false, conditions, fetchCallbacks, orderBy, selectCallback);
+        return findAttribute(attributeName, false, conditions, fetchCallbacks, orderBy, selectCallback);
     }
 
-    protected <A> List<A> findAttributeDistinct(Class<A> attributeClass,
-                                                String attributeName,
+    protected <A> List<A> findAttributeDistinct(String attributeName,
                                                 Conditions conditions,
                                                 List<Function<FetchParent<?, ?>, FetchParent<?, ?>>> fetchCallbacks,
                                                 OrderBy<T> orderBy,
                                                 SelectFunction<CriteriaBuilder,
                                                         Path<A>, Selection<A>> selectCallback) {
-        return findAttribute(attributeClass, attributeName, true, conditions, fetchCallbacks, orderBy, selectCallback);
+        return findAttribute(attributeName, true, conditions, fetchCallbacks, orderBy, selectCallback);
     }
 
-    //TODO
-    private <A> List<A> findAttribute(Class<A> attributeClass,
-                                      String attributeName,
+    private <A> List<A> findAttribute(String attributeName,
                                       boolean selectDistinct,
                                       Conditions conditions,
                                       List<Function<FetchParent<?, ?>, FetchParent<?, ?>>> fetchCallbacks,
@@ -140,7 +136,7 @@ public abstract class AbstractRepository<T> {
             return null;
 
         CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
-        CriteriaQuery<A> criteriaQuery = criteriaBuilder.createQuery(attributeClass);
+        CriteriaQuery<A> criteriaQuery = criteriaBuilder.createQuery(getType(attributeName));
         Root<T> root = criteriaQuery.from(typeParameterClass);
 
         applyFetchCallbacks(fetchCallbacks, root);
@@ -171,6 +167,10 @@ public abstract class AbstractRepository<T> {
         setParameters(conditions, typedQuery);
 
         return typedQuery.getResultList();
+    }
+
+    protected <A> List<A> findAttribute(String attributeName, Conditions conditions){
+        return findAttribute(attributeName, conditions, null, null, null);
     }
 
     private <X> Conditions applyConditions(Conditions conditions, CriteriaBuilder criteriaBuilder, CriteriaQuery<X> criteriaQuery, Root<T> root) {

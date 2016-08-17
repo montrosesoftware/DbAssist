@@ -55,7 +55,7 @@ public class DbAssistMiscellaneousTest extends BaseTest {
 
         Conditions c = new Conditions();
         c.equal("createdAt", date);
-        List<String> namesRead = uRepo.findAttribute(String.class, "name", c, null, null, null);
+        List<String> namesRead = uRepo.findAttribute("name", c);
 
         assertEquals(namesRead.size(),2);
         List<String> namesExpected = new ArrayList<>(Arrays.asList("A", "C"));
