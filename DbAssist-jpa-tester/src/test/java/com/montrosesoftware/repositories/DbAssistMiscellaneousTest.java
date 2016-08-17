@@ -19,7 +19,7 @@ public class DbAssistMiscellaneousTest extends BaseTest {
     private UserRepo uRepo;
 
     @Test
-    public void conditionsAreNotReusableAfterFindCall(){
+    public void conditionsAreNotReusableAfterCallingFind(){
         //prepare user data:
         Date date = DateUtils.getUtc("2012-06-12 08:10:15");
         List<User> users = new ArrayList<>();

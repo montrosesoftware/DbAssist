@@ -1,10 +1,15 @@
 package com.montrosesoftware.repositories;
 
+import org.apache.commons.lang3.ClassUtils;
+
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Tuple;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.*;
+import javax.persistence.metamodel.Attribute;
+import javax.persistence.metamodel.EntityType;
+import javax.persistence.metamodel.Metamodel;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -39,11 +44,9 @@ public abstract class AbstractRepository<T> {
     }
 
     protected List<T> find(Conditions conditions, List<Function<FetchParent<?, ?>, FetchParent<?, ?>>> fetchCallbacks, OrderBy<T> orderBy) {
-        //TODO apply to other find*, count etc.
+        //TODO apply this part to other find*, count...
         if(conditions.isConditionsAlreadyUsed())
             return null;
-        else
-            conditions.setConditionsAlreadyUsed();
 
         CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
         CriteriaQuery<T> criteriaQuery = criteriaBuilder.createQuery(typeParameterClass);
@@ -54,6 +57,7 @@ public abstract class AbstractRepository<T> {
         criteriaQuery.select(root);
 
         conditions = applyConditions(conditions, criteriaBuilder, criteriaQuery, root);
+        conditions.setConditionsAlreadyUsed();
 
         if (orderBy != null) {
             criteriaQuery.orderBy(orderBy.apply(criteriaBuilder, root));
@@ -128,6 +132,9 @@ public abstract class AbstractRepository<T> {
                                       List<Function<FetchParent<?, ?>, FetchParent<?, ?>>> fetchCallbacks,
                                       OrderBy<T> orderBy,
                                       SelectFunction<CriteriaBuilder, Path<A>, Selection<A>> selectCallback) {
+        if(conditions.isConditionsAlreadyUsed())
+            return null;
+
         CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
         CriteriaQuery<A> criteriaQuery = criteriaBuilder.createQuery(attributeClass);
         Root<T> root = criteriaQuery.from(typeParameterClass);
@@ -149,6 +156,7 @@ public abstract class AbstractRepository<T> {
         }
 
         conditions = applyConditions(conditions, criteriaBuilder, criteriaQuery, root);
+        conditions.setConditionsAlreadyUsed();
 
         if (orderBy != null) {
             criteriaQuery.orderBy(orderBy.apply(criteriaBuilder, root));
@@ -189,7 +197,7 @@ public abstract class AbstractRepository<T> {
         }
     }
 
-    private abstract class Aggregate<N extends Number> {
+    private abstract class Aggregate {
         protected CriteriaBuilder cb;
         protected CriteriaQuery<Number> cq;
         protected Root<T> root;
@@ -204,64 +212,85 @@ public abstract class AbstractRepository<T> {
 
         public abstract void prepareQuery(String attributeName);
 
-        public N calculate(Conditions conditions, String attributeName, Class<N> type){
+        protected  <N extends Number> N prepareReturn(String attributeName, Conditions conditions){
+            Class<? extends Number> attributeType = getType(attributeName);
+            return (N) attributeType.cast(conditions.setParameters(entityManager.createQuery(cq)).getSingleResult());
+        }
+
+        public Number calculate(Conditions conditions, String attributeName){
+            if (conditions.isConditionsAlreadyUsed())
+                return null;
+
             cb = entityManager.getCriteriaBuilder();
             cq = cb.createQuery(Number.class);
             root = cq.from(typeParameterClass);
-            prepareQuery(attributeName);                                                          //TODO
+            prepareQuery(attributeName);
             conditions.apply(cq, cb, root);
-            return type.cast(conditions.setParameters(entityManager.createQuery(cq)).getSingleResult());
+            conditions.setConditionsAlreadyUsed();
+            return prepareReturn(attributeName, conditions);
+        }
+
+        private Class getType(String attributeName){
+            Metamodel metamodel = entityManager.getMetamodel();
+            EntityType<T> entityType = metamodel.entity(typeParameterClass);
+            Class attributeType = entityType.getAttribute(attributeName).getJavaType();
+            return ClassUtils.primitiveToWrapper(attributeType);
         }
     }
 
-    protected <N extends Number> N min(Conditions conditions, String attributeName, Class<N> type){
-        Aggregate<N> agg = new Aggregate<N>(){
+    protected <N extends Number> N min(Conditions conditions, String attributeName){
+        Aggregate agg = new Aggregate(){
             @Override
             public void prepareQuery(String attributeName){
                 cq.select(cb.min(root.get(attributeName)));
             }
         };
-        return agg.calculate(conditions, attributeName, type);
+        return (N) agg.calculate(conditions, attributeName);
     }
 
-    protected <N extends Number> N max(Conditions conditions, String attributeName, Class<N> type){
-        Aggregate<N> agg = new Aggregate<N>(){
+    protected <N extends Number> N max(Conditions conditions, String attributeName){
+        Aggregate agg = new Aggregate(){
           @Override
           public void prepareQuery(String attributeName){
               cq.select(cb.max(root.get(attributeName)));
           }
         };
-        return agg.calculate(conditions, attributeName, type);
+        return (N) agg.calculate(conditions, attributeName);
     }
 
-    protected <N extends Number> N sum(Conditions conditions, String attributeName, Class<N> type){
-        Aggregate<N> agg = new Aggregate<N>(){
+    protected <N extends Number> N sum(Conditions conditions, String attributeName){
+        Aggregate agg = new Aggregate(){
             @Override
             public void prepareQuery(String attributeName){
                 cq.select(cb.sum(root.get(attributeName)));
             }
         };
-        return agg.calculate(conditions, attributeName, type);
+        return (N) agg.calculate(conditions, attributeName);
     }
 
-    protected <N extends Number> N count(Conditions conditions, Class<N> type, boolean countDistinct){
-        Aggregate<N> agg = new Aggregate<N>(countDistinct){
+    protected <N extends Number> N count(Conditions conditions, boolean countDistinct){
+        Aggregate agg = new Aggregate(countDistinct) {
             @Override
-            public void prepareQuery(String attributeName){
+            public void prepareQuery(String attributeName) {
                 if (countDistinct)
                     cq.select(cb.countDistinct(root));
                 else
                     cq.select(cb.count(root));
             }
+
+            @Override
+            protected N prepareReturn(String attributeName, Conditions conditions) {
+                return (N) (Long.class.cast(conditions.setParameters(entityManager.createQuery(cq)).getSingleResult()));
+            }
         };
-        return agg.calculate(conditions, null, type);
+        return (N) agg.calculate(conditions, null);
     }
 
-    protected long count(Conditions conditions) {
-        return count(conditions, Long.class, false);
+    protected Long count(Conditions conditions) {
+        return count(conditions, false);
     }
 
-    protected long countDistinct(Conditions conditions) {
-        return count(conditions, Long.class, true);
+    protected Long countDistinct(Conditions conditions) {
+        return count(conditions, true);
     }
 }
