@@ -298,7 +298,7 @@ public abstract class AbstractRepository<T> {
         return (N) agg.calculate(conditions, attributeName);
     }
 
-    protected <N extends Number> N count(Conditions conditions, boolean countDistinct){
+    protected Long count(Conditions conditions, boolean countDistinct){
         Aggregate agg = new Aggregate(countDistinct) {
             @Override
             public void prepareQuery(String attributeName) {
@@ -309,11 +309,11 @@ public abstract class AbstractRepository<T> {
             }
 
             @Override
-            protected N prepareReturn(String attributeName, Conditions conditions) {
-                return (N) (Long.class.cast(conditions.setParameters(entityManager.createQuery(cq)).getSingleResult()));
+            protected Long prepareReturn(String attributeName, Conditions conditions) {
+                return (Long.class.cast(conditions.setParameters(entityManager.createQuery(cq)).getSingleResult()));
             }
         };
-        return (N) agg.calculate(conditions, null);
+        return (Long) agg.calculate(conditions, null);
     }
 
     protected Long count(Conditions conditions) {
@@ -338,6 +338,4 @@ public abstract class AbstractRepository<T> {
         };
         return (N) agg.calculate(conditions, attributeName);
     }
-
-
 }
