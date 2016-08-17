@@ -268,7 +268,7 @@ public abstract class AbstractRepository<T> {
         return (N) agg.calculate(conditions, attributeName);
     }
 
-    protected <N extends Number> N sumAsLong(Conditions conditions, String attributeName){
+    protected Long sumAsLong(Conditions conditions, String attributeName){
         Aggregate agg = new Aggregate(){
             @Override
             public void prepareQuery(String attributeName){
@@ -276,14 +276,14 @@ public abstract class AbstractRepository<T> {
             }
 
             @Override
-            protected N prepareReturn(String attributeName, Conditions conditions) {
-                return (N) (Long.class.cast(conditions.setParameters(entityManager.createQuery(cq)).getSingleResult()));
+            protected Long prepareReturn(String attributeName, Conditions conditions) {
+                return Long.class.cast(conditions.setParameters(entityManager.createQuery(cq)).getSingleResult());
             }
         };
-        return (N) agg.calculate(conditions, attributeName);
+        return (Long) agg.calculate(conditions, attributeName);
     }
 
-    protected <N extends Number> N sumAsDouble(Conditions conditions, String attributeName){
+    protected Double sumAsDouble(Conditions conditions, String attributeName){
         Aggregate agg = new Aggregate(){
             @Override
             public void prepareQuery(String attributeName){
@@ -291,11 +291,11 @@ public abstract class AbstractRepository<T> {
             }
 
             @Override
-            protected N prepareReturn(String attributeName, Conditions conditions) {
-                return (N) (Double.class.cast(conditions.setParameters(entityManager.createQuery(cq)).getSingleResult()));
+            protected Double prepareReturn(String attributeName, Conditions conditions) {
+                return (Double.class.cast(conditions.setParameters(entityManager.createQuery(cq)).getSingleResult()));
             }
         };
-        return (N) agg.calculate(conditions, attributeName);
+        return (Double) agg.calculate(conditions, attributeName);
     }
 
     protected Long count(Conditions conditions, boolean countDistinct){
