@@ -84,9 +84,32 @@ public class DbAssistAggregateTest extends BaseTest {
 
     @Test
     public void minOnEmptyTable(){
-        Conditions c = new Conditions();
-        Integer min = uRepo.min(c, "id");
+        Integer min = uRepo.min(new Conditions(), "id");
         assertTrue(min == null);
+    }
+
+    private static final double Delta = 1e-15;
+
+    @Test
+    public void sumAsIntegerLongAndDouble(){
+        //prepare user data:
+        Date date = DateUtils.getUtc("2012-06-12 08:10:15");
+        List<User> users = new ArrayList<>();
+        users.add(new User(1, "Mont", date));
+        users.add(new User(2, "Mont", date));
+        users.add(new User(3, "Rose", date));
+        users.forEach(uRepo::save);
+        uRepo.clearPersistenceContext();
+
+        //id is of type: int
+        Integer sumInteger = uRepo.sum(new Conditions(), "id");
+        assertEquals(sumInteger.intValue(), 6);
+
+        Long sumLong = uRepo.sumAsLong(new Conditions(), "id");
+        assertEquals(sumLong.longValue(), 6);
+
+        Double sumDouble = uRepo.sumAsDouble(new Conditions(), "id");
+        assertEquals(sumDouble, 6.0, Delta);
     }
 
     @Test
@@ -108,5 +131,26 @@ public class DbAssistAggregateTest extends BaseTest {
 
         Long countAgain = uRepo.count(c);
         assertTrue(countAgain == null);
+    }
+
+    @Test
+    public void avgAggregate(){
+        //prepare user data
+        Date date = DateUtils.getUtc("2012-06-12 08:10:15");
+        List<User> users = new ArrayList<>();
+        users.add(new User(1, "Mont", date));
+        users.add(new User(2, "Rose", date));
+        users.add(new User(3, "Montrose", date));
+        users.forEach(uRepo::save);
+        uRepo.clearPersistenceContext();
+
+        Double avg = uRepo.avg(new Conditions(), "id");
+        assertEquals(avg, 2.0, Delta);
+    }
+
+    @Test
+    public void avgOnEmptyTable(){
+        Double avg = uRepo.avg(new Conditions(), "id");
+        assertTrue(avg == null);
     }
 }

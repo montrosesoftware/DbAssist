@@ -8,8 +8,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
 
@@ -109,5 +111,34 @@ public class DbAssistMiscellaneousTest extends BaseTest {
         Conditions c = new Conditions();
         List<User> results = uRepo.find(c);
         assertEquals(users.size(), results.size());
+    }
+
+    @Test
+    public void conditionsInAndNotIn(){
+        //prepare user data:
+        Date date = DateUtils.getUtc("2012-06-12 08:10:15");
+        List<User> users = new ArrayList<>();
+        users.add(new User(1, "A", date));
+        users.add(new User(2, "B", date));
+        users.add(new User(3, "C", date));
+        users.forEach(uRepo::save);
+        uRepo.clearPersistenceContext();
+
+        List<String> names = new ArrayList(Arrays.asList("B", "C"));
+        Conditions cA = new Conditions();
+        cA.in("name", names);
+
+        List<User> resultsA = uRepo.find(cA);
+        assertEquals(resultsA.size(), 2);
+        List<String> namesReadA = resultsA.stream().map(User::getName).collect(Collectors.toList());
+        assertTrue(names.containsAll(namesReadA) && namesReadA.containsAll(names));
+
+        Conditions cB = new Conditions();
+        cB.notIn("name", names);
+
+        List<User> resultsB = uRepo.find(cB);
+        assertEquals(resultsB.size(), 1);
+        List<String> namesReadB = resultsB.stream().map(User::getName).collect(Collectors.toList());
+        assertFalse(names.contains(namesReadB.get(0)));
     }
 }

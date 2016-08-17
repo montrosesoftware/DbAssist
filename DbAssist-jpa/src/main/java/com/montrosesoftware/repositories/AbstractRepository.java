@@ -268,6 +268,36 @@ public abstract class AbstractRepository<T> {
         return (N) agg.calculate(conditions, attributeName);
     }
 
+    protected <N extends Number> N sumAsLong(Conditions conditions, String attributeName){
+        Aggregate agg = new Aggregate(){
+            @Override
+            public void prepareQuery(String attributeName){
+                cq.select(cb.sumAsLong(root.get(attributeName)));
+            }
+
+            @Override
+            protected N prepareReturn(String attributeName, Conditions conditions) {
+                return (N) (Long.class.cast(conditions.setParameters(entityManager.createQuery(cq)).getSingleResult()));
+            }
+        };
+        return (N) agg.calculate(conditions, attributeName);
+    }
+
+    protected <N extends Number> N sumAsDouble(Conditions conditions, String attributeName){
+        Aggregate agg = new Aggregate(){
+            @Override
+            public void prepareQuery(String attributeName){
+                cq.select(cb.sumAsDouble(root.get(attributeName)));
+            }
+
+            @Override
+            protected N prepareReturn(String attributeName, Conditions conditions) {
+                return (N) (Double.class.cast(conditions.setParameters(entityManager.createQuery(cq)).getSingleResult()));
+            }
+        };
+        return (N) agg.calculate(conditions, attributeName);
+    }
+
     protected <N extends Number> N count(Conditions conditions, boolean countDistinct){
         Aggregate agg = new Aggregate(countDistinct) {
             @Override
@@ -293,4 +323,21 @@ public abstract class AbstractRepository<T> {
     protected Long countDistinct(Conditions conditions) {
         return count(conditions, true);
     }
+
+    protected <N extends Number> N avg(Conditions conditions, String attributeName){
+        Aggregate agg = new Aggregate() {
+            @Override
+            public void prepareQuery(String attributeName) {
+                cq.select(cb.avg(root.get(attributeName)));
+            }
+
+            @Override
+            protected N prepareReturn(String attributeName, Conditions conditions) {
+                return (N) (Double.class.cast(conditions.setParameters(entityManager.createQuery(cq)).getSingleResult()));
+            }
+        };
+        return (N) agg.calculate(conditions, attributeName);
+    }
+
+
 }
