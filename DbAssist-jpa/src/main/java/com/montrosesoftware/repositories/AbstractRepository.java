@@ -44,7 +44,6 @@ public abstract class AbstractRepository<T> {
     }
 
     protected List<T> find(Conditions conditions, List<Function<FetchParent<?, ?>, FetchParent<?, ?>>> fetchCallbacks, OrderBy<T> orderBy) {
-        //TODO apply this part to other find*, count...
         if(conditions.isConditionsAlreadyUsed())
             return null;
 
@@ -81,6 +80,9 @@ public abstract class AbstractRepository<T> {
                                          List<Function<FetchParent<?, ?>, FetchParent<?, ?>>> fetchCallbacks,
                                          OrderBy<T> orderBy,
                                          GroupBy<T> groupBy) {
+        if(conditions.isConditionsAlreadyUsed())
+            return null;
+
         CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
         CriteriaQuery<Tuple> criteriaQuery = criteriaBuilder.createTupleQuery();
         Root<T> root = criteriaQuery.from(typeParameterClass);
@@ -90,6 +92,7 @@ public abstract class AbstractRepository<T> {
         criteriaQuery.multiselect(selectionList.apply(criteriaBuilder, root));
 
         conditions = applyConditions(conditions, criteriaBuilder, criteriaQuery, root);
+        conditions.setConditionsAlreadyUsed();
 
         if (orderBy != null) {
             criteriaQuery.orderBy(orderBy.apply(criteriaBuilder, root));
@@ -324,7 +327,7 @@ public abstract class AbstractRepository<T> {
         return count(conditions, true);
     }
 
-    protected <N extends Number> N avg(Conditions conditions, String attributeName){
+    protected Double avg(Conditions conditions, String attributeName){
         Aggregate agg = new Aggregate() {
             @Override
             public void prepareQuery(String attributeName) {
@@ -332,10 +335,10 @@ public abstract class AbstractRepository<T> {
             }
 
             @Override
-            protected N prepareReturn(String attributeName, Conditions conditions) {
-                return (N) (Double.class.cast(conditions.setParameters(entityManager.createQuery(cq)).getSingleResult()));
+            protected Double prepareReturn(String attributeName, Conditions conditions) {
+                return Double.class.cast(conditions.setParameters(entityManager.createQuery(cq)).getSingleResult());
             }
         };
-        return (N) agg.calculate(conditions, attributeName);
+        return (Double) agg.calculate(conditions, attributeName);
     }
 }
