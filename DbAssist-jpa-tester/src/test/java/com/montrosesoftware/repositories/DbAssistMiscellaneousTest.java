@@ -5,7 +5,6 @@ import com.montrosesoftware.config.BaseTest;
 import com.montrosesoftware.entities.User;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.InvalidDataAccessApiUsageException;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -40,6 +39,25 @@ public class DbAssistMiscellaneousTest extends BaseTest {
         List<User> resultsAgain = uRepo.find(conditions);   //should fail (return null pointer)
         assertNotNull(results);
         assertNull(resultsAgain);
+    }
+
+    @Test
+    public void findAttributeUse(){
+        //prepare user data:
+        Date date = DateUtils.getUtc("2012-06-12 08:10:15");
+        Date dateAnother = DateUtils.getUtc("2000-03-03 11:10:15");
+        List<User> users = new ArrayList<>();
+        users.add(new User(1, "A", date));
+        users.add(new User(2, "B", date));
+        users.add(new User(3, "C", dateAnother));
+        users.forEach(uRepo::save);
+        uRepo.clearPersistenceContext();
+
+        Conditions c = new Conditions();
+        c.equal("createdAt", date);
+        List<String> names = uRepo.findAttribute(String.class, "name", c, null, null, null);
+
+        //TODO finish the test
     }
 
     @Test

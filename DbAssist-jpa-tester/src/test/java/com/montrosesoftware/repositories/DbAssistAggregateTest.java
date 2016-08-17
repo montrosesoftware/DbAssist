@@ -153,4 +153,30 @@ public class DbAssistAggregateTest extends BaseTest {
         Double avg = uRepo.avg(new Conditions(), "id");
         assertTrue(avg == null);
     }
+
+    @Test
+    public void leastAggregateDate(){
+        //prepare data
+        Date date1 = DateUtils.getUtc("2015-06-12 08:10:15");
+        Date date2 = DateUtils.getUtc("2011-06-12 09:10:15");
+        Date date3 = DateUtils.getUtc("2025-06-12 10:10:15");
+        List<User> users = new ArrayList<>();
+        users.add(new User(1, "BB", date1));
+        users.add(new User(2, "AA", date2));
+        users.add(new User(3, "CC", date3));
+        users.forEach(uRepo::save);
+        uRepo.clearPersistenceContext();
+
+        Date dateMinRead = uRepo.least(new Conditions(), "createdAt");
+        assertTrue(dateMinRead.compareTo(date2) == 0);
+
+        Date dateMaxRead = uRepo.greatest(new Conditions(), "createdAt");
+        assertTrue(dateMaxRead.compareTo(date3) == 0);
+
+        String nameMinRead = uRepo.least(new Conditions(), "name");
+        assertEquals(nameMinRead, "AA");
+
+        String nameMaxRead = uRepo.greatest(new Conditions(), "name");
+        assertEquals(nameMaxRead, "CC");
+    }
 }

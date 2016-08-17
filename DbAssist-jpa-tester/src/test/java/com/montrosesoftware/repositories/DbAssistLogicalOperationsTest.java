@@ -19,9 +19,6 @@ public class DbAssistLogicalOperationsTest extends BaseTest {
     @Autowired
     private UserRepo uRepo;
 
-    @Autowired
-    private CertificateRepo cRepo;
-
     @Test
     public void logicalAndConditionsTest(){
         //prepare and insert user

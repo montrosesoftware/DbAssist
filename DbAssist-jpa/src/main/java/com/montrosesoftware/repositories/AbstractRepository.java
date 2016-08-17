@@ -7,10 +7,10 @@ import javax.persistence.PersistenceContext;
 import javax.persistence.Tuple;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.*;
-import javax.persistence.metamodel.Attribute;
 import javax.persistence.metamodel.EntityType;
 import javax.persistence.metamodel.Metamodel;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.function.Function;
@@ -128,6 +128,7 @@ public abstract class AbstractRepository<T> {
         return findAttribute(attributeClass, attributeName, true, conditions, fetchCallbacks, orderBy, selectCallback);
     }
 
+    //TODO
     private <A> List<A> findAttribute(Class<A> attributeClass,
                                       String attributeName,
                                       boolean selectDistinct,
@@ -200,20 +201,31 @@ public abstract class AbstractRepository<T> {
         }
     }
 
+    private Class getType(String attributeName){
+        Metamodel metamodel = entityManager.getMetamodel();
+        EntityType<T> entityType = metamodel.entity(typeParameterClass);
+        Class attributeType = entityType.getAttribute(attributeName).getJavaType();
+        return ClassUtils.primitiveToWrapper(attributeType);
+    }
+
     private abstract class Aggregate {
         protected CriteriaBuilder cb;
-        protected CriteriaQuery<Number> cq;
         protected Root<T> root;
 
-        protected boolean countDistinct;
+        public abstract void prepareQuery(String attributeName);
+    }
 
-        public Aggregate(){}
+    private abstract class AggregateNum extends Aggregate{
 
-        public Aggregate(boolean countDistinct){
+        public AggregateNum(){}
+
+        public AggregateNum(boolean countDistinct){
             this.countDistinct = countDistinct;
         }
 
-        public abstract void prepareQuery(String attributeName);
+        protected CriteriaQuery<Number> cq;
+
+        protected boolean countDistinct;
 
         protected  <N extends Number> N prepareReturn(String attributeName, Conditions conditions){
             Class<? extends Number> attributeType = getType(attributeName);
@@ -232,17 +244,10 @@ public abstract class AbstractRepository<T> {
             conditions.setConditionsAlreadyUsed();
             return prepareReturn(attributeName, conditions);
         }
-
-        private Class getType(String attributeName){
-            Metamodel metamodel = entityManager.getMetamodel();
-            EntityType<T> entityType = metamodel.entity(typeParameterClass);
-            Class attributeType = entityType.getAttribute(attributeName).getJavaType();
-            return ClassUtils.primitiveToWrapper(attributeType);
-        }
     }
 
     protected <N extends Number> N min(Conditions conditions, String attributeName){
-        Aggregate agg = new Aggregate(){
+        AggregateNum agg = new AggregateNum(){
             @Override
             public void prepareQuery(String attributeName){
                 cq.select(cb.min(root.get(attributeName)));
@@ -252,7 +257,7 @@ public abstract class AbstractRepository<T> {
     }
 
     protected <N extends Number> N max(Conditions conditions, String attributeName){
-        Aggregate agg = new Aggregate(){
+        AggregateNum agg = new AggregateNum(){
           @Override
           public void prepareQuery(String attributeName){
               cq.select(cb.max(root.get(attributeName)));
@@ -262,7 +267,7 @@ public abstract class AbstractRepository<T> {
     }
 
     protected <N extends Number> N sum(Conditions conditions, String attributeName){
-        Aggregate agg = new Aggregate(){
+        AggregateNum agg = new AggregateNum(){
             @Override
             public void prepareQuery(String attributeName){
                 cq.select(cb.sum(root.get(attributeName)));
@@ -272,7 +277,7 @@ public abstract class AbstractRepository<T> {
     }
 
     protected Long sumAsLong(Conditions conditions, String attributeName){
-        Aggregate agg = new Aggregate(){
+        AggregateNum agg = new AggregateNum(){
             @Override
             public void prepareQuery(String attributeName){
                 cq.select(cb.sumAsLong(root.get(attributeName)));
@@ -287,7 +292,7 @@ public abstract class AbstractRepository<T> {
     }
 
     protected Double sumAsDouble(Conditions conditions, String attributeName){
-        Aggregate agg = new Aggregate(){
+        AggregateNum agg = new AggregateNum(){
             @Override
             public void prepareQuery(String attributeName){
                 cq.select(cb.sumAsDouble(root.get(attributeName)));
@@ -302,7 +307,7 @@ public abstract class AbstractRepository<T> {
     }
 
     protected Long count(Conditions conditions, boolean countDistinct){
-        Aggregate agg = new Aggregate(countDistinct) {
+        AggregateNum agg = new AggregateNum(countDistinct) {
             @Override
             public void prepareQuery(String attributeName) {
                 if (countDistinct)
@@ -328,7 +333,7 @@ public abstract class AbstractRepository<T> {
     }
 
     protected Double avg(Conditions conditions, String attributeName){
-        Aggregate agg = new Aggregate() {
+        AggregateNum agg = new AggregateNum() {
             @Override
             public void prepareQuery(String attributeName) {
                 cq.select(cb.avg(root.get(attributeName)));
@@ -340,5 +345,50 @@ public abstract class AbstractRepository<T> {
             }
         };
         return (Double) agg.calculate(conditions, attributeName);
+    }
+
+    private abstract class AggregateNonNum extends Aggregate {
+
+        public AggregateNonNum(){}
+
+        protected CriteriaQuery<Comparable> cq;
+
+        protected  <N extends Comparable<N>> N prepareReturn(String attributeName, Conditions conditions){
+            Class<? extends Comparable<N>> attributeType = getType(attributeName);
+            return (N) attributeType.cast(conditions.setParameters(entityManager.createQuery(cq)).getSingleResult());
+        }
+
+        public <N extends Comparable<N>> Comparable calculate(Conditions conditions, String attributeName){
+            if (conditions.isConditionsAlreadyUsed())
+                return null;
+
+            cb = entityManager.getCriteriaBuilder();
+            cq = cb.createQuery(Comparable.class);
+            root = cq.from(typeParameterClass);
+            prepareQuery(attributeName);
+            conditions.apply(cq, cb, root);
+            conditions.setConditionsAlreadyUsed();
+            return prepareReturn(attributeName, conditions);
+        }
+    }
+
+    protected <N extends Comparable<N>> N least(Conditions conditions, String attributeName){
+        AggregateNonNum agg = new AggregateNonNum(){
+            @Override
+            public void prepareQuery(String attributeName){
+                cq.select(cb.least(root.<Comparable>get(attributeName)));
+            }
+        };
+        return (N)agg.calculate(conditions, attributeName);
+    }
+
+    protected <N extends Comparable<N>> N greatest(Conditions conditions, String attributeName){
+        AggregateNonNum agg = new AggregateNonNum(){
+            @Override
+            public void prepareQuery(String attributeName){
+                cq.select(cb.greatest(root.<Comparable>get(attributeName)));
+            }
+        };
+        return (N)agg.calculate(conditions, attributeName);
     }
 }
