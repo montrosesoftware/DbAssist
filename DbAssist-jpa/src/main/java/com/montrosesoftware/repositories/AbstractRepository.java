@@ -109,6 +109,10 @@ public abstract class AbstractRepository<T> {
         return typedQuery.getResultList();
     }
 
+    protected List<Tuple> findAttributes(SelectionList<T> selectionList, Conditions conditions){
+        return findAttributes(selectionList, conditions, null, null, null);
+    }
+
     protected <A> List<A> findAttribute(String attributeName,
                                         Conditions conditions,
                                         List<Function<FetchParent<?, ?>, FetchParent<?, ?>>> fetchCallbacks,

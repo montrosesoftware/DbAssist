@@ -5,12 +5,8 @@ import com.montrosesoftware.config.BaseTest;
 import com.montrosesoftware.entities.User;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.InvalidDataAccessApiUsageException;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 import static org.junit.Assert.*;
 
@@ -19,13 +15,19 @@ public class DbAssistLogicalOperationsTest extends BaseTest {
     @Autowired
     private UserRepo uRepo;
 
+    private void saveUsersData(List<User> usersToSave){
+        usersToSave.forEach(uRepo::save);
+        uRepo.clearPersistenceContext();
+    }
+
+    public static final Date ExampleDate = DateUtils.getUtc("2012-06-12 08:10:15");
+
     @Test
     public void logicalAndConditionsTest(){
         //prepare and insert user
         Date date = DateUtils.getUtc("2016-06-12 08:10:15");
         Date dateBefore = DateUtils.getUtc("2015-02-12 08:10:15");
         Date dateAfter = DateUtils.getUtc("2018-06-12 08:10:15");
-
         User userToInsert = new User(1, "Joanna Spring", date);
         uRepo.save(userToInsert);
         uRepo.clearPersistenceContext();
@@ -52,13 +54,11 @@ public class DbAssistLogicalOperationsTest extends BaseTest {
     @Test
     public void logicalOrAndAndCombined(){
         //prepare data
-        Date date = DateUtils.getUtc("2016-06-12 08:10:15");
         ArrayList<String> names = new ArrayList<>(Arrays.asList("A", "A", "B", "C", "C"));
         List<User> users = new ArrayList<>();
         for(int i=0; i<5; i++)
-            users.add(new User(i + 1, names.get(i), date));
-        users.forEach(uRepo::save);
-        uRepo.clearPersistenceContext();
+            users.add(new User(i + 1, names.get(i), ExampleDate));
+        saveUsersData(users);
 
         // WHERE id >= 1 AND id <= 2 OR name = "C"
         Conditions c = new Conditions();
@@ -81,18 +81,16 @@ public class DbAssistLogicalOperationsTest extends BaseTest {
 
     @Test
     public void inRangeWithDatesAndIds(){
-        //prepare user data:
-        Date date1 = DateUtils.getUtc("2012-06-12 08:10:15");
-        Date date2 = addMinutes(date1, 10);
-        Date date3 = addMinutes(date1, 20);
-        Date date4 = addMinutes(date1, 30);
-        List<User> users = new ArrayList<>();
-        users.add(new User(1, "User 1", date1));
-        users.add(new User(2, "User 2", date2));
-        users.add(new User(3, "User 3", date3));
-        users.add(new User(4, "User 4", date4));
-        users.forEach(uRepo::save);
-        uRepo.clearPersistenceContext();
+        Date date1 = ExampleDate;
+        Date date2 = addMinutes(ExampleDate, 10);
+        Date date3 = addMinutes(ExampleDate, 20);
+        Date date4 = addMinutes(ExampleDate, 30);
+        saveUsersData(new ArrayList<User>(){{
+            add(new User(1, "User 1", date1));
+            add(new User(2, "User 2", date2));
+            add(new User(3, "User 3", date3));
+            add(new User(4, "User 4", date4));
+        }});
 
         // WHERE created_at >= ? AND created_at <= ?
         Conditions conditionsA = new Conditions();

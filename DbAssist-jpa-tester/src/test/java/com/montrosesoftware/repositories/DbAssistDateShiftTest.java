@@ -36,8 +36,7 @@ public class DbAssistDateShiftTest extends BaseTest{
         Logger.getRootLogger().setLevel(Level.ERROR);
 
         //prepare user
-        String expDateString = "2016-06-12 14:54:15";
-        Date expectedDate = DateUtils.getUtc(expDateString);
+        Date expectedDate = DateUtils.getUtc("2016-06-12 14:54:15");
         int id = 1;
         User userToInsert = new User(id, "Adam Spring", expectedDate);
 
@@ -55,8 +54,7 @@ public class DbAssistDateShiftTest extends BaseTest{
         Logger.getRootLogger().setLevel(Level.ERROR);
 
         //prepare user
-        String expDateString = "2016-06-12 12:10:15";
-        Date expectedDate = DateUtils.getUtc(expDateString);
+        Date expectedDate = DateUtils.getUtc("2016-06-12 12:10:15");
         int id = 1;
         User userToInsert = new User(id, "Adam Spring", expectedDate);
 
@@ -78,8 +76,7 @@ public class DbAssistDateShiftTest extends BaseTest{
         Logger.getRootLogger().setLevel(Level.ERROR);
 
         //prepare user
-        String expDateString = "2016-06-12 12:10:15";
-        Date expectedDate = DateUtils.getUtc(expDateString);
+        Date expectedDate = DateUtils.getUtc("2016-06-12 12:10:15");
         int id = 1;
         User userToInsert = new User(id, "Adam Spring", expectedDate);
 
@@ -99,8 +96,7 @@ public class DbAssistDateShiftTest extends BaseTest{
         Logger.getRootLogger().setLevel(Level.ERROR);
 
         //prepare user
-        String expDateString = "2016-06-12 08:10:15";
-        Date expectedDate = DateUtils.getUtc(expDateString);
+        Date expectedDate = DateUtils.getUtc("2016-06-12 08:10:15");
         int id = 1;
         User userToInsert = new User(id, "Joanna Spring", expectedDate);
 
@@ -119,8 +115,7 @@ public class DbAssistDateShiftTest extends BaseTest{
     public void dataInsertedBySpringAndReadByPlainSQLIsNotEqual(){
         Logger.getRootLogger().setLevel(Level.ERROR);
 
-        String expDateString = "2016-06-12 15:15:15";
-        Date expectedDate = DateUtils.getUtc(expDateString);
+        Date expectedDate = DateUtils.getUtc("2016-06-12 15:15:15");
         int id = 1;
         User userToInsert = new User(id, "Adam Spring", expectedDate);
 
@@ -148,11 +143,9 @@ public class DbAssistDateShiftTest extends BaseTest{
         Logger.getRootLogger().setLevel(Level.ERROR);
 
         //prepare example certificate
-        String certName = "BHP";
-        String expirationDate = "2016-06-12 14:54:15";
-        Date expectedDate = DateUtils.getUtc(expirationDate);
+        Date expectedDate = DateUtils.getUtc("2016-06-12 14:54:15");
         int id = 1;
-        Certificate certToInsert = new Certificate(id, certName, expectedDate);
+        Certificate certToInsert = new Certificate(1, "BHP", expectedDate);
 
         cRepo.saveAsPlainSQL(certToInsert);
 
@@ -162,21 +155,18 @@ public class DbAssistDateShiftTest extends BaseTest{
 
     @Test
     public void writeAndReadByHibernateJoin(){
-        Logger.getRootLogger().setLevel(Level.DEBUG);
+        Logger.getRootLogger().setLevel(Level.ERROR);
 
         //prepare user
-        String expDateString = "2016-06-12 08:10:15";
-        Date expectedDate = DateUtils.getUtc(expDateString);
+        Date expectedDate = DateUtils.getUtc("2016-06-12 08:10:15");
         int id = 1;
         User userToInsert = new User(id, "Joanna Spring", expectedDate);
 
         //prepare certificates
-        String expirationDateA = "2016-06-12 14:54:15";
-        Date certDateA = DateUtils.getUtc(expirationDateA);
+        Date certDateA = DateUtils.getUtc("2016-06-12 14:54:15");
         Certificate certA = new Certificate(1, "BHP", certDateA);
 
-        String expirationDateB = "2014-03-12 11:11:15";
-        Date certDateB = DateUtils.getUtc(expirationDateB);
+        Date certDateB = DateUtils.getUtc("2014-03-12 11:11:15");
         Certificate certB = new Certificate(2, "Java Cert", certDateB);
 
         userToInsert.addCertificate(certA);
@@ -200,18 +190,15 @@ public class DbAssistDateShiftTest extends BaseTest{
     @Test
     public void writeByHibernateReadUsingConditionsJoin(){
         //prepare user
-        String expDateString = "2016-06-12 08:10:15";
-        Date expectedDate = DateUtils.getUtc(expDateString);
+        Date expectedDate = DateUtils.getUtc("2016-06-12 08:10:15");
         int id = 1;
         User userToInsert = new User(id, "Joanna Spring", expectedDate);
 
         //prepare certificates
-        String expirationDateA = "2016-06-12 14:54:15";
-        Date certDateA = DateUtils.getUtc(expirationDateA);
+        Date certDateA = DateUtils.getUtc("2016-06-12 14:54:15");
         Certificate certA = new Certificate(1, "BHP", certDateA);
 
-        String expirationDateB = "2014-03-12 11:11:15";
-        Date certDateB = DateUtils.getUtc(expirationDateB);
+        Date certDateB = DateUtils.getUtc("2014-03-12 11:11:15");
         Certificate certB = new Certificate(2, "Java Cert", certDateB);
 
         userToInsert.addCertificate(certA);

@@ -6,11 +6,9 @@ import com.montrosesoftware.entities.User;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
-import java.util.stream.Collectors;
+import javax.persistence.Tuple;
+import javax.persistence.criteria.Selection;
+import java.util.*;
 
 import static org.junit.Assert.*;
 
@@ -19,15 +17,23 @@ public class DbAssistMiscellaneousTest extends BaseTest {
     @Autowired
     private UserRepo uRepo;
 
+    private void saveUsersData(List<User> usersToSave){
+        usersToSave.forEach(uRepo::save);
+        uRepo.clearPersistenceContext();
+    }
+
+    private <T> boolean collectionsAreEqual(Collection<T> a, Collection<T> b){
+        return a.containsAll(b) && b.containsAll(a);
+    }
+
+    public static final Date ExampleDate = DateUtils.getUtc("2012-06-12 08:10:15");
+
     @Test
     public void conditionsAreNotReusableAfterCallingFind(){
-        //prepare user data:
-        Date date = DateUtils.getUtc("2012-06-12 08:10:15");
-        List<User> users = new ArrayList<>();
-        users.add(new User(1, "User 1", date));
-        users.add(new User(2, "User 2", date));
-        users.forEach(uRepo::save);
-        uRepo.clearPersistenceContext();
+        saveUsersData(new ArrayList<User>(){{
+            add(new User(1, "User 1", ExampleDate));
+            add(new User(2, "User 2", ExampleDate));
+        }});
 
         //WHERE id >= 1 AND id <= 1
         Conditions conditions = new Conditions();
@@ -43,15 +49,13 @@ public class DbAssistMiscellaneousTest extends BaseTest {
 
     @Test
     public void findAttributeUse(){
-        //prepare user data:
         Date date = DateUtils.getUtc("2012-06-12 08:10:15");
         Date dateAnother = DateUtils.getUtc("2000-03-03 11:10:15");
-        List<User> users = new ArrayList<>();
-        users.add(new User(1, "A", date));
-        users.add(new User(2, "B", dateAnother));
-        users.add(new User(3, "C", date));
-        users.forEach(uRepo::save);
-        uRepo.clearPersistenceContext();
+        saveUsersData(new ArrayList<User>(){{
+            add(new User(1, "A", date));
+            add(new User(2, "B", dateAnother));
+            add(new User(3, "C", date));
+        }});
 
         Conditions c = new Conditions();
         c.equal("createdAt", date);
@@ -59,14 +63,44 @@ public class DbAssistMiscellaneousTest extends BaseTest {
 
         assertEquals(namesRead.size(),2);
         List<String> namesExpected = new ArrayList<>(Arrays.asList("A", "C"));
-        assertTrue(namesRead.containsAll(namesExpected) && namesExpected.containsAll(namesRead));
+        assertTrue(collectionsAreEqual(namesRead, namesExpected));
+    }
+
+    @Test
+    public void findAttributesUse(){
+        saveUsersData(new ArrayList<User>(){{
+            add(new User(1, "Mont", ExampleDate));
+            add(new User(2, "Rose", ExampleDate));
+            add(new User(3, "Montrose", ExampleDate));
+        }});
+
+        AbstractRepository.SelectionList<User> selectionList = (criteriaBuilder, root) -> {
+            List<Selection<?>> list = new ArrayList<>();
+            list.add(root.get("id"));
+            list.add(root.get("name"));
+            return  list;
+        };
+
+        Conditions c = new Conditions();
+        c.inRangeConditions("id",1,2);
+        List<Tuple> tuples = uRepo.findAttributes(selectionList, c);
+        List<Integer> idsRead = new ArrayList<>();
+        List<String> namesRead = new ArrayList<>();
+        tuples.forEach((tuple -> {
+            idsRead.add((Integer) tuple.get(0));
+            namesRead.add((String) tuple.get(1));
+        }));
+
+        List<String> namesExpected = new ArrayList<>(Arrays.asList("Mont", "Rose"));
+        List<Integer> idsExpected = new ArrayList<>(Arrays.asList(1, 2));
+        assertTrue(collectionsAreEqual(namesRead, namesExpected));
+        assertTrue(collectionsAreEqual(idsRead, idsExpected));
     }
 
     @Test
     public void conditionsNullAndNotNull() {
         //prepare user data with null date in user 2
-        Date date = DateUtils.getUtc("2012-06-12 08:10:15");
-        User u1 = new User(1, "Rose", date);
+        User u1 = new User(1, "Rose", ExampleDate);
         User u2 = new User();
         u2.setId(2);
         u2.setName("Mont");
@@ -77,55 +111,50 @@ public class DbAssistMiscellaneousTest extends BaseTest {
         //WHERE created_at IS NULL
         Conditions condDateNull = new Conditions();
         condDateNull.isNull("createdAt");
-        List<User> results = uRepo.find(condDateNull);
-        assertEquals(1,results.size());
-        assertEquals("Mont", results.get(0).getName());
+        List<String> resultsDateNull = uRepo.findAttribute("name", condDateNull);
+        assertEquals(1, resultsDateNull.size());
+        assertEquals("Mont", resultsDateNull.get(0));
 
         //WHERE created_at IS NOT NULL
         Conditions condDateNotNull = new Conditions();
         condDateNotNull.isNotNull("createdAt");
-        List<User> resultsDateNotNull = uRepo.find(condDateNotNull);
-        assertEquals(1,resultsDateNotNull.size());
-        assertEquals("Rose", resultsDateNotNull.get(0).getName());
+        List<String> resultsDateNotNull = uRepo.findAttribute("name", condDateNotNull);
+        assertEquals(1, resultsDateNotNull.size());
+        assertEquals("Rose", resultsDateNotNull.get(0));
     }
 
     @Test
     public void conditionsLikeAndNotLike() {
-        //prepare user data:
-        Date date = DateUtils.getUtc("2012-06-12 08:10:15");
-        List<User> users = new ArrayList<>();
-        users.add(new User(1, "Mont", date));
-        users.add(new User(2, "Rose", date));
-        users.add(new User(3, "Montrose", date));
-        users.forEach(uRepo::save);
-        uRepo.clearPersistenceContext();
+        saveUsersData(new ArrayList<User>(){{
+            add(new User(1, "Mont", ExampleDate));
+            add(new User(2, "Rose", ExampleDate));
+            add(new User(3, "Montrose", ExampleDate));
+        }});
 
         //WHERE name NOT LIKE 'Mont%'
         Conditions conditionsA = new Conditions();
         conditionsA.like("name", "Mont%");
-        List<User> resultsA = uRepo.find(conditionsA);
+        List<String> resultsA = uRepo.findAttribute("name", conditionsA);
         assertEquals(2, resultsA.size());
-        assertEquals("Mont", resultsA.get(0).getName());
-        assertEquals("Montrose", resultsA.get(1).getName());
+        assertEquals("Mont", resultsA.get(0));
+        assertEquals("Montrose", resultsA.get(1));
 
         // WHERE name LIKE 'Mont%'
         Conditions conditionsB = new Conditions();
         conditionsB.notLike("name", "Mont%");
-        List<User> resultsB = uRepo.find(conditionsB);
+        List<String> resultsB = uRepo.findAttribute("name", conditionsB);
         assertEquals(1, resultsB.size());
-        assertEquals("Rose", resultsB.get(0).getName());
+        assertEquals("Rose", resultsB.get(0));
     }
 
     @Test
     public void emptyConditionsReturnAllRecords() {
-        //prepare user data:
-        Date date = DateUtils.getUtc("2012-06-12 08:10:15");
-        List<User> users = new ArrayList<>();
-        users.add(new User(1, "Mont", date));
-        users.add(new User(2, "Rose", date));
-        users.add(new User(3, "Montrose", date));
-        users.forEach(uRepo::save);
-        uRepo.clearPersistenceContext();
+        List<User> users = new ArrayList<User>(){{
+            add(new User(1, "Mont", ExampleDate));
+            add(new User(2, "Rose", ExampleDate));
+            add(new User(3, "Montrose", ExampleDate));
+        }};
+        saveUsersData(users);
 
         // WHERE 1 = 1
         Conditions c = new Conditions();
@@ -135,30 +164,25 @@ public class DbAssistMiscellaneousTest extends BaseTest {
 
     @Test
     public void conditionsInAndNotIn(){
-        //prepare user data:
-        Date date = DateUtils.getUtc("2012-06-12 08:10:15");
-        List<User> users = new ArrayList<>();
-        users.add(new User(1, "A", date));
-        users.add(new User(2, "B", date));
-        users.add(new User(3, "C", date));
-        users.forEach(uRepo::save);
-        uRepo.clearPersistenceContext();
+        saveUsersData(new ArrayList<User>(){{
+            add(new User(1, "A", ExampleDate));
+            add(new User(2, "B", ExampleDate));
+            add(new User(3, "C", ExampleDate));
+        }});
 
-        List<String> names = new ArrayList(Arrays.asList("B", "C"));
+        List<String> names = new ArrayList<>(Arrays.asList("B", "C"));
         Conditions cA = new Conditions();
         cA.in("name", names);
 
-        List<User> resultsA = uRepo.find(cA);
-        assertEquals(resultsA.size(), 2);
-        List<String> namesReadA = resultsA.stream().map(User::getName).collect(Collectors.toList());
-        assertTrue(names.containsAll(namesReadA) && namesReadA.containsAll(names));
+        List<String> namesReadA = uRepo.findAttribute("name", cA);
+        assertEquals(namesReadA.size(), 2);
+        assertTrue(collectionsAreEqual(names, namesReadA));
 
         Conditions cB = new Conditions();
         cB.notIn("name", names);
 
-        List<User> resultsB = uRepo.find(cB);
-        assertEquals(resultsB.size(), 1);
-        List<String> namesReadB = resultsB.stream().map(User::getName).collect(Collectors.toList());
+        List<String> namesReadB = uRepo.findAttribute("name", cB);
+        assertEquals(namesReadB.size(), 1);
         assertFalse(names.contains(namesReadB.get(0)));
     }
 }

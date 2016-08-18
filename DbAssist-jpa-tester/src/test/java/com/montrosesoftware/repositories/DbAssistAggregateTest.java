@@ -7,6 +7,7 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
@@ -18,16 +19,20 @@ public class DbAssistAggregateTest extends BaseTest {
     @Autowired
     UserRepo uRepo;
 
+    private void saveUsersData(List<User> usersToSave){
+        usersToSave.forEach(uRepo::save);
+        uRepo.clearPersistenceContext();
+    }
+
+    public static final Date ExampleDate = DateUtils.getUtc("2012-06-12 08:10:15");
+
     @Test
     public void countUseTest() {
-        //prepare user data:
-        Date date = DateUtils.getUtc("2012-06-12 08:10:15");
-        List<User> users = new ArrayList<>();
-        users.add(new User(1, "Mont", date));
-        users.add(new User(2, "Mont", date));
-        users.add(new User(3, "Rose", date));
-        users.forEach(uRepo::save);
-        uRepo.clearPersistenceContext();
+        saveUsersData(new ArrayList<User>(){{
+            add(new User(1, "Mont", ExampleDate));
+            add(new User(2, "Mont", ExampleDate));
+            add(new User(3, "Rose", ExampleDate));
+        }});
 
         // SELECT COUNT(id) FROM users WHERE name = 'Mont'
         Conditions cA = new Conditions();
@@ -55,15 +60,13 @@ public class DbAssistAggregateTest extends BaseTest {
 
     @Test
     public void sumMinMaxUseTest(){
-        //prepare user data:
         Date date = DateUtils.getUtc("2012-06-12 08:10:15");
         Date dateAnother = DateUtils.getUtc("2020-06-12 15:10:15");
-        List<User> users = new ArrayList<>();
-        users.add(new User(13, "Mont", date));
-        users.add(new User(7, "Mont", date));
-        users.add(new User(5, "Rose", dateAnother));
-        users.forEach(uRepo::save);
-        uRepo.clearPersistenceContext();
+        saveUsersData(new ArrayList<User>(){{
+            add(new User(13, "Mont", date));
+            add(new User(7, "Mont", date));
+            add(new User(5, "Rose", dateAnother));
+        }});
 
         // SELECT SUM(id) FROM users WHERE created_at = date
         Conditions cA = new Conditions();
@@ -92,14 +95,11 @@ public class DbAssistAggregateTest extends BaseTest {
 
     @Test
     public void sumAsIntegerLongAndDouble(){
-        //prepare user data:
-        Date date = DateUtils.getUtc("2012-06-12 08:10:15");
-        List<User> users = new ArrayList<>();
-        users.add(new User(1, "Mont", date));
-        users.add(new User(2, "Mont", date));
-        users.add(new User(3, "Rose", date));
-        users.forEach(uRepo::save);
-        uRepo.clearPersistenceContext();
+        saveUsersData(new ArrayList<User>(){{
+            add(new User(1, "Mont", ExampleDate));
+            add(new User(2, "Mont", ExampleDate));
+            add(new User(3, "Rose", ExampleDate));
+        }});
 
         //id is of type: int
         Integer sumInteger = uRepo.sum(new Conditions(), "id");
@@ -114,14 +114,11 @@ public class DbAssistAggregateTest extends BaseTest {
 
     @Test
     public void conditionsAreNotReusableAfterCallingAggregate(){
-        //prepare user data:
-        Date date = DateUtils.getUtc("2012-06-12 08:10:15");
-        List<User> users = new ArrayList<>();
-        users.add(new User(1, "Mont", date));
-        users.add(new User(2, "Mont", date));
-        users.add(new User(3, "Rose", date));
-        users.forEach(uRepo::save);
-        uRepo.clearPersistenceContext();
+        saveUsersData(new ArrayList<User>(){{
+            add(new User(1, "Mont", ExampleDate));
+            add(new User(2, "Mont", ExampleDate));
+            add(new User(3, "Rose", ExampleDate));
+        }});
 
         // SELECT COUNT(id) FROM users WHERE name = 'Mont'
         Conditions c = new Conditions();
@@ -135,14 +132,11 @@ public class DbAssistAggregateTest extends BaseTest {
 
     @Test
     public void avgAggregate(){
-        //prepare user data
-        Date date = DateUtils.getUtc("2012-06-12 08:10:15");
-        List<User> users = new ArrayList<>();
-        users.add(new User(1, "Mont", date));
-        users.add(new User(2, "Rose", date));
-        users.add(new User(3, "Montrose", date));
-        users.forEach(uRepo::save);
-        uRepo.clearPersistenceContext();
+        saveUsersData(new ArrayList<User>(){{
+            add(new User(1, "Mont", ExampleDate));
+            add(new User(2, "Rose", ExampleDate));
+            add(new User(3, "Montrose", ExampleDate));
+        }});
 
         Double avg = uRepo.avg(new Conditions(), "id");
         assertEquals(avg, 2.0, Delta);
@@ -156,16 +150,14 @@ public class DbAssistAggregateTest extends BaseTest {
 
     @Test
     public void leastAggregateDate(){
-        //prepare data
         Date date1 = DateUtils.getUtc("2015-06-12 08:10:15");
         Date date2 = DateUtils.getUtc("2011-06-12 09:10:15");
         Date date3 = DateUtils.getUtc("2025-06-12 10:10:15");
-        List<User> users = new ArrayList<>();
-        users.add(new User(1, "BB", date1));
-        users.add(new User(2, "AA", date2));
-        users.add(new User(3, "CC", date3));
-        users.forEach(uRepo::save);
-        uRepo.clearPersistenceContext();
+        saveUsersData(new ArrayList<User>(){{
+            add(new User(1, "BB", date1));
+            add(new User(2, "AA", date2));
+            add(new User(3, "CC", date3));
+        }});
 
         Date dateMinRead = uRepo.least(new Conditions(), "createdAt");
         assertTrue(dateMinRead.compareTo(date2) == 0);
