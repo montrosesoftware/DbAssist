@@ -94,22 +94,33 @@ public class DbAssistAggregateTest extends BaseTest {
     private static final double Delta = 1e-15;
 
     @Test
-    public void sumAsIntegerLongAndDouble(){
+    public void sumNormalAsLongAndAsDouble(){
         saveUsersData(new ArrayList<User>(){{
-            add(new User(1, "Mont", ExampleDate));
-            add(new User(2, "Mont", ExampleDate));
-            add(new User(3, "Rose", ExampleDate));
+            add(new User(1, "Mont", ExampleDate, 14.5, "worker"));
+            add(new User(2, "Mont", ExampleDate, 10.1, "worker"));
+            add(new User(3, "Rose", ExampleDate, 1.5, "worker"));
         }});
 
         //id is of type: int
-        Integer sumInteger = uRepo.sum(new Conditions(), "id");
-        assertEquals(sumInteger.intValue(), 6);
+        Integer sumIds = uRepo.sum(new Conditions(), "id");
+        assertEquals(sumIds.intValue(), 6);
 
-        Long sumLong = uRepo.sumAsLong(new Conditions(), "id");
-        assertEquals(sumLong.longValue(), 6);
+        Long sumIdsLong = uRepo.sumAsLong(new Conditions(), "id");
+        assertEquals(sumIdsLong.longValue(), 6);
 
-        Double sumDouble = uRepo.sumAsDouble(new Conditions(), "id");
-        assertEquals(sumDouble, 6.0, Delta);
+        Double sumIdsDouble = uRepo.sumAsDouble(new Conditions(), "id");
+        assertEquals(sumIdsDouble, 6.0, Delta);
+
+        //salary is of type: double
+        Double sumSalaries = uRepo.sum(new Conditions(), "salary");
+        assertEquals(sumSalaries, 14.5 + 10.1 + 1.5, Delta);
+
+        Long sumSalariesAsLong = uRepo.sumAsLong(new Conditions(), "salary");
+        assertEquals(sumSalariesAsLong.longValue(), 26);
+
+        Double sumSalariesAsDouble = uRepo.sumAsDouble(new Conditions(), "salary");
+        assertEquals(sumSalariesAsDouble, 14.5 + 10.1 + 1.5, Delta);
+
     }
 
     @Test

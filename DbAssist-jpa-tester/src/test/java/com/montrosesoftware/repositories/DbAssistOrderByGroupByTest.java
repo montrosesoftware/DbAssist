@@ -6,6 +6,8 @@ import com.montrosesoftware.entities.User;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import javax.persistence.Tuple;
+import javax.persistence.criteria.Expression;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -26,6 +28,7 @@ public class DbAssistOrderByGroupByTest extends BaseTest {
     }
 
     private static final Date ExampleDate = DateUtils.getUtc("2012-06-12 08:10:15");
+    private static final double Delta = 1e-15;
 
     @Test
     public void orderByDateUse(){
@@ -38,9 +41,9 @@ public class DbAssistOrderByGroupByTest extends BaseTest {
         }});
 
         Conditions c = new Conditions();
-        AbstractRepository.OrderBy<User> userOrderBy = (cb, root) -> Arrays.asList(
-                cb.asc(root.get("name")),
-                cb.desc(root.get("createdAt"))
+        AbstractRepository.OrderBy<User> userOrderBy = (builder, root) -> Arrays.asList(
+                builder.asc(root.get("name")),
+                builder.desc(root.get("createdAt"))
                 );
         List<User> results = uRepo.find(c, null, userOrderBy);
 
@@ -48,5 +51,38 @@ public class DbAssistOrderByGroupByTest extends BaseTest {
         assertTrue(results.get(0).getId() == 2);
         assertTrue(results.get(1).getId() == 3);
         assertTrue(results.get(2).getId() == 1);
+    }
+
+    @Test
+    public void groupByWithAggregates(){
+        saveUsersData(new ArrayList<User>(){{
+            add(new User(1, "Mont", ExampleDate, 14.5, "worker"));
+            add(new User(2, "Mont", ExampleDate, 10.1, "worker"));
+            add(new User(3, "Rose", ExampleDate, 1.5, "worker"));
+            add(new User(4, "Rose", ExampleDate, 111.5, "boss"));
+        }});
+
+        AbstractRepository.SelectionList<User> selectionList = (builder, root) -> Arrays.asList(
+                builder.sum(root.get("salary")),
+                builder.avg(root.get("salary")),
+                builder.count(root.get("id"))
+        );
+
+        Conditions conditions = new Conditions();
+        conditions.equal("category", "worker");
+
+        AbstractRepository.GroupBy<User> groupBy = (root) -> Arrays.asList(
+                root.get("category")
+        );
+
+        List<Tuple> results = uRepo.findAttributes(selectionList, conditions, null, null, groupBy);
+
+        Double sumSalaryWorkers = (Double) results.get(0).get(0);
+        Double avgSalaryWorkers = (Double) results.get(0).get(1);
+        Long numWorkers = (Long) results.get(0).get(2);
+
+        assertEquals(numWorkers.longValue(), 3);
+        assertEquals(sumSalaryWorkers, 14.5 + 10.1 + 1.5, Delta);
+        assertEquals(avgSalaryWorkers, sumSalaryWorkers / numWorkers, Delta);
     }
 }

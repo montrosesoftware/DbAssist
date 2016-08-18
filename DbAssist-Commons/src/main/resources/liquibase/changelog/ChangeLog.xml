@@ -6,5 +6,5 @@
                             http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
 
     <include file="0000_addInitialSchema.xml" relativeToChangelogFile="true"/>
-
+    <include file="0001_addAdditionalColumnsUsers.xml" relativeToChangelogFile="true"/>
 </databaseChangeLog>

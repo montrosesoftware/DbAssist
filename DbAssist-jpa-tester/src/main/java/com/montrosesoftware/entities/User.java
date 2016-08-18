@@ -22,6 +22,12 @@ public class User {
     @Column(name = "created_at")
     private Date createdAt;
 
+    @Column(name = "salary")
+    private Double salary;
+
+    @Column(name = "category")
+    private String category;
+
     @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinTable(
             name = "users_certificates",
@@ -36,6 +42,14 @@ public class User {
         this.id = id;
         this.name = name;
         this.createdAt = createdAt;
+    }
+
+    public User(int id, String name, Date createdAt, Double salary, String category) {
+        this.id = id;
+        this.name = name;
+        this.createdAt = createdAt;
+        this.salary = salary;
+        this.category = category;
     }
 
     public int getId() {
@@ -61,6 +75,14 @@ public class User {
     public void setCreatedAt(Date createdAt) {
         this.createdAt = createdAt;
     }
+
+    public Double getSalary() { return salary; }
+
+    public void setSalary(Double salary) { this.salary = salary; }
+
+    public String getCategory() { return category; }
+
+    public void setCategory(String category) { this.category = category; }
 
     public List<Certificate> getCertificates() {
         return certificates;

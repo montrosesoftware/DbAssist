@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog/1.6"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog/1.6
+         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-1.6.xsd">
+
+    <changeSet id="49526237-86a8-48b4-919d-9198caf6edfc" author="MontroseSoftware">
+        <addColumn schemaName="jpa" tableName="users">
+            <column name="salary" type="double"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="f9543ce7-8147-4e1e-8339-794f23ca57a2" author="MontroseSoftware">
+        <addColumn schemaName="jpa" tableName="users">
+            <column name="category" type="varchar(100)"/>
+        </addColumn>
+    </changeSet>
+
+</databaseChangeLog>
