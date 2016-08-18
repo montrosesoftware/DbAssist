@@ -24,7 +24,7 @@ public class DbAssistAggregateTest extends BaseTest {
         uRepo.clearPersistenceContext();
     }
 
-    public static final Date ExampleDate = DateUtils.getUtc("2012-06-12 08:10:15");
+    private static final Date ExampleDate = DateUtils.getUtc("2012-06-12 08:10:15");
 
     @Test
     public void countUseTest() {

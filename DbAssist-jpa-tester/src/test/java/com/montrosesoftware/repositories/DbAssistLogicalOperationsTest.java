@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.*;
 
+import static org.apache.commons.lang3.time.DateUtils.addMinutes;
 import static org.junit.Assert.*;
 
 public class DbAssistLogicalOperationsTest extends BaseTest {
@@ -20,7 +21,7 @@ public class DbAssistLogicalOperationsTest extends BaseTest {
         uRepo.clearPersistenceContext();
     }
 
-    public static final Date ExampleDate = DateUtils.getUtc("2012-06-12 08:10:15");
+    private static final Date ExampleDate = DateUtils.getUtc("2012-06-12 08:10:15");
 
     @Test
     public void logicalAndConditionsTest(){
@@ -70,13 +71,6 @@ public class DbAssistLogicalOperationsTest extends BaseTest {
         List<User> results = uRepo.find(c);
         assertEquals(4, results.size());
         results.forEach(user -> {if (user.getId() == 3) fail("User id = 3 should not be included according to the conditions");});
-    }
-
-    private static Date addMinutes(Date date, int minutes){
-        final long OneMinuteInMs = 60000;
-        long currentTimeInMs = date.getTime();
-        Date newDate = new Date(currentTimeInMs + (minutes * OneMinuteInMs));
-        return newDate;
     }
 
     @Test

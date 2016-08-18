@@ -10,6 +10,7 @@ import javax.persistence.Tuple;
 import javax.persistence.criteria.Selection;
 import java.util.*;
 
+import static com.montrosesoftware.repositories.TestUtils.collectionsAreEqual;
 import static org.junit.Assert.*;
 
 public class DbAssistMiscellaneousTest extends BaseTest {
@@ -22,11 +23,7 @@ public class DbAssistMiscellaneousTest extends BaseTest {
         uRepo.clearPersistenceContext();
     }
 
-    private <T> boolean collectionsAreEqual(Collection<T> a, Collection<T> b){
-        return a.containsAll(b) && b.containsAll(a);
-    }
-
-    public static final Date ExampleDate = DateUtils.getUtc("2012-06-12 08:10:15");
+    private static final Date ExampleDate = DateUtils.getUtc("2012-06-12 08:10:15");
 
     @Test
     public void conditionsAreNotReusableAfterCallingFind(){
