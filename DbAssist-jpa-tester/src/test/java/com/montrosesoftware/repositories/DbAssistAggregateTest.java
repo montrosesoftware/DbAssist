@@ -120,7 +120,6 @@ public class DbAssistAggregateTest extends BaseTest {
 
         Double sumSalariesAsDouble = uRepo.sumAsDouble(new Conditions(), "salary");
         assertEquals(sumSalariesAsDouble, 14.5 + 10.1 + 1.5, Delta);
-
     }
 
     @Test

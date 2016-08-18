@@ -64,7 +64,7 @@ public class DbAssistLogicalOperationsTest extends BaseTest {
         // WHERE id >= 1 AND id <= 2 OR name = "C"
         Conditions c = new Conditions();
         c.or(
-                c.and(c.greaterThanOrEqualTo("id", 1), null, c.lessThanOrEqualTo("id", 2)),
+                c.and(c.greaterThanOrEqualTo("id", 1), c.lessThanOrEqualTo("id", 2)),
                 c.equal("name", names.get(4))
         );
 

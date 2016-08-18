@@ -185,47 +185,4 @@ public class DbAssistDateShiftTest extends BaseTest{
         assertEquals("Certificate A dates are not the same", certA.getExpirationDate(), certsRead.get(0).getExpirationDate());
         assertEquals("Certificate B dates are not the same", certB.getExpirationDate(), certsRead.get(1).getExpirationDate());
     }
-
-    //TODO remake the test
-    @Test
-    public void writeByHibernateReadUsingConditionsJoin(){
-        //prepare user
-        Date expectedDate = DateUtils.getUtc("2016-06-12 08:10:15");
-        int id = 1;
-        User userToInsert = new User(id, "Joanna Spring", expectedDate);
-
-        //prepare certificates
-        Date certDateA = DateUtils.getUtc("2016-06-12 14:54:15");
-        Certificate certA = new Certificate(1, "BHP", certDateA);
-
-        Date certDateB = DateUtils.getUtc("2014-03-12 11:11:15");
-        Certificate certB = new Certificate(2, "Java Cert", certDateB);
-
-        userToInsert.addCertificate(certA);
-        userToInsert.addCertificate(certB);
-
-        uRepo.save(userToInsert);
-        uRepo.clearPersistenceContext();
-
-        //use conditions
-        Conditions conditions = new Conditions();
-        conditions.equal("createdAt", expectedDate);
-
-        //TODO
-       /* Conditions joinConditions = conditions.getJoinConditions("expirationDate", JoinType.INNER);
-        joinConditions.equal("expirationDate", expirationDateA);*/
-
-        List<User> results = uRepo.find(conditions);
-        assertEquals(1,results.size());
-
-        User userRead = results.get(0);
-        List<Certificate> certsRead = userRead.getCertificates();
-        assertEquals(2, certsRead.size());
-
-        assertEquals("User dates are not the same", userToInsert.getCreatedAt(), userRead.getCreatedAt());
-        assertEquals("Certificate A dates are not the same", certA.getExpirationDate(), certsRead.get(0).getExpirationDate());
-        assertEquals("Certificate B dates are not the same", certB.getExpirationDate(), certsRead.get(1).getExpirationDate());
-    }
-
-
 }
