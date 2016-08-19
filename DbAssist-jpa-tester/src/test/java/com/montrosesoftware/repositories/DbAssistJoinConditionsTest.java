@@ -98,4 +98,79 @@ public class DbAssistJoinConditionsTest extends BaseTest {
         assertEquals(1,results.size());
         assertEquals(1, results.get(0).getId());
     }
+
+    @Test
+    public void findWithJoinConditionsAndLogicalAndBetweenTables(){
+        Date certDateA = DateUtils.getUtc("2016-06-12 14:54:15");
+        Certificate certA = new Certificate(1, "BHP", certDateA);
+        Date certDateB = DateUtils.getUtc("2014-03-12 11:11:15");
+        Certificate certB = new Certificate(2, "Java Cert", certDateB);
+
+        //prepare users
+        Date dateA = DateUtils.getUtc("2016-06-12 06:10:15");
+        Date dateB = DateUtils.getUtc("2010-06-12 08:10:15");
+        User userA = new User(1, "Rose", dateA);
+        User userB = new User(2, "Mont", dateB);
+        User userC = new User(3, "Tom", dateB);
+        userA.addCertificate(certA);
+        userA.addCertificate(certB);
+        userB.addCertificate(certB);
+        saveUsersData(Arrays.asList(userA, userB, userC));
+
+        ConditionsBuilder conditionsBuilder = new ConditionsBuilder();
+        ConditionsBuilder.Condition createdAt = conditionsBuilder.equal("createdAt", dateA);
+
+        //add join conditions
+        ConditionsBuilder certificatesConditionsBuilder = conditionsBuilder.getJoinConditionsBuilder("certificates", JoinType.LEFT);
+        ConditionsBuilder.Condition name = certificatesConditionsBuilder.equal("name", "BHP");
+
+        ConditionsBuilder.Condition id = conditionsBuilder.equal("id", 2);
+
+        conditionsBuilder.or(
+                conditionsBuilder.and(createdAt, certificatesConditionsBuilder, name),
+                id
+        );
+
+        // SELECT ... LEFT OUTER JOIN ... ON ... WHERE (users.created_at = ? AND certificates.name = ?) OR users.id = ?
+        List<User> results = uRepo.find(conditionsBuilder);
+        assertEquals(2, results.size());
+    }
+
+    @Test
+    public void findWithJoinConditionsAndLogicalAndOrCombination(){
+        Date certDateA = DateUtils.getUtc("2016-06-12 14:54:15");
+        Certificate certA = new Certificate(1, "BHP", certDateA);
+        Date certDateB = DateUtils.getUtc("2014-03-12 11:11:15");
+        Certificate certB = new Certificate(2, "Java Cert", certDateB);
+
+        //prepare users
+        Date dateA = DateUtils.getUtc("2016-06-12 07:10:15");
+        Date dateB = DateUtils.getUtc("2010-06-12 08:10:15");
+        User userA = new User(1, "Rose", dateA);
+        User userB = new User(2, "Mont", dateB);
+        User userC = new User(3, "Tom", dateB);
+        userA.addCertificate(certA);
+        userA.addCertificate(certB);
+        userB.addCertificate(certB);
+        saveUsersData(Arrays.asList(userA, userB, userC));
+
+        ConditionsBuilder conditionsBuilder = new ConditionsBuilder();
+        ConditionsBuilder.Condition createdAt = conditionsBuilder.equal("createdAt", dateA);
+
+        //add join conditions
+        ConditionsBuilder certificatesConditionsBuilder = conditionsBuilder.getJoinConditionsBuilder("certificates", JoinType.LEFT);
+        ConditionsBuilder.Condition name = certificatesConditionsBuilder.equal("name", "BHP");
+
+        ConditionsBuilder.Condition id = conditionsBuilder.equal("id", 1);
+
+        conditionsBuilder.or(
+                conditionsBuilder.and(createdAt, certificatesConditionsBuilder, name),
+                certificatesConditionsBuilder,
+                id
+        );
+
+        // SELECT ... LEFT OUTER JOIN ... ON ... WHERE (users.created_at = ? AND certificates.name = ?) OR certificates.id = ?
+        List<User> results = uRepo.find(conditionsBuilder);
+        assertEquals(1, results.size());
+    }
 }
