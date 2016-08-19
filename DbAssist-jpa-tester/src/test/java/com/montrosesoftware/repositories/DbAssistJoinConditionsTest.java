@@ -3,6 +3,7 @@ package com.montrosesoftware.repositories;
 import com.montrosesoftware.DateUtils;
 import com.montrosesoftware.config.BaseTest;
 import com.montrosesoftware.entities.Certificate;
+import com.montrosesoftware.entities.Provider;
 import com.montrosesoftware.entities.User;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +13,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
+import static com.montrosesoftware.repositories.TestUtils.saveUsersData;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -23,10 +25,8 @@ public class DbAssistJoinConditionsTest extends BaseTest {
     @Autowired
     private CertificateRepo cRepo;
 
-    private void saveUsersData(List<User> usersToSave){
-        usersToSave.forEach(uRepo::save);
-        uRepo.clearPersistenceContext();
-    }
+    @Autowired
+    private ProviderRepo pRepo;
 
     @Test
     public void findWithJoinConditionsUse(){
@@ -44,7 +44,7 @@ public class DbAssistJoinConditionsTest extends BaseTest {
         userA.addCertificate(certA);
         userA.addCertificate(certB);
         userB.addCertificate(certB);
-        saveUsersData(Arrays.asList(userA, userB, userC));
+        saveUsersData(uRepo, Arrays.asList(userA, userB, userC));
 
         ConditionsBuilder conditionsBuilder = new ConditionsBuilder();
         conditionsBuilder.equal("createdAt", expectedDate);
@@ -82,7 +82,7 @@ public class DbAssistJoinConditionsTest extends BaseTest {
         userA.addCertificate(certA);
         userA.addCertificate(certB);
         userB.addCertificate(certB);
-        saveUsersData(Arrays.asList(userA, userB, userC));
+        saveUsersData(uRepo, Arrays.asList(userA, userB, userC));
 
         ConditionsBuilder conditionsBuilder = new ConditionsBuilder();
         ConditionsBuilder.Condition createdAt = conditionsBuilder.equal("createdAt", dateA);
@@ -115,7 +115,7 @@ public class DbAssistJoinConditionsTest extends BaseTest {
         userA.addCertificate(certA);
         userA.addCertificate(certB);
         userB.addCertificate(certB);
-        saveUsersData(Arrays.asList(userA, userB, userC));
+        saveUsersData(uRepo, Arrays.asList(userA, userB, userC));
 
         ConditionsBuilder conditionsBuilder = new ConditionsBuilder();
         ConditionsBuilder.Condition createdAt = conditionsBuilder.equal("createdAt", dateA);
@@ -152,7 +152,7 @@ public class DbAssistJoinConditionsTest extends BaseTest {
         userA.addCertificate(certA);
         userA.addCertificate(certB);
         userB.addCertificate(certB);
-        saveUsersData(Arrays.asList(userA, userB, userC));
+        saveUsersData(uRepo, Arrays.asList(userA, userB, userC));
 
         ConditionsBuilder conditionsBuilder = new ConditionsBuilder();
         ConditionsBuilder.Condition createdAt = conditionsBuilder.equal("createdAt", dateA);
@@ -172,5 +172,72 @@ public class DbAssistJoinConditionsTest extends BaseTest {
         // SELECT ... LEFT OUTER JOIN ... ON ... WHERE (users.created_at = ? AND certificates.name = ?) OR certificates.id = ?
         List<User> results = uRepo.find(conditionsBuilder);
         assertEquals(1, results.size());
+    }
+
+    @Test
+    public void multipleJoinsConditionBuildersUse(){
+        //TODO test is not finished
+        //Certificate providers and certificates
+        Provider providerA = new Provider(1, "Provider 1", true);
+        Provider providerB = new Provider(2, "Provider 2", false);
+
+        Date certDateA = DateUtils.getUtc("2016-06-12 14:54:15");
+        Certificate certA = new Certificate(1, "BHP", certDateA);
+        certA.setProvider(providerA);
+
+        Date certDateB = DateUtils.getUtc("2014-03-12 11:11:15");
+        Certificate certB = new Certificate(2, "Java Cert", certDateB);
+        certB.setProvider(providerB);
+
+        pRepo.save(providerA);
+        pRepo.save(providerB);
+
+        //prepare users
+        Date dateA = DateUtils.getUtc("2016-06-12 07:10:15");
+        Date dateB = DateUtils.getUtc("2010-06-12 08:10:15");
+        User userA = new User(1, "Rose", dateA);
+        User userB = new User(2, "Mont", dateB);
+        User userC = new User(3, "Tom", dateB);
+        userA.addCertificate(certA);
+        userA.addCertificate(certB);
+        userB.addCertificate(certB);
+        saveUsersData(uRepo, Arrays.asList(userA, userB, userC));
+
+        //read with no conditions
+        List<Provider> providersRead = pRepo.find(new ConditionsBuilder());
+        List<User> usersRead = uRepo.find(new ConditionsBuilder());
+        assertEquals(providersRead.size(), 2);
+        assertEquals(usersRead.size(), 3);
+
+        //complex example
+        ConditionsBuilder builderUsers = new ConditionsBuilder();
+        ConditionsBuilder.Condition uIdLessThan = builderUsers.lessThan("id", 15);
+        ConditionsBuilder.Condition uIdGreaterThanOrEqual = builderUsers.greaterThanOrEqualTo("id", 0);
+
+        ConditionsBuilder builderCertificates = builderUsers.getJoinConditionsBuilder("certificates", JoinType.LEFT);
+        ConditionsBuilder.Condition certIdLessThan = builderCertificates.lessThan("id", 5);
+        ConditionsBuilder.Condition certIdGreaterThanOrEqual = builderCertificates.greaterThanOrEqualTo("id", 0);
+
+        ConditionsBuilder builderProviders = builderCertificates.getJoinConditionsBuilder("provider", JoinType.LEFT);
+        ConditionsBuilder.Condition provNameA = builderProviders.equal("name", "Provider 1");
+        ConditionsBuilder.Condition provNameB = builderProviders.equal("name", "Provider 2");
+
+        // remake it
+        /*builderUsers.or(
+                builderUsers.and(uIdLessThan, null, uIdGreaterThanOrEqual),
+                null,
+                builderProviders.or(
+                        builderCertificates,
+                        builderCertificates.and(certIdGreaterThanOrEqual, certIdLessThan),
+                        builderProviders,
+                        builderProviders.or(provNameA, provNameB)
+                )
+        );
+        */
+        //TODO change the condition to boolean active!
+
+        List<User> usersReadMultipleJoin = uRepo.find(builderUsers);
+        usersReadMultipleJoin.size();
+
     }
 }

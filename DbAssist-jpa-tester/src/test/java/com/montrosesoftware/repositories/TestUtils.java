@@ -1,7 +1,10 @@
 package com.montrosesoftware.repositories;
 
+import com.montrosesoftware.entities.User;
+
 import java.util.Collection;
 import java.util.Date;
+import java.util.List;
 
 public class TestUtils {
 
@@ -15,4 +18,10 @@ public class TestUtils {
     public static <T> boolean collectionsAreEqual(Collection<T> a, Collection<T> b){
         return a.containsAll(b) && b.containsAll(a);
     }
+
+    public static void saveUsersData(UserRepo uRepo, List<User> usersToSave){
+        usersToSave.forEach(uRepo::save);
+        uRepo.clearPersistenceContext();
+    }
+
 }

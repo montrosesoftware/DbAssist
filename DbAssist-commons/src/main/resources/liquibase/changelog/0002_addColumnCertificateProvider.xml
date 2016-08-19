@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog/1.6"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog/1.6
+         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-1.6.xsd">
+
+    <changeSet id="51d3fb45-18a6-4c53-836a-9f367ab80965" author="MontroseSoftware">
+        <addColumn schemaName="jpa" tableName="certificates">
+            <column name="provider_id" type="int"/>
+        </addColumn>
+    </changeSet>
+
+</databaseChangeLog>

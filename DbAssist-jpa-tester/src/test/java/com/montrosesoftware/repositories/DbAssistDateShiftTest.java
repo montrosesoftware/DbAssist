@@ -26,7 +26,7 @@ public class DbAssistDateShiftTest extends BaseTest{
     @Autowired
     private CertificateRepo cRepo;
 
-    @Test public void reposProperlyAutowiredTest(){
+    @Test public void repositoriesProperlyAutowiredTest(){
         assertNotNull(uRepo);
         assertNotNull(cRepo);
     }

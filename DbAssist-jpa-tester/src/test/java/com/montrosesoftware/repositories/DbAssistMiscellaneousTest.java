@@ -11,6 +11,7 @@ import javax.persistence.criteria.Selection;
 import java.util.*;
 
 import static com.montrosesoftware.repositories.TestUtils.collectionsAreEqual;
+import static com.montrosesoftware.repositories.TestUtils.saveUsersData;
 import static org.junit.Assert.*;
 
 public class DbAssistMiscellaneousTest extends BaseTest {
@@ -18,16 +19,11 @@ public class DbAssistMiscellaneousTest extends BaseTest {
     @Autowired
     private UserRepo uRepo;
 
-    private void saveUsersData(List<User> usersToSave){
-        usersToSave.forEach(uRepo::save);
-        uRepo.clearPersistenceContext();
-    }
-
     private static final Date ExampleDate = DateUtils.getUtc("2012-06-12 08:10:15");
 
     @Test(expected = RuntimeException.class)
     public void conditionsAreNotReusableAfterCallingFind(){
-        saveUsersData(new ArrayList<User>(){{
+        saveUsersData(uRepo, new ArrayList<User>(){{
             add(new User(1, "User 1", ExampleDate));
             add(new User(2, "User 2", ExampleDate));
         }});
@@ -47,7 +43,7 @@ public class DbAssistMiscellaneousTest extends BaseTest {
     public void findAttributeUse(){
         Date date = DateUtils.getUtc("2012-06-12 08:10:15");
         Date dateAnother = DateUtils.getUtc("2000-03-03 11:10:15");
-        saveUsersData(new ArrayList<User>(){{
+        saveUsersData(uRepo, new ArrayList<User>(){{
             add(new User(1, "A", date));
             add(new User(2, "B", dateAnother));
             add(new User(3, "C", date));
@@ -64,7 +60,7 @@ public class DbAssistMiscellaneousTest extends BaseTest {
 
     @Test
     public void findAttributesUse(){
-        saveUsersData(new ArrayList<User>(){{
+        saveUsersData(uRepo, new ArrayList<User>(){{
             add(new User(1, "Mont", ExampleDate));
             add(new User(2, "Rose", ExampleDate));
             add(new User(3, "Montrose", ExampleDate));
@@ -121,7 +117,7 @@ public class DbAssistMiscellaneousTest extends BaseTest {
 
     @Test
     public void conditionsLikeAndNotLike() {
-        saveUsersData(new ArrayList<User>(){{
+        saveUsersData(uRepo, new ArrayList<User>(){{
             add(new User(1, "Mont", ExampleDate));
             add(new User(2, "Rose", ExampleDate));
             add(new User(3, "Montrose", ExampleDate));
@@ -150,7 +146,7 @@ public class DbAssistMiscellaneousTest extends BaseTest {
             add(new User(2, "Rose", ExampleDate));
             add(new User(3, "Montrose", ExampleDate));
         }};
-        saveUsersData(users);
+        saveUsersData(uRepo, users);
 
         // WHERE 1 = 1
         ConditionsBuilder c = new ConditionsBuilder();
@@ -160,7 +156,7 @@ public class DbAssistMiscellaneousTest extends BaseTest {
 
     @Test
     public void conditionsInAndNotIn(){
-        saveUsersData(new ArrayList<User>(){{
+        saveUsersData(uRepo, new ArrayList<User>(){{
             add(new User(1, "A", ExampleDate));
             add(new User(2, "B", ExampleDate));
             add(new User(3, "C", ExampleDate));

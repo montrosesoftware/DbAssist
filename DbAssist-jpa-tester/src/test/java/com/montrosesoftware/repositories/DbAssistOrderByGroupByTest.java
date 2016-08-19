@@ -14,6 +14,7 @@ import java.util.Date;
 import java.util.List;
 
 import static com.montrosesoftware.repositories.TestUtils.addMinutes;
+import static com.montrosesoftware.repositories.TestUtils.saveUsersData;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -22,11 +23,6 @@ public class DbAssistOrderByGroupByTest extends BaseTest {
     @Autowired
     private UserRepo uRepo;
 
-    private void saveUsersData(List<User> usersToSave){
-        usersToSave.forEach(uRepo::save);
-        uRepo.clearPersistenceContext();
-    }
-
     private static final Date ExampleDate = DateUtils.getUtc("2012-06-12 08:10:15");
     private static final double Delta = 1e-15;
 
@@ -34,7 +30,7 @@ public class DbAssistOrderByGroupByTest extends BaseTest {
     public void orderByDateUse(){
         Date date1 = ExampleDate;
         Date date2 = addMinutes(ExampleDate, 10);
-        saveUsersData(new ArrayList<User>(){{
+        saveUsersData(uRepo, new ArrayList<User>(){{
             add(new User(1, "B", date2));
             add(new User(2, "A", date2));
             add(new User(3, "A", date1));
@@ -55,7 +51,7 @@ public class DbAssistOrderByGroupByTest extends BaseTest {
 
     @Test
     public void groupByWithAggregates(){
-        saveUsersData(new ArrayList<User>(){{
+        saveUsersData(uRepo, new ArrayList<User>(){{
             add(new User(1, "Mont", ExampleDate, 14.5, "worker"));
             add(new User(2, "Mont", ExampleDate, 10.1, "worker"));
             add(new User(3, "Rose", ExampleDate, 1.5, "worker"));

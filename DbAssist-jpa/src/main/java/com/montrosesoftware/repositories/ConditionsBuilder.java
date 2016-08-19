@@ -173,15 +173,15 @@ public class ConditionsBuilder {
         return conditionsBuilder;
     }
 
-    public <T extends Comparable<T>> void inRangeCondition(String attributeName, T leftBound, T rightBound){
-        this.and(
+    public <T extends Comparable<T>> Condition inRangeCondition(String attributeName, T leftBound, T rightBound){
+        return this.and(
                 this.greaterThanOrEqualTo(attributeName, leftBound),
                 this.lessThanOrEqualTo(attributeName, rightBound)
         );
     }
 
-    public <T extends Comparable<T>> void inRangeExclusiveCondition(String attributeName, T leftBound, T rightBound){
-        this.and(
+    public <T extends Comparable<T>> Condition inRangeExclusiveCondition(String attributeName, T leftBound, T rightBound){
+        return this.and(
                 this.greaterThan(attributeName, leftBound),
                 this.lessThan(attributeName, rightBound)
         );

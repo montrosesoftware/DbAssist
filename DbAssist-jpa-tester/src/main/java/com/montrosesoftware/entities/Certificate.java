@@ -22,6 +22,10 @@ public class Certificate {
     @ManyToMany(mappedBy="certificates")
     private List<User> users = new ArrayList<>();
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "provider_id")
+    private Provider provider;
+
     public Certificate () {}
 
     public Certificate(int id, String name, Date expirationDate) {
@@ -69,6 +73,16 @@ public class Certificate {
         }
     }
 
+    public Provider getProvider() {
+        return provider;
+    }
+
+    public void setProvider(Provider provider) {
+        this.provider = provider;
+        if(!provider.getCertificates().contains(this))
+            provider.getCertificates().add(this);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -79,7 +93,6 @@ public class Certificate {
         if (id != that.id) return false;
         if (!name.equals(that.name)) return false;
         return expirationDate != null ? expirationDate.equals(that.expirationDate) : that.expirationDate == null;
-
     }
 
     @Override

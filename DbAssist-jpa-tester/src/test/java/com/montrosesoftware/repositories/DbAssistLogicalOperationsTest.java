@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.*;
 
+import static com.montrosesoftware.repositories.TestUtils.saveUsersData;
 import static org.apache.commons.lang3.time.DateUtils.addMinutes;
 import static org.junit.Assert.*;
 
@@ -15,11 +16,6 @@ public class DbAssistLogicalOperationsTest extends BaseTest {
 
     @Autowired
     private UserRepo uRepo;
-
-    private void saveUsersData(List<User> usersToSave){
-        usersToSave.forEach(uRepo::save);
-        uRepo.clearPersistenceContext();
-    }
 
     private static final Date ExampleDate = DateUtils.getUtc("2012-06-12 08:10:15");
 
@@ -59,7 +55,7 @@ public class DbAssistLogicalOperationsTest extends BaseTest {
         List<User> users = new ArrayList<>();
         for(int i=0; i<5; i++)
             users.add(new User(i + 1, names.get(i), ExampleDate));
-        saveUsersData(users);
+        saveUsersData(uRepo, users);
 
         // WHERE id >= 1 AND id <= 2 OR name = "C"
         ConditionsBuilder c = new ConditionsBuilder();
@@ -79,7 +75,7 @@ public class DbAssistLogicalOperationsTest extends BaseTest {
         Date date2 = addMinutes(ExampleDate, 10);
         Date date3 = addMinutes(ExampleDate, 20);
         Date date4 = addMinutes(ExampleDate, 30);
-        saveUsersData(new ArrayList<User>(){{
+        saveUsersData(uRepo, new ArrayList<User>(){{
             add(new User(1, "User 1", date1));
             add(new User(2, "User 2", date2));
             add(new User(3, "User 3", date3));
