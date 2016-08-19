@@ -27,8 +27,6 @@ public class UtcTimestampType extends AbstractSingleColumnStandardBasicType<Date
 
     private static final long serialVersionUID = 1L;
 
-    public static final UtcTimestampType INSTANCE = new UtcTimestampType();
-
     public static class UtcTimestampTypeDescriptor extends TimestampTypeDescriptor {
 
         private static final long serialVersionUID = 1L;
