@@ -1,7 +1,5 @@
 package com.montrosesoftware.types;
 
-import com.montrosesoftware.DateUtils;
-
 import org.hibernate.HibernateException;
 import org.hibernate.dialect.Dialect;
 import org.hibernate.engine.spi.SessionImplementor;
@@ -28,15 +26,13 @@ public class UtcTimestampType extends AbstractSingleColumnStandardBasicType<Date
 
     private static final long serialVersionUID = 1L;
 
-    public static final UtcTimestampType INSTANCE = new UtcTimestampType();
-
     public static class UtcTimestampTypeDescriptor extends TimestampTypeDescriptor {
 
         private static final long serialVersionUID = 1L;
 
         public static final UtcTimestampTypeDescriptor INSTANCE = new UtcTimestampTypeDescriptor();
 
-        private static final TimeZone UTC = DateUtils.UTCTimeZone;
+        private static final TimeZone UTC = TimeZone.getTimeZone("UTC");
 
         @Override
         public <X> ValueBinder<X> getBinder(final JavaTypeDescriptor<X> javaTypeDescriptor) {

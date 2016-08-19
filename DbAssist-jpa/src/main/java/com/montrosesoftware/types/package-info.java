@@ -4,7 +4,7 @@
  */
 
 @TypeDef(name = "UtcTimestampType", defaultForType = Date.class, typeClass = UtcTimestampType.class)
-package com.montrosesoftware.entities;
+package com.montrosesoftware.types;
 
 import com.montrosesoftware.types.UtcTimestampType;
 import org.hibernate.annotations.TypeDef;
