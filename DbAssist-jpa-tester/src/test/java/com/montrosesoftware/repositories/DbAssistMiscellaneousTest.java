@@ -25,7 +25,7 @@ public class DbAssistMiscellaneousTest extends BaseTest {
 
     private static final Date ExampleDate = DateUtils.getUtc("2012-06-12 08:10:15");
 
-    @Test
+    @Test(expected = RuntimeException.class)
     public void conditionsAreNotReusableAfterCallingFind(){
         saveUsersData(new ArrayList<User>(){{
             add(new User(1, "User 1", ExampleDate));
@@ -39,9 +39,8 @@ public class DbAssistMiscellaneousTest extends BaseTest {
         //Conditions can be used only once, after calling find() or findAttribute()
         //we have to create a new instance of Conditions that we want to use
         List<User> results = uRepo.find(conditions);
-        List<User> resultsAgain = uRepo.find(conditions);   //should fail (return null pointer)
         assertNotNull(results);
-        assertNotNull(resultsAgain);                        //TODO remake this test
+        List<User> resultsAgain = uRepo.find(conditions);   //should fail (throw RuntimeException)
     }
 
     @Test

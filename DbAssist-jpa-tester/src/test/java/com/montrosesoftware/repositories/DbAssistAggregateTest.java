@@ -122,7 +122,7 @@ public class DbAssistAggregateTest extends BaseTest {
         assertEquals(sumSalariesAsDouble, 14.5 + 10.1 + 1.5, Delta);
     }
 
-    @Test
+    @Test(expected = RuntimeException.class)
     public void conditionsAreNotReusableAfterCallingAggregate(){
         saveUsersData(new ArrayList<User>(){{
             add(new User(1, "Mont", ExampleDate));
@@ -136,8 +136,7 @@ public class DbAssistAggregateTest extends BaseTest {
         Long count = uRepo.count(c);
         assertEquals(count.longValue(), 2);
 
-        Long countAgain = uRepo.count(c);
-        assertTrue(countAgain == null);
+        Long countAgain = uRepo.count(c);   //should fail and throw RuntimeException
     }
 
     @Test

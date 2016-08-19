@@ -19,10 +19,8 @@ public class ConditionsBuilder {
         R apply(A1 arg1, A2 arg2, A3 arg3);
     }
 
-    private boolean conditionsAlreadyUsed = false;
-
     // Per single join
-    private HashMap<String, ConditionsBuilder> joinConditionsBuilder = new HashMap<>();
+    private HashMap<String, ConditionsBuilder> joinConditionsBuilders = new HashMap<>();
 
     private LinkedList<Condition> whereConditions = new LinkedList<>();
 
@@ -39,9 +37,8 @@ public class ConditionsBuilder {
         this.joinType = joinType;
     }
 
-    protected void clear(){
-        //TODO find a better way to achieve it
-        parameters.clear();
+    public HashMap<String, Object> getParameters() {
+        return parameters;
     }
 
     public Condition equal(String attributeName, String value) {
@@ -166,11 +163,11 @@ public class ConditionsBuilder {
     }
 
     public ConditionsBuilder getJoinConditionsBuilder(String joinAttribute, JoinType joinType) {
-        ConditionsBuilder conditionsBuilder = joinConditionsBuilder.get(joinAttribute);
+        ConditionsBuilder conditionsBuilder = joinConditionsBuilders.get(joinAttribute);
 
         if (conditionsBuilder == null) {
             conditionsBuilder = new ConditionsBuilder(joinAttribute, joinType);
-            joinConditionsBuilder.put(joinAttribute, conditionsBuilder);
+            joinConditionsBuilders.put(joinAttribute, conditionsBuilder);
         }
 
         return conditionsBuilder;
@@ -191,14 +188,17 @@ public class ConditionsBuilder {
     }
 
     public void apply(CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder, Root<?> root) {
+        if(!this.getParameters().isEmpty())
+            throw new RuntimeException("The conditions were already used.");
+
         applyPredicates(getPredicates(criteriaQuery, criteriaBuilder, root), criteriaQuery, criteriaBuilder);
     }
 
     public TypedQuery<?> setParameters(TypedQuery<?> typedQuery) {
         parameters.forEach(typedQuery::setParameter);
 
-        if (joinConditionsBuilder != null && !joinConditionsBuilder.isEmpty()) {
-            joinConditionsBuilder.forEach((joinAttribute, joinCondition) -> joinCondition.setParameters(typedQuery));
+        if (joinConditionsBuilders != null && !joinConditionsBuilders.isEmpty()) {
+            joinConditionsBuilders.forEach((joinAttribute, joinCondition) -> joinCondition.setParameters(typedQuery));
         }
 
         return typedQuery;
@@ -209,8 +209,8 @@ public class ConditionsBuilder {
 
         whereConditions.forEach(condition -> predicates.add(condition.apply(cb, root)));
 
-        if (joinConditionsBuilder != null && !joinConditionsBuilder.isEmpty()) {
-            joinConditionsBuilder.forEach((joinAttribute, joinCondition) -> {
+        if (joinConditionsBuilders != null && !joinConditionsBuilders.isEmpty()) {
+            joinConditionsBuilders.forEach((joinAttribute, joinCondition) -> {
                 From<?, ?> from = getFrom(root, joinCondition);
                 predicates.addAll(joinCondition.getPredicates(query, cb, from));
             });
@@ -266,11 +266,5 @@ public class ConditionsBuilder {
         return fetchParent;
     }
 
-    public boolean isConditionsAlreadyUsed() {
-        return conditionsAlreadyUsed;
-    }
 
-    public void setConditionsAlreadyUsed() {
-        this.conditionsAlreadyUsed = true;
-    }
 }
