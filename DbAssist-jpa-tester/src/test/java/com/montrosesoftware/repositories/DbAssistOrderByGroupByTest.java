@@ -40,7 +40,7 @@ public class DbAssistOrderByGroupByTest extends BaseTest {
             add(new User(3, "A", date1));
         }});
 
-        Conditions c = new Conditions();
+        ConditionsBuilder c = new ConditionsBuilder();
         AbstractRepository.OrderBy<User> userOrderBy = (builder, root) -> Arrays.asList(
                 builder.asc(root.get("name")),
                 builder.desc(root.get("createdAt"))
@@ -68,7 +68,7 @@ public class DbAssistOrderByGroupByTest extends BaseTest {
                 builder.count(root.get("id"))
         );
 
-        Conditions conditions = new Conditions();
+        ConditionsBuilder conditions = new ConditionsBuilder();
         conditions.equal("category", "worker");
 
         AbstractRepository.GroupBy<User> groupBy = (root) -> Arrays.asList(

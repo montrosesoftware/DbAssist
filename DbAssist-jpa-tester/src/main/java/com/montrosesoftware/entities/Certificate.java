@@ -68,4 +68,25 @@ public class Certificate {
             user.getCertificates().add(this);
         }
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Certificate that = (Certificate) o;
+
+        if (id != that.id) return false;
+        if (!name.equals(that.name)) return false;
+        return expirationDate != null ? expirationDate.equals(that.expirationDate) : that.expirationDate == null;
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = id;
+        result = 31 * result + name.hashCode();
+        result = 31 * result + (expirationDate != null ? expirationDate.hashCode() : 0);
+        return result;
+    }
 }

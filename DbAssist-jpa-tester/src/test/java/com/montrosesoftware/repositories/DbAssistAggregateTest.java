@@ -35,17 +35,17 @@ public class DbAssistAggregateTest extends BaseTest {
         }});
 
         // SELECT COUNT(id) FROM users WHERE name = 'Mont'
-        Conditions cA = new Conditions();
+        ConditionsBuilder cA = new ConditionsBuilder();
         cA.equal("name", "Mont");
         Long countA = uRepo.count(cA);
         assertEquals(countA.longValue(), 2);
 
-        Conditions cB = new Conditions();
+        ConditionsBuilder cB = new ConditionsBuilder();
         cB.equal("name", "Rose");
         Long countB = uRepo.count(cB);
         assertEquals(countB.longValue(), 1);
 
-        Conditions cC = new Conditions();
+        ConditionsBuilder cC = new ConditionsBuilder();
         cC.equal("name", "Whatever");
         Long countC = uRepo.count(cC);
         assertEquals(countC.longValue(), 0);
@@ -53,7 +53,7 @@ public class DbAssistAggregateTest extends BaseTest {
 
     @Test
     public void countOnEmptyTable(){
-        Conditions c = new Conditions();
+        ConditionsBuilder c = new ConditionsBuilder();
         Long count = uRepo.count(c);
         assertEquals(count.longValue(), 0);
     }
@@ -69,17 +69,17 @@ public class DbAssistAggregateTest extends BaseTest {
         }});
 
         // SELECT SUM(id) FROM users WHERE created_at = date
-        Conditions cA = new Conditions();
+        ConditionsBuilder cA = new ConditionsBuilder();
         cA.equal("createdAt", date);
         Integer sum = uRepo.sum(cA, "id");
         assertEquals(sum.intValue(), 20);
 
-        Conditions cB = new Conditions();
+        ConditionsBuilder cB = new ConditionsBuilder();
         cB.equal("createdAt", date);
         Integer min = uRepo.min(cB, "id");
         assertEquals(min.intValue(), 7);
 
-        Conditions cC = new Conditions();
+        ConditionsBuilder cC = new ConditionsBuilder();
         cC.equal("createdAt", date);
         Integer max = uRepo.max(cC, "id");
         assertEquals(max.intValue(), 13);
@@ -87,7 +87,7 @@ public class DbAssistAggregateTest extends BaseTest {
 
     @Test
     public void minOnEmptyTable(){
-        Integer min = uRepo.min(new Conditions(), "id");
+        Integer min = uRepo.min(new ConditionsBuilder(), "id");
         assertTrue(min == null);
     }
 
@@ -102,23 +102,23 @@ public class DbAssistAggregateTest extends BaseTest {
         }});
 
         //id is of type: int
-        Integer sumIds = uRepo.sum(new Conditions(), "id");
+        Integer sumIds = uRepo.sum(new ConditionsBuilder(), "id");
         assertEquals(sumIds.intValue(), 6);
 
-        Long sumIdsLong = uRepo.sumAsLong(new Conditions(), "id");
+        Long sumIdsLong = uRepo.sumAsLong(new ConditionsBuilder(), "id");
         assertEquals(sumIdsLong.longValue(), 6);
 
-        Double sumIdsDouble = uRepo.sumAsDouble(new Conditions(), "id");
+        Double sumIdsDouble = uRepo.sumAsDouble(new ConditionsBuilder(), "id");
         assertEquals(sumIdsDouble, 6.0, Delta);
 
         //salary is of type: double
-        Double sumSalaries = uRepo.sum(new Conditions(), "salary");
+        Double sumSalaries = uRepo.sum(new ConditionsBuilder(), "salary");
         assertEquals(sumSalaries, 14.5 + 10.1 + 1.5, Delta);
 
-        Long sumSalariesAsLong = uRepo.sumAsLong(new Conditions(), "salary");
+        Long sumSalariesAsLong = uRepo.sumAsLong(new ConditionsBuilder(), "salary");
         assertEquals(sumSalariesAsLong.longValue(), 26);
 
-        Double sumSalariesAsDouble = uRepo.sumAsDouble(new Conditions(), "salary");
+        Double sumSalariesAsDouble = uRepo.sumAsDouble(new ConditionsBuilder(), "salary");
         assertEquals(sumSalariesAsDouble, 14.5 + 10.1 + 1.5, Delta);
     }
 
@@ -131,7 +131,7 @@ public class DbAssistAggregateTest extends BaseTest {
         }});
 
         // SELECT COUNT(id) FROM users WHERE name = 'Mont'
-        Conditions c = new Conditions();
+        ConditionsBuilder c = new ConditionsBuilder();
         c.equal("name", "Mont");
         Long count = uRepo.count(c);
         assertEquals(count.longValue(), 2);
@@ -148,13 +148,13 @@ public class DbAssistAggregateTest extends BaseTest {
             add(new User(3, "Montrose", ExampleDate));
         }});
 
-        Double avg = uRepo.avg(new Conditions(), "id");
+        Double avg = uRepo.avg(new ConditionsBuilder(), "id");
         assertEquals(avg, 2.0, Delta);
     }
 
     @Test
     public void avgOnEmptyTable(){
-        Double avg = uRepo.avg(new Conditions(), "id");
+        Double avg = uRepo.avg(new ConditionsBuilder(), "id");
         assertTrue(avg == null);
     }
 
@@ -169,16 +169,16 @@ public class DbAssistAggregateTest extends BaseTest {
             add(new User(3, "CC", date3));
         }});
 
-        Date dateMinRead = uRepo.least(new Conditions(), "createdAt");
+        Date dateMinRead = uRepo.least(new ConditionsBuilder(), "createdAt");
         assertTrue(dateMinRead.compareTo(date2) == 0);
 
-        Date dateMaxRead = uRepo.greatest(new Conditions(), "createdAt");
+        Date dateMaxRead = uRepo.greatest(new ConditionsBuilder(), "createdAt");
         assertTrue(dateMaxRead.compareTo(date3) == 0);
 
-        String nameMinRead = uRepo.least(new Conditions(), "name");
+        String nameMinRead = uRepo.least(new ConditionsBuilder(), "name");
         assertEquals(nameMinRead, "AA");
 
-        String nameMaxRead = uRepo.greatest(new Conditions(), "name");
+        String nameMaxRead = uRepo.greatest(new ConditionsBuilder(), "name");
         assertEquals(nameMaxRead, "CC");
     }
 }

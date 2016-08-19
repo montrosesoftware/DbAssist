@@ -85,12 +85,12 @@ public class UserRepo extends AbstractRepository<User> {
         }
     }
 
-    public User getUsingConditions(Date utcDate){
+    public User getUsingConditionsBuilder(Date utcDate){
 
-        Conditions conditions = new Conditions();
-        conditions.equal("createdAt", utcDate);
+        ConditionsBuilder conditionsBuilder = new ConditionsBuilder();
+        conditionsBuilder.equal("createdAt", utcDate);
 
-        List<User> results = find(conditions, null, null);
+        List<User> results = find(conditionsBuilder, null, null);
 
         if (results.isEmpty()){
             return null;

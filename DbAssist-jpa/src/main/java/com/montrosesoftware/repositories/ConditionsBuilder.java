@@ -8,7 +8,7 @@ import javax.persistence.metamodel.Attribute;
 import java.time.LocalDate;
 import java.util.*;
 
-public class Conditions {
+public class ConditionsBuilder {
 
     public interface Condition {
         Predicate apply(CriteriaBuilder cb, From<?, ?> root);
@@ -22,7 +22,7 @@ public class Conditions {
     private boolean conditionsAlreadyUsed = false;
 
     // Per single join
-    private HashMap<String, Conditions> joinConditions = new HashMap<>();
+    private HashMap<String, ConditionsBuilder> joinConditionsBuilder = new HashMap<>();
 
     private LinkedList<Condition> whereConditions = new LinkedList<>();
 
@@ -32,11 +32,16 @@ public class Conditions {
 
     private JoinType joinType;
 
-    public Conditions() {}
+    public ConditionsBuilder() {}
 
-    private Conditions(String joinAttribute, JoinType joinType) {
+    private ConditionsBuilder(String joinAttribute, JoinType joinType) {
         this.joinAttribute = joinAttribute;
         this.joinType = joinType;
+    }
+
+    protected void clear(){
+        //TODO find a better way to achieve it
+        parameters.clear();
     }
 
     public Condition equal(String attributeName, String value) {
@@ -99,50 +104,50 @@ public class Conditions {
         return or(leftOperandCondition, null, rightOperandCondition);
     }
 
-    public Condition or(Condition leftOperandCondition, Conditions rightOperandJoinConditions, Condition rightOperandCondition) {
-        return or(this, leftOperandCondition, rightOperandJoinConditions, rightOperandCondition);
+    public Condition or(Condition leftOperandCondition, ConditionsBuilder rightOperandJoinConditionsBuilder, Condition rightOperandCondition) {
+        return or(this, leftOperandCondition, rightOperandJoinConditionsBuilder, rightOperandCondition);
     }
 
-    public Condition or(Conditions leftOperandJoinConditions, Condition leftOperandCondition, Conditions rightOperandJoinConditions, Condition rightOperandCondition) {
-        return applyLogicalOperator(leftOperandJoinConditions, leftOperandCondition, rightOperandJoinConditions, rightOperandCondition, (cb, p1, p2) -> cb.or(p1, p2));
+    public Condition or(ConditionsBuilder leftOperandJoinConditionsBuilder, Condition leftOperandCondition, ConditionsBuilder rightOperandJoinConditionsBuilder, Condition rightOperandCondition) {
+        return applyLogicalOperator(leftOperandJoinConditionsBuilder, leftOperandCondition, rightOperandJoinConditionsBuilder, rightOperandCondition, (cb, p1, p2) -> cb.or(p1, p2));
     }
 
     public Condition and(Condition leftOperandCondition, Condition rightOperandCondition) {
         return and(leftOperandCondition, null, rightOperandCondition);
     }
 
-    public Condition and(Condition leftOperandCondition, Conditions rightOperandJoinConditions, Condition rightOperandCondition) {
-        return applyLogicalOperator(this, leftOperandCondition, rightOperandJoinConditions, rightOperandCondition, (cb, p1, p2) -> cb.and(p1, p2));
+    public Condition and(Condition leftOperandCondition, ConditionsBuilder rightOperandJoinConditionsBuilder, Condition rightOperandCondition) {
+        return applyLogicalOperator(this, leftOperandCondition, rightOperandJoinConditionsBuilder, rightOperandCondition, (cb, p1, p2) -> cb.and(p1, p2));
     }
 
-    private Condition applyLogicalOperator(Conditions leftOperandJoinConditions,
+    private Condition applyLogicalOperator(ConditionsBuilder leftOperandJoinConditionsBuilder,
                                            Condition leftOperandCondition,
-                                           Conditions rightOperandJoinConditions,
+                                           ConditionsBuilder rightOperandJoinConditionsBuilder,
                                            Condition rightOperandCondition,
                                            ThreeArgsFunction<CriteriaBuilder, Predicate, Predicate, Predicate> logicalOperator) {
         if (leftOperandCondition == null || rightOperandCondition == null) {
             return null;
         }
 
-        if (leftOperandJoinConditions != null && leftOperandJoinConditions.whereConditions.contains(leftOperandCondition)) {
-            leftOperandJoinConditions.whereConditions.remove(leftOperandCondition);
+        if (leftOperandJoinConditionsBuilder != null && leftOperandJoinConditionsBuilder.whereConditions.contains(leftOperandCondition)) {
+            leftOperandJoinConditionsBuilder.whereConditions.remove(leftOperandCondition);
         }
 
-        if (leftOperandJoinConditions != null && leftOperandJoinConditions.whereConditions.contains(rightOperandCondition)) {
-            leftOperandJoinConditions.whereConditions.remove(rightOperandCondition);
+        if (leftOperandJoinConditionsBuilder != null && leftOperandJoinConditionsBuilder.whereConditions.contains(rightOperandCondition)) {
+            leftOperandJoinConditionsBuilder.whereConditions.remove(rightOperandCondition);
         }
 
-        if (rightOperandJoinConditions != null && rightOperandJoinConditions.whereConditions.contains(leftOperandCondition)) {
-            rightOperandJoinConditions.whereConditions.remove(leftOperandCondition);
+        if (rightOperandJoinConditionsBuilder != null && rightOperandJoinConditionsBuilder.whereConditions.contains(leftOperandCondition)) {
+            rightOperandJoinConditionsBuilder.whereConditions.remove(leftOperandCondition);
         }
 
-        if (rightOperandJoinConditions != null && rightOperandJoinConditions.whereConditions.contains(rightOperandCondition)) {
-            rightOperandJoinConditions.whereConditions.remove(rightOperandCondition);
+        if (rightOperandJoinConditionsBuilder != null && rightOperandJoinConditionsBuilder.whereConditions.contains(rightOperandCondition)) {
+            rightOperandJoinConditionsBuilder.whereConditions.remove(rightOperandCondition);
         }
 
         Condition condition = (cb, root) -> {
-            From<?, ?> leftFrom = getFrom(root, leftOperandJoinConditions);
-            From<?, ?> rightFrom = getFrom(root, rightOperandJoinConditions);
+            From<?, ?> leftFrom = getFrom(root, leftOperandJoinConditionsBuilder);
+            From<?, ?> rightFrom = getFrom(root, rightOperandJoinConditionsBuilder);
 
             return logicalOperator.apply(cb, leftOperandCondition.apply(cb, leftFrom), rightOperandCondition.apply(cb, rightFrom));
         };
@@ -160,25 +165,25 @@ public class Conditions {
         return condition;
     }
 
-    public Conditions getJoinConditions(String joinAttribute, JoinType joinType) {
-        Conditions conditions = joinConditions.get(joinAttribute);
+    public ConditionsBuilder getJoinConditionsBuilder(String joinAttribute, JoinType joinType) {
+        ConditionsBuilder conditionsBuilder = joinConditionsBuilder.get(joinAttribute);
 
-        if (conditions == null) {
-            conditions = new Conditions(joinAttribute, joinType);
-            joinConditions.put(joinAttribute, conditions);
+        if (conditionsBuilder == null) {
+            conditionsBuilder = new ConditionsBuilder(joinAttribute, joinType);
+            joinConditionsBuilder.put(joinAttribute, conditionsBuilder);
         }
 
-        return conditions;
+        return conditionsBuilder;
     }
 
-    public <T extends Comparable<T>> void inRangeConditions(String attributeName, T leftBound, T rightBound){
+    public <T extends Comparable<T>> void inRangeCondition(String attributeName, T leftBound, T rightBound){
         this.and(
                 this.greaterThanOrEqualTo(attributeName, leftBound),
                 this.lessThanOrEqualTo(attributeName, rightBound)
         );
     }
 
-    public <T extends Comparable<T>> void inRangeExclusiveConditions(String attributeName, T leftBound, T rightBound){
+    public <T extends Comparable<T>> void inRangeExclusiveCondition(String attributeName, T leftBound, T rightBound){
         this.and(
                 this.greaterThan(attributeName, leftBound),
                 this.lessThan(attributeName, rightBound)
@@ -192,8 +197,8 @@ public class Conditions {
     public TypedQuery<?> setParameters(TypedQuery<?> typedQuery) {
         parameters.forEach(typedQuery::setParameter);
 
-        if (joinConditions != null && !joinConditions.isEmpty()) {
-            joinConditions.forEach((joinAttribute, joinCondition) -> joinCondition.setParameters(typedQuery));
+        if (joinConditionsBuilder != null && !joinConditionsBuilder.isEmpty()) {
+            joinConditionsBuilder.forEach((joinAttribute, joinCondition) -> joinCondition.setParameters(typedQuery));
         }
 
         return typedQuery;
@@ -204,8 +209,8 @@ public class Conditions {
 
         whereConditions.forEach(condition -> predicates.add(condition.apply(cb, root)));
 
-        if (joinConditions != null && !joinConditions.isEmpty()) {
-            joinConditions.forEach((joinAttribute, joinCondition) -> {
+        if (joinConditionsBuilder != null && !joinConditionsBuilder.isEmpty()) {
+            joinConditionsBuilder.forEach((joinAttribute, joinCondition) -> {
                 From<?, ?> from = getFrom(root, joinCondition);
                 predicates.addAll(joinCondition.getPredicates(query, cb, from));
             });
@@ -229,7 +234,7 @@ public class Conditions {
         return "param" + UUID.randomUUID().toString().replaceAll("-", "").replaceAll("\\d", "");
     }
 
-    private From<?, ?> getFrom(From<?, ?> from, Conditions joinCondition) {
+    private From<?, ?> getFrom(From<?, ?> from, ConditionsBuilder joinCondition) {
         if (joinCondition == null || joinCondition == this) {
             return from;
         }
@@ -243,7 +248,7 @@ public class Conditions {
         return (From<?, ?>) fetchParent;
     }
 
-    private FetchParent<?, ?> checkExisting(Conditions joinCondition, FetchParent<?, ?> fetchParent, Set<?> joinsOrFetches) {
+    private FetchParent<?, ?> checkExisting(ConditionsBuilder joinCondition, FetchParent<?, ?> fetchParent, Set<?> joinsOrFetches) {
         if (!joinsOrFetches.isEmpty()) {
             LinkedHashSet<?> existingSingularAttributes = (LinkedHashSet<?>) joinsOrFetches;
             Iterator<?> itor = existingSingularAttributes.iterator();

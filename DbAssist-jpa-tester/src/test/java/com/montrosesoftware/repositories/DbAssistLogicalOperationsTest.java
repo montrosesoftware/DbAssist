@@ -24,7 +24,7 @@ public class DbAssistLogicalOperationsTest extends BaseTest {
     private static final Date ExampleDate = DateUtils.getUtc("2012-06-12 08:10:15");
 
     @Test
-    public void logicalAndConditionsTest(){
+    public void logicalAndConditionsBuilderTest(){
         //prepare and insert user
         Date date = DateUtils.getUtc("2016-06-12 08:10:15");
         Date dateBefore = DateUtils.getUtc("2015-02-12 08:10:15");
@@ -34,7 +34,7 @@ public class DbAssistLogicalOperationsTest extends BaseTest {
         uRepo.clearPersistenceContext();
 
         // WHERE created_at > dateBefore AND created_at < dateAfter
-        Conditions cA = new Conditions();
+        ConditionsBuilder cA = new ConditionsBuilder();
         cA.and(
                 cA.greaterThan("createdAt", dateBefore),
                 cA.lessThan("createdAt", dateAfter)
@@ -43,7 +43,7 @@ public class DbAssistLogicalOperationsTest extends BaseTest {
         assertEquals(1, resultsA.size());
 
         // WHERE created_at > dateAfter AND created_at < dateBefore
-        Conditions cB = new Conditions();
+        ConditionsBuilder cB = new ConditionsBuilder();
         cB.and(
                 cB.greaterThan("createdAt", dateAfter),
                 cB.lessThan("createdAt", dateBefore)
@@ -62,7 +62,7 @@ public class DbAssistLogicalOperationsTest extends BaseTest {
         saveUsersData(users);
 
         // WHERE id >= 1 AND id <= 2 OR name = "C"
-        Conditions c = new Conditions();
+        ConditionsBuilder c = new ConditionsBuilder();
         c.or(
                 c.and(c.greaterThanOrEqualTo("id", 1), c.lessThanOrEqualTo("id", 2)),
                 c.equal("name", names.get(4))
@@ -87,8 +87,8 @@ public class DbAssistLogicalOperationsTest extends BaseTest {
         }});
 
         // WHERE created_at >= ? AND created_at <= ?
-        Conditions conditionsA = new Conditions();
-        conditionsA.inRangeConditions("createdAt", date2, addMinutes(date3, 1));
+        ConditionsBuilder conditionsA = new ConditionsBuilder();
+        conditionsA.inRangeCondition("createdAt", date2, addMinutes(date3, 1));
         List<User> resultsA = uRepo.find(conditionsA);
         assertEquals(2, resultsA.size());
         assertTrue(resultsA.get(0).getCreatedAt().compareTo(date2) == 0);
@@ -96,22 +96,22 @@ public class DbAssistLogicalOperationsTest extends BaseTest {
 
         //we cannot reuse the previous conditions (find(...) was already executed)
         // WHERE (created_at >= ? AND created_at <= ?) AND (id >= ? AND id <= ?)
-        Conditions conditionsB = new Conditions();
-        conditionsB.inRangeConditions("createdAt", date2, addMinutes(date3, 1));
-        conditionsB.inRangeConditions("id", 3, 4);
+        ConditionsBuilder conditionsB = new ConditionsBuilder();
+        conditionsB.inRangeCondition("createdAt", date2, addMinutes(date3, 1));
+        conditionsB.inRangeCondition("id", 3, 4);
         List<User> resultsB = uRepo.find(conditionsB);
         assertEquals(1, resultsB.size());
         assertEquals(3, resultsB.get(0).getId());
 
         //incorrect boundaries
-        Conditions conditionsC = new Conditions();
-        conditionsC.inRangeConditions("createdAt", date3, date2);
+        ConditionsBuilder conditionsC = new ConditionsBuilder();
+        conditionsC.inRangeCondition("createdAt", date3, date2);
         List<User> resultsC = uRepo.find(conditionsC);
         assertEquals(0,resultsC.size());
 
         // WHERE (id > 1 AND id < 3)
-        Conditions conditionsD = new Conditions();
-        conditionsD.inRangeExclusiveConditions("id",1,3);
+        ConditionsBuilder conditionsD = new ConditionsBuilder();
+        conditionsD.inRangeExclusiveCondition("id",1,3);
         List<User> resultsD = uRepo.find(conditionsD);
         assertEquals(1, resultsD.size());
         assertEquals(2, resultsD.get(0).getId());

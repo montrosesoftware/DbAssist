@@ -5,7 +5,7 @@ import com.montrosesoftware.config.BaseTest;
 import com.montrosesoftware.entities.Certificate;
 import com.montrosesoftware.entities.User;
 import com.montrosesoftware.repositories.CertificateRepo;
-import com.montrosesoftware.repositories.Conditions;
+import com.montrosesoftware.repositories.ConditionsBuilder;
 import com.montrosesoftware.repositories.UserRepo;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -104,7 +104,7 @@ public class DbAssistDateShiftTest extends BaseTest{
         uRepo.saveAsPlainSQL(userToInsert);
 
         //read
-        User userReadUsingSpecs = uRepo.getUsingConditions(expectedDate);
+        User userReadUsingSpecs = uRepo.getUsingConditionsBuilder(expectedDate);
 
         assertNotNull(userReadUsingSpecs);
         assertEquals("Names are not the same", userToInsert.getName(), userReadUsingSpecs.getName());
