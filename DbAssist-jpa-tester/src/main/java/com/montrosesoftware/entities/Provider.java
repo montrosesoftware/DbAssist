@@ -21,6 +21,10 @@ public class Provider {
     @OneToMany(fetch=FetchType.LAZY, mappedBy = "provider")
     private List<Certificate> certificates = new ArrayList<>();
 
+    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JoinColumn(name = "country_id")
+    private Country country;
+
     public Provider(){}
 
     public Provider(int id, String name, boolean active) {
@@ -66,5 +70,15 @@ public class Provider {
         if(certificate.getProvider() != this){
             certificate.setProvider(this);
         }
+    }
+
+    public Country getCountry() {
+        return country;
+    }
+
+    public void setCountry(Country country) {
+        this.country = country;
+        if(!country.getProviders().contains(this))
+            country.getProviders().add(this);
     }
 }

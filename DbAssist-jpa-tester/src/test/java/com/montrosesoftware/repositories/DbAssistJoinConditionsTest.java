@@ -3,6 +3,7 @@ package com.montrosesoftware.repositories;
 import com.montrosesoftware.DateUtils;
 import com.montrosesoftware.config.BaseTest;
 import com.montrosesoftware.entities.Certificate;
+import com.montrosesoftware.entities.Country;
 import com.montrosesoftware.entities.Provider;
 import com.montrosesoftware.entities.User;
 import org.junit.Test;
@@ -178,8 +179,7 @@ public class DbAssistJoinConditionsTest extends BaseTest {
     }*/
 
     @Test
-    public void multipleJoinsConditionBuildersUse(){
-        //TODO test is not finished
+    public void joinTestChainOfThreeEntities(){
         //Certificate providers and certificates
         Provider providerA = new Provider(1, "Provider 1", true);
         Provider providerB = new Provider(2, "Provider 2", false);
@@ -212,23 +212,77 @@ public class DbAssistJoinConditionsTest extends BaseTest {
         //complex example
         ConditionsBuilder builderUsers = new ConditionsBuilder();
         ConditionsBuilder.Condition uIdLessThan = builderUsers.lessThan("id", 15);
-      //  ConditionsBuilder.Condition uIdGreaterThanOrEqual = builderUsers.greaterThanOrEqualTo("id", 0);
 
         ConditionsBuilder builderCertificates = builderUsers.getJoinConditionsBuilder("certificates", JoinType.LEFT);
-//        ConditionsBuilder.Condition certIdLessThan = builderCertificates.lessThan("id", 5);
-//        ConditionsBuilder.Condition certIdGreaterThanOrEqual = builderCertificates.greaterThanOrEqualTo("id", 0);
 
         ConditionsBuilder builderProviders = builderCertificates.getJoinConditionsBuilder("provider", JoinType.LEFT);
         ConditionsBuilder.Condition provNameA = builderProviders.equal("name", "Provider 1");
-        //ConditionsBuilder.Condition provNameB = builderProviders.equal("name", "Provider 2");
 
-        // TODO remake it
         builderUsers.or(
                 provNameA,
                 uIdLessThan
         );
 
-        //TODO change the condition to boolean active!
+        List<User> usersReadMultipleJoin = uRepo.find(builderUsers);
+        usersReadMultipleJoin.size();
+    }
+
+    @Test
+    public void joinTestChainOfFourEntities(){
+        //Countries
+        Country countryA = new Country(1, "Poland");
+        Country countryB = new Country(2, "USA");
+
+        //Certificate providers and certificates
+        Provider providerA = new Provider(1, "Provider 1", true);
+        Provider providerB = new Provider(2, "Provider 2", false);
+        providerA.setCountry(countryA);
+        providerB.setCountry(countryB);
+
+        //certificates
+        Date certDateA = DateUtils.getUtc("2016-06-12 14:54:15");
+        Certificate certA = new Certificate(1, "BHP", certDateA);
+        certA.setProvider(providerA);
+
+        Date certDateB = DateUtils.getUtc("2014-03-12 11:11:15");
+        Certificate certB = new Certificate(2, "Java Cert", certDateB);
+        certB.setProvider(providerB);
+
+        //prepare users
+        Date dateA = DateUtils.getUtc("2016-06-12 07:10:15");
+        Date dateB = DateUtils.getUtc("2010-06-12 08:10:15");
+        User userA = new User(1, "Rose", dateA);
+        User userB = new User(2, "Mont", dateB);
+        User userC = new User(3, "Tom", dateB);
+        userA.addCertificate(certA);
+        userA.addCertificate(certB);
+        userB.addCertificate(certB);
+        saveUsersData(uRepo, Arrays.asList(userA, userB, userC));
+
+        //read with no conditions
+        List<Provider> providersRead = pRepo.find(new ConditionsBuilder());
+        List<User> usersRead = uRepo.find(new ConditionsBuilder());
+        assertEquals(providersRead.size(), 2);
+        assertEquals(usersRead.size(), 3);
+
+        //complex example
+        ConditionsBuilder builderUsers = new ConditionsBuilder();
+        ConditionsBuilder.Condition userIdLessThan = builderUsers.lessThan("id", 15);
+
+        ConditionsBuilder builderCertificates = builderUsers.getJoinConditionsBuilder("certificates", JoinType.LEFT);
+
+        ConditionsBuilder builderProviders = builderCertificates.getJoinConditionsBuilder("provider", JoinType.LEFT);
+        ConditionsBuilder.Condition provNameA = builderProviders.equal("name", "Provider 1");
+
+        ConditionsBuilder builderCountries = builderProviders.getJoinConditionsBuilder("country", JoinType.LEFT);
+        ConditionsBuilder.Condition countryIdLessThan = builderCountries.lessThan("id", 25);
+
+        // WHERE
+        builderUsers.or(
+                userIdLessThan,
+                countryIdLessThan
+        );
+
         List<User> usersReadMultipleJoin = uRepo.find(builderUsers);
         usersReadMultipleJoin.size();
     }

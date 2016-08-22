@@ -9,5 +9,5 @@
     <include file="0001_addAdditionalColumnsUsers.xml" relativeToChangelogFile="true"/>
     <include file="0002_addColumnCertificateProvider.xml" relativeToChangelogFile="true"/>
     <include file="0003_createTableCertificateProviders.xml" relativeToChangelogFile="true"/>
-
+    <include file="0004_createTableCountries.xml" relativeToChangelogFile="true"/>
 </databaseChangeLog>
