@@ -10,8 +10,26 @@ import java.util.*;
 
 public class ConditionsBuilder {
 
-    public interface Condition {
+    public interface ApplicableCondition {
         Predicate apply(CriteriaBuilder cb, From<?, ?> root);
+    }
+
+    public class Condition {
+        private ApplicableCondition applicableCondition;
+        private ConditionsBuilder conditionsBuilder;
+
+        public Condition(ConditionsBuilder conditionsBuilder, ApplicableCondition applicableCondition) {
+            this.applicableCondition = applicableCondition;
+            this.conditionsBuilder = conditionsBuilder;
+        }
+
+        public ApplicableCondition getApplicableCondition() {
+            return applicableCondition;
+        }
+
+        public ConditionsBuilder getConditionsBuilder() {
+            return conditionsBuilder;
+        }
     }
 
     @FunctionalInterface
@@ -21,6 +39,12 @@ public class ConditionsBuilder {
 
     // Per single join
     private HashMap<String, ConditionsBuilder> joinConditionsBuilders = new HashMap<>();
+
+    private HashMap<String, ConditionsBuilder> getJoinConditionsBuilders() {
+        return joinConditionsBuilders;
+    }
+
+    private ConditionsBuilder joinParent = null;
 
     private LinkedList<Condition> whereConditions = new LinkedList<>();
 
@@ -37,94 +61,105 @@ public class ConditionsBuilder {
         this.joinType = joinType;
     }
 
+    public ConditionsBuilder getJoinParent() {
+        return joinParent;
+    }
+
+    public void setJoinParent(ConditionsBuilder joinParent) {
+        this.joinParent = joinParent;
+    }
+
     public HashMap<String, Object> getParameters() {
         return parameters;
     }
 
     public Condition equal(String attributeName, String value) {
-        return addToWhereConditionsAndReturn((cb, root) -> cb.equal(root.get(attributeName), getExpression(cb, value, String.class)));
+        return addToWhereConditionsAndReturn(new Condition(this, (cb, root) -> cb.equal(root.get(attributeName), getExpression(cb, value, String.class))));
     }
 
     public Condition equal(String attributeName, Number value) {
-        return addToWhereConditionsAndReturn((cb, root) -> cb.equal(root.get(attributeName), getExpression(cb, value, Number.class)));
+        return addToWhereConditionsAndReturn(new Condition(null, (cb, root) -> cb.equal(root.get(attributeName), getExpression(cb, value, Number.class))));
     }
 
     public Condition equal(String attributeName, Date value) {
-        return addToWhereConditionsAndReturn((cb, root) -> cb.equal(root.get(attributeName), getExpression(cb, value, Date.class)));
+        return addToWhereConditionsAndReturn(new Condition(this, (cb, root) -> cb.equal(root.get(attributeName), getExpression(cb, value, Date.class))));
     }
 
     public Condition equal(String attributeName, LocalDate value) {
-        return addToWhereConditionsAndReturn((cb, root) -> cb.equal(root.get(attributeName), getExpression(cb, value, LocalDate.class)));
+        return addToWhereConditionsAndReturn(new Condition(this, (cb, root) -> cb.equal(root.get(attributeName), getExpression(cb, value, LocalDate.class))));
     }
 
     public <T extends Comparable<T>> Condition greaterThan(String attributeName, T value){
-        return addToWhereConditionsAndReturn((cb, root) -> cb.greaterThan(root.get(attributeName), getExpression(cb, value, (Class<T>)value.getClass())));
+        return addToWhereConditionsAndReturn(new Condition(this, (cb, root) -> cb.greaterThan(root.get(attributeName), getExpression(cb, value, (Class<T>)value.getClass()))));
     }
 
     public <T extends Comparable<T>> Condition greaterThanOrEqualTo(String attributeName, T value){
-        return addToWhereConditionsAndReturn((cb, root) -> cb.greaterThanOrEqualTo(root.get(attributeName), getExpression(cb, value, (Class<T>)value.getClass())));
+        return addToWhereConditionsAndReturn(new Condition(this, (cb, root) -> cb.greaterThanOrEqualTo(root.get(attributeName), getExpression(cb, value, (Class<T>)value.getClass()))));
     }
 
     public <T extends Comparable<T>> Condition lessThan(String attributeName, T value){
-        return addToWhereConditionsAndReturn((cb, root) -> cb.lessThan(root.get(attributeName), getExpression(cb, value, (Class<T>)value.getClass())));
+        return addToWhereConditionsAndReturn(new Condition(this, (cb, root) -> cb.lessThan(root.get(attributeName), getExpression(cb, value, (Class<T>)value.getClass()))));
     }
 
     public <T extends Comparable<T>> Condition lessThanOrEqualTo(String attributeName, T value){
-        return addToWhereConditionsAndReturn((cb, root) -> cb.lessThanOrEqualTo(root.get(attributeName), getExpression(cb, value, (Class<T>)value.getClass())));
+        return addToWhereConditionsAndReturn(new Condition(this, (cb, root) -> cb.lessThanOrEqualTo(root.get(attributeName), getExpression(cb, value, (Class<T>)value.getClass()))));
     }
 
     public <T> Condition in(String attributeName, List<T> values) {
-        return addToWhereConditionsAndReturn((cb, root) -> getInPredicate(attributeName, values, cb, root));
+        return addToWhereConditionsAndReturn(new Condition(this, (cb, root) -> getInPredicate(attributeName, values, cb, root)));
     }
 
     public Condition notIn(String attributeName, List<String> values) {
-        return addToWhereConditionsAndReturn((cb, root) -> getInPredicate(attributeName, values, cb, root).not());
+        return addToWhereConditionsAndReturn(new Condition(this, (cb, root) -> getInPredicate(attributeName, values, cb, root).not()));
     }
 
     public Condition like(String attributeName, String value) {
-        return addToWhereConditionsAndReturn((cb, root) -> cb.like(root.get(attributeName), getExpression(cb, value, String.class)));
+        return addToWhereConditionsAndReturn(new Condition(this, (cb, root) -> cb.like(root.get(attributeName), getExpression(cb, value, String.class))));
     }
 
     public Condition notLike(String attributeName, String value) {
-        return addToWhereConditionsAndReturn((cb, root) -> cb.like(root.get(attributeName), getExpression(cb, value, String.class)).not());
+        return addToWhereConditionsAndReturn(new Condition(this, (cb, root) -> cb.like(root.get(attributeName), getExpression(cb, value, String.class)).not()));
     }
 
     public Condition isNull(String attributeName) {
-        return addToWhereConditionsAndReturn((cb, root) -> root.get(attributeName).isNull());
+        return addToWhereConditionsAndReturn(new Condition(this, (cb, root) -> root.get(attributeName).isNull()));
     }
 
     public Condition isNotNull(String attributeName) {
-        return addToWhereConditionsAndReturn((cb, root) -> root.get(attributeName).isNotNull());
+        return addToWhereConditionsAndReturn(new Condition(this, (cb, root) -> root.get(attributeName).isNotNull()));
     }
 
     public Condition or(Condition leftOperandCondition, Condition rightOperandCondition) {
-        return or(leftOperandCondition, null, rightOperandCondition);
+        return applyLogicalOperator(leftOperandCondition, rightOperandCondition, (cb, p1, p2) -> cb.or(p1, p2));
     }
 
-    public Condition or(Condition leftOperandCondition, ConditionsBuilder rightOperandJoinConditionsBuilder, Condition rightOperandCondition) {
-        return or(this, leftOperandCondition, rightOperandJoinConditionsBuilder, rightOperandCondition);
-    }
-
-    public Condition or(ConditionsBuilder leftOperandJoinConditionsBuilder, Condition leftOperandCondition, ConditionsBuilder rightOperandJoinConditionsBuilder, Condition rightOperandCondition) {
-        return applyLogicalOperator(leftOperandJoinConditionsBuilder, leftOperandCondition, rightOperandJoinConditionsBuilder, rightOperandCondition, (cb, p1, p2) -> cb.or(p1, p2));
-    }
+//    public Condition or(ApplicableCondition leftOperandApplicableCondition, ConditionsBuilder rightOperandJoinConditionsBuilder, ApplicableCondition rightOperandApplicableCondition) {
+//        return or(this, leftOperandApplicableCondition, rightOperandJoinConditionsBuilder, rightOperandApplicableCondition);
+//    }
+//
+//    public Condition or(ConditionsBuilder leftOperandJoinConditionsBuilder, ApplicableCondition leftOperandApplicableCondition, ConditionsBuilder rightOperandJoinConditionsBuilder, ApplicableCondition rightOperandApplicableCondition) {
+//        return applyLogicalOperator(leftOperandJoinConditionsBuilder, leftOperandApplicableCondition, rightOperandJoinConditionsBuilder, rightOperandApplicableCondition, (cb, p1, p2) -> cb.or(p1, p2));
+//    }
 
     public Condition and(Condition leftOperandCondition, Condition rightOperandCondition) {
-        return and(leftOperandCondition, null, rightOperandCondition);
+        return applyLogicalOperator(leftOperandCondition, rightOperandCondition, (cb, p1, p2) -> cb.and(p1, p2));
+
     }
 
-    public Condition and(Condition leftOperandCondition, ConditionsBuilder rightOperandJoinConditionsBuilder, Condition rightOperandCondition) {
-        return applyLogicalOperator(this, leftOperandCondition, rightOperandJoinConditionsBuilder, rightOperandCondition, (cb, p1, p2) -> cb.and(p1, p2));
-    }
+//    public Condition and(ApplicableCondition leftOperandApplicableCondition, ConditionsBuilder rightOperandJoinConditionsBuilder, ApplicableCondition rightOperandApplicableCondition) {
+//        return applyLogicalOperator(this, leftOperandApplicableCondition, rightOperandJoinConditionsBuilder, rightOperandApplicableCondition, (cb, p1, p2) -> cb.and(p1, p2));
+//    }
 
-    private Condition applyLogicalOperator(ConditionsBuilder leftOperandJoinConditionsBuilder,
-                                           Condition leftOperandCondition,
-                                           ConditionsBuilder rightOperandJoinConditionsBuilder,
+    private Condition applyLogicalOperator(Condition leftOperandCondition,
                                            Condition rightOperandCondition,
                                            ThreeArgsFunction<CriteriaBuilder, Predicate, Predicate, Predicate> logicalOperator) {
+
         if (leftOperandCondition == null || rightOperandCondition == null) {
             return null;
         }
+
+        ConditionsBuilder leftOperandJoinConditionsBuilder = leftOperandCondition.getConditionsBuilder();
+        ConditionsBuilder rightOperandJoinConditionsBuilder = rightOperandCondition.getConditionsBuilder();
 
         if (leftOperandJoinConditionsBuilder != null && leftOperandJoinConditionsBuilder.whereConditions.contains(leftOperandCondition)) {
             leftOperandJoinConditionsBuilder.whereConditions.remove(leftOperandCondition);
@@ -142,14 +177,14 @@ public class ConditionsBuilder {
             rightOperandJoinConditionsBuilder.whereConditions.remove(rightOperandCondition);
         }
 
-        Condition condition = (cb, root) -> {
+        ApplicableCondition applicableCondition = (cb, root) -> {
             From<?, ?> leftFrom = getFrom(root, leftOperandJoinConditionsBuilder);
             From<?, ?> rightFrom = getFrom(root, rightOperandJoinConditionsBuilder);
 
-            return logicalOperator.apply(cb, leftOperandCondition.apply(cb, leftFrom), rightOperandCondition.apply(cb, rightFrom));
+            return logicalOperator.apply(cb, leftOperandCondition.getApplicableCondition().apply(cb, leftFrom), rightOperandCondition.getApplicableCondition().apply(cb, rightFrom));
         };
 
-        return addToWhereConditionsAndReturn(condition);
+        return addToWhereConditionsAndReturn(new Condition(this, applicableCondition));
     }
 
     private <T> Predicate getInPredicate(String attributeName, List<T> values, CriteriaBuilder cb, From<?, ?> root) {
@@ -167,6 +202,7 @@ public class ConditionsBuilder {
 
         if (conditionsBuilder == null) {
             conditionsBuilder = new ConditionsBuilder(joinAttribute, joinType);
+            conditionsBuilder.setJoinParent(this);
             joinConditionsBuilders.put(joinAttribute, conditionsBuilder);
         }
 
@@ -207,7 +243,7 @@ public class ConditionsBuilder {
     private List<Predicate> getPredicates(CriteriaQuery<?> query, CriteriaBuilder cb, From<?, ?> root) {
         List<Predicate> predicates = new LinkedList<Predicate>();
 
-        whereConditions.forEach(condition -> predicates.add(condition.apply(cb, root)));
+        whereConditions.forEach(condition -> predicates.add(condition.getApplicableCondition().apply(cb, root)));
 
         if (joinConditionsBuilders != null && !joinConditionsBuilders.isEmpty()) {
             joinConditionsBuilders.forEach((joinAttribute, joinCondition) -> {
@@ -234,16 +270,39 @@ public class ConditionsBuilder {
         return "param" + UUID.randomUUID().toString().replaceAll("-", "").replaceAll("\\d", "");
     }
 
-    private From<?, ?> getFrom(From<?, ?> from, ConditionsBuilder joinCondition) {
-        if (joinCondition == null || joinCondition == this) {
+    public From<?, ?> getPrevious(From<?, ?> from, ConditionsBuilder conditionsBuilder){
+
+        FetchParent<?, ?> fetchParent = null;
+
+        ConditionsBuilder parentBuilder = conditionsBuilder.getJoinParent();
+        if(this == parentBuilder){
+            return from;
+        } else{
+            if (parentBuilder != null) {
+
+                if (this.getJoinConditionsBuilders().containsValue(parentBuilder)) {
+                    //make join
+                    fetchParent = from.join(parentBuilder.joinAttribute, parentBuilder.joinType);
+                }else{
+                    //recursive
+                    From<?, ?> currentFrom = getPrevious(from, parentBuilder);
+                    fetchParent = currentFrom.join(conditionsBuilder.joinAttribute, conditionsBuilder.joinType); //TODO rethink
+                }
+            }
+        }
+
+        return (From<?, ?>) fetchParent;
+    }
+
+    private From<?, ?> getFrom(From<?, ?> from, ConditionsBuilder joinConditionBuilder) {
+        if (joinConditionBuilder == null || joinConditionBuilder == this) {   //TODO THIS or not
             return from;
         }
 
         FetchParent<?, ?> fetchParent = null;
 
-        fetchParent = checkExisting(joinCondition, fetchParent, from.getJoins());
-        fetchParent = fetchParent != null ? fetchParent : checkExisting(joinCondition, fetchParent, from.getFetches());
-        fetchParent = fetchParent != null ? fetchParent : from.join(joinCondition.joinAttribute, joinCondition.joinType);
+        From<?,?> previousFrom = ( From<?,?> ) getPrevious(from, joinConditionBuilder);
+        fetchParent = previousFrom.join(joinConditionBuilder.joinAttribute, joinConditionBuilder.joinType);
 
         return (From<?, ?>) fetchParent;
     }
@@ -251,10 +310,9 @@ public class ConditionsBuilder {
     private FetchParent<?, ?> checkExisting(ConditionsBuilder joinCondition, FetchParent<?, ?> fetchParent, Set<?> joinsOrFetches) {
         if (!joinsOrFetches.isEmpty()) {
             LinkedHashSet<?> existingSingularAttributes = (LinkedHashSet<?>) joinsOrFetches;
-            Iterator<?> itor = existingSingularAttributes.iterator();
 
-            while (itor.hasNext()) {
-                AbstractJoinImpl<?, ?> existingSingularAttributeJoin = (AbstractJoinImpl<?, ?>) itor.next();
+            for (Object existingSingularAttribute : existingSingularAttributes) {
+                AbstractJoinImpl<?, ?> existingSingularAttributeJoin = (AbstractJoinImpl<?, ?>) existingSingularAttribute;
                 Attribute<?, ?> joinAttribute = existingSingularAttributeJoin.getAttribute();
 
                 if (joinAttribute.getName().equals(joinCondition.joinAttribute)) {
