@@ -4,6 +4,7 @@ import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 @Entity
 @Table(name = "certificates", schema = "jpa")
@@ -22,7 +23,10 @@ public class Certificate {
     @ManyToMany(mappedBy="certificates")
     private List<User> users = new ArrayList<>();
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "mainCertificate")
+    private List<User> usersOfMainCert = new ArrayList<>();
+
+    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinColumn(name = "provider_id")
     private Provider provider;
 
@@ -81,6 +85,20 @@ public class Certificate {
         this.provider = provider;
         if(!provider.getCertificates().contains(this))
             provider.getCertificates().add(this);
+    }
+
+    public List<User> getUsersOfMainCert() {
+        return usersOfMainCert;
+    }
+
+    public void setUsersOfMainCert(List<User> usersOfMainCert) {
+        this.usersOfMainCert = usersOfMainCert;
+    }
+
+    public void addUserOfMainCert(User user){
+        this.usersOfMainCert.add(user);
+        if(user.getMainCertificate()!= this)
+            user.setMainCertificate(this);
     }
 
     @Override

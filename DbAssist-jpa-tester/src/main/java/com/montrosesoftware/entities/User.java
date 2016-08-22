@@ -36,6 +36,10 @@ public class User {
             inverseJoinColumns = @JoinColumn(name="cert_id", referencedColumnName = "id"))
     private List<Certificate> certificates = new ArrayList<>();
 
+    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JoinColumn(name = "main_cert_id")
+    private Certificate mainCertificate;
+
     public User(){}
 
     public User(int id, String name, Date createdAt){
@@ -97,5 +101,15 @@ public class User {
         if(!cert.getUsers().contains(this)){
             cert.getUsers().add(this);
         }
+    }
+
+    public Certificate getMainCertificate() {
+        return mainCertificate;
+    }
+
+    public void setMainCertificate(Certificate cert) {
+        this.mainCertificate = cert;
+        if(!cert.getUsersOfMainCert().contains(this))
+            cert.getUsersOfMainCert().add(this);
     }
 }

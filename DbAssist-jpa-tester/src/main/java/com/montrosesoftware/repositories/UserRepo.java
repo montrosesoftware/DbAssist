@@ -20,6 +20,10 @@ public class UserRepo extends AbstractRepository<User> {
         super(User.class);
     }
 
+    public EntityManager getEntityManager() {
+        return entityManager;
+    }
+
     @PersistenceContext
     protected EntityManager entityManager;
 

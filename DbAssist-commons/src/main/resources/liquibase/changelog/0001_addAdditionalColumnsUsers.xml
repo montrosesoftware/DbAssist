@@ -18,4 +18,10 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="1a9992f5-30b8-4ad3-a49f-ab3e6f8edd3a" author="MontroseSoftware">
+        <addColumn schemaName="jpa" tableName="users">
+            <column name="main_cert_id" type="int"/>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>
