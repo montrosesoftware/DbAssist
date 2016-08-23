@@ -6,9 +6,9 @@ import com.montrosesoftware.entities.Certificate;
 import com.montrosesoftware.entities.Country;
 import com.montrosesoftware.entities.Provider;
 import com.montrosesoftware.entities.User;
+import com.montrosesoftware.repositories.ConditionsBuilder.Condition;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.TestPropertySource;
 
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.*;
@@ -32,214 +32,18 @@ public class DbAssistJoinConditionsTest extends BaseTest {
     @Autowired
     private ProviderRepo pRepo;
 
-  /*  @Test
-    public void findWithJoinConditionsUse(){
-        //prepare certificates
-        Date certDateA = DateUtils.getUtc("2016-06-12 14:54:15");
-        Certificate certA = new Certificate(1, "BHP", certDateA);
-        Date certDateB = DateUtils.getUtc("2014-03-12 11:11:15");
-        Certificate certB = new Certificate(2, "Java Cert", certDateB);
-
-        //prepare users
-        Date expectedDate = DateUtils.getUtc("2016-06-12 08:10:15");
-        User userA = new User(1, "Rose", expectedDate);
-        User userB = new User(2, "Mont", expectedDate);
-        User userC = new User(3, "Tom", expectedDate);
-        userA.addCertificate(certA);
-        userA.addCertificate(certB);
-        userB.addCertificate(certB);
-        saveUsersData(uRepo, Arrays.asList(userA, userB, userC));
-
-        ConditionsBuilder conditionsBuilder = new ConditionsBuilder();
-        conditionsBuilder.equal("createdAt", expectedDate);
-
-        //add join conditions
-        ConditionsBuilder certificatesConditionsBuilder = conditionsBuilder.getJoinConditionsBuilder("certificates", JoinType.LEFT);
-        certificatesConditionsBuilder.or(
-                certificatesConditionsBuilder.equal("name", "BHP"),
-                certificatesConditionsBuilder.equal("name", "Java Cert")
-        );
-
-        // SELECT ... LEFT OUTER JOIN ... ON ... WHERE users.created_at = ? AND (certificates.name = ? OR certificates.name = ?)
-        List<User> results = uRepo.find(conditionsBuilder);
-        assertEquals(2,results.size());
-        List<Certificate> certsOfUserA = results.get(0).getCertificates();
-        List<Certificate> certsOfUserB = results.get(1).getCertificates();
-        assertTrue(certsOfUserA.contains(certA) || certsOfUserA.contains(certB));
-        assertTrue(certsOfUserB.contains(certA) || certsOfUserB.contains(certB));
-    }
-
-    @Test
-    public void findWithJoinConditionsAndLogicalOrBetweenTables(){
-        //TODO ms: remove duplication
-        Date certDateA = DateUtils.getUtc("2016-06-12 14:54:15");
-        Certificate certA = new Certificate(1, "BHP", certDateA);
-        Date certDateB = DateUtils.getUtc("2014-03-12 11:11:15");
-        Certificate certB = new Certificate(2, "Java Cert", certDateB);
-
-        //prepare users
-        Date dateA = DateUtils.getUtc("2016-06-12 08:10:15");
-        Date dateB = DateUtils.getUtc("2010-06-12 08:10:15");
-        User userA = new User(1, "Rose", dateA);
-        User userB = new User(2, "Mont", dateB);
-        User userC = new User(3, "Tom", dateB);
-        userA.addCertificate(certA);
-        userA.addCertificate(certB);
-        userB.addCertificate(certB);
-        saveUsersData(uRepo, Arrays.asList(userA, userB, userC));
-
-        ConditionsBuilder conditionsBuilder = new ConditionsBuilder();
-        ConditionsBuilder.Condition createdAt = conditionsBuilder.equal("createdAt", dateA);
-
-        //add join conditions
-        ConditionsBuilder certificatesConditionsBuilder = conditionsBuilder.getJoinConditionsBuilder("certificates", JoinType.LEFT);
-        ConditionsBuilder.Condition name = certificatesConditionsBuilder.equal("name", "BHP");
-        conditionsBuilder.or(createdAt, certificatesConditionsBuilder, name);
-        certificatesConditionsBuilder.equal("name", "Java Cert");
-
-        // SELECT ... LEFT OUTER JOIN ... ON ... WHERE (users.created_at = ? OR certificates.name = ?) AND certificates.name = ?
-        List<User> results = uRepo.find(conditionsBuilder);
-        assertEquals(1,results.size());
-        assertEquals(1, results.get(0).getId());
-    }
-
-    @Test
-    public void findWithJoinConditionsAndLogicalAndBetweenTables(){
-        Date certDateA = DateUtils.getUtc("2016-06-12 14:54:15");
-        Certificate certA = new Certificate(1, "BHP", certDateA);
-        Date certDateB = DateUtils.getUtc("2014-03-12 11:11:15");
-        Certificate certB = new Certificate(2, "Java Cert", certDateB);
-
-        //prepare users
-        Date dateA = DateUtils.getUtc("2016-06-12 06:10:15");
-        Date dateB = DateUtils.getUtc("2010-06-12 08:10:15");
-        User userA = new User(1, "Rose", dateA);
-        User userB = new User(2, "Mont", dateB);
-        User userC = new User(3, "Tom", dateB);
-        userA.addCertificate(certA);
-        userA.addCertificate(certB);
-        userB.addCertificate(certB);
-        saveUsersData(uRepo, Arrays.asList(userA, userB, userC));
-
-        ConditionsBuilder conditionsBuilder = new ConditionsBuilder();
-        ConditionsBuilder.Condition createdAt = conditionsBuilder.equal("createdAt", dateA);
-
-        //add join conditions
-        ConditionsBuilder certificatesConditionsBuilder = conditionsBuilder.getJoinConditionsBuilder("certificates", JoinType.LEFT);
-        ConditionsBuilder.Condition name = certificatesConditionsBuilder.equal("name", "BHP");
-
-        ConditionsBuilder.Condition id = conditionsBuilder.equal("id", 2);
-
-        conditionsBuilder.or(
-                conditionsBuilder.and(createdAt, certificatesConditionsBuilder, name),
-                id
-        );
-
-        // SELECT ... LEFT OUTER JOIN ... ON ... WHERE (users.created_at = ? AND certificates.name = ?) OR users.id = ?
-        List<User> results = uRepo.find(conditionsBuilder);
-        assertEquals(2, results.size());
-    }
-
-    @Test
-    public void findWithJoinConditionsAndLogicalAndOrCombination(){
-        Date certDateA = DateUtils.getUtc("2016-06-12 14:54:15");
-        Certificate certA = new Certificate(1, "BHP", certDateA);
-        Date certDateB = DateUtils.getUtc("2014-03-12 11:11:15");
-        Certificate certB = new Certificate(2, "Java Cert", certDateB);
-
-        //prepare users
-        Date dateA = DateUtils.getUtc("2016-06-12 07:10:15");
-        Date dateB = DateUtils.getUtc("2010-06-12 08:10:15");
-        User userA = new User(1, "Rose", dateA);
-        User userB = new User(2, "Mont", dateB);
-        User userC = new User(3, "Tom", dateB);
-        userA.addCertificate(certA);
-        userA.addCertificate(certB);
-        userB.addCertificate(certB);
-        saveUsersData(uRepo, Arrays.asList(userA, userB, userC));
-
-        ConditionsBuilder conditionsBuilder = new ConditionsBuilder();
-        ConditionsBuilder.Condition createdAt = conditionsBuilder.equal("createdAt", dateA);
-
-        //add join conditions
-        ConditionsBuilder certificatesConditionsBuilder = conditionsBuilder.getJoinConditionsBuilder("certificates", JoinType.LEFT);
-        ConditionsBuilder.Condition name = certificatesConditionsBuilder.equal("name", "BHP");
-
-        ConditionsBuilder.Condition id = conditionsBuilder.equal("id", 1);
-
-        conditionsBuilder.or(
-                conditionsBuilder.and(createdAt, certificatesConditionsBuilder, name),
-                certificatesConditionsBuilder,
-                id
-        );
-
-        // SELECT ... LEFT OUTER JOIN ... ON ... WHERE (users.created_at = ? AND certificates.name = ?) OR certificates.id = ?
-        List<User> results = uRepo.find(conditionsBuilder);
-        assertEquals(1, results.size());
-    }*/
-
-    @Test
-    public void joinTestChainOfThreeEntities(){
-        //Certificate providers and certificates
-        Provider providerA = new Provider(1, "Provider 1", true);
-        Provider providerB = new Provider(2, "Provider 2", false);
-
-        Date certDateA = DateUtils.getUtc("2016-06-12 14:54:15");
-        Certificate certA = new Certificate(1, "BHP", certDateA);
-        certA.setProvider(providerA);
-
-        Date certDateB = DateUtils.getUtc("2014-03-12 11:11:15");
-        Certificate certB = new Certificate(2, "Java Cert", certDateB);
-        certB.setProvider(providerB);
-
-        //prepare users
-        Date dateA = DateUtils.getUtc("2016-06-12 07:10:15");
-        Date dateB = DateUtils.getUtc("2010-06-12 08:10:15");
-        User userA = new User(1, "Rose", dateA);
-        User userB = new User(2, "Mont", dateB);
-        User userC = new User(3, "Tom", dateB);
-        userA.addCertificate(certA);
-        userA.addCertificate(certB);
-        userB.addCertificate(certB);
-        saveUsersData(uRepo, Arrays.asList(userA, userB, userC));
-
-        //read with no conditions
-        List<Provider> providersRead = pRepo.find(new ConditionsBuilder());
-        List<User> usersRead = uRepo.find(new ConditionsBuilder());
-        assertEquals(providersRead.size(), 2);
-        assertEquals(usersRead.size(), 3);
-
-        //complex example
-        ConditionsBuilder builderUsers = new ConditionsBuilder();
-        ConditionsBuilder.Condition uIdLessThan = builderUsers.lessThan("id", 15);
-
-        ConditionsBuilder builderCertificates = builderUsers.getJoinConditionsBuilder("certificates", JoinType.LEFT);
-
-        ConditionsBuilder builderProviders = builderCertificates.getJoinConditionsBuilder("provider", JoinType.LEFT);
-        ConditionsBuilder.Condition provNameA = builderProviders.equal("name", "Provider 1");
-
-        builderUsers.or(
-                provNameA,
-                uIdLessThan
-        );
-
-        List<User> usersReadMultipleJoin = uRepo.find(builderUsers);
-        usersReadMultipleJoin.size();
-    }
-
-    @Test
-    public void joinTestChainOfFourEntities(){
+    public void prepareAndSaveExampleDataToDb() {
         //Countries
         Country countryA = new Country(1, "Poland");
         Country countryB = new Country(2, "USA");
 
-        //Certificate providers and certificates
+        //Certificate providers
         Provider providerA = new Provider(1, "Provider 1", true);
         Provider providerB = new Provider(2, "Provider 2", false);
         providerA.setCountry(countryA);
         providerB.setCountry(countryB);
 
-        //certificates
+        //Certificates
         Date certDateA = DateUtils.getUtc("2016-06-12 14:54:15");
         Certificate certA = new Certificate(1, "BHP", certDateA);
         certA.setProvider(providerA);
@@ -248,16 +52,34 @@ public class DbAssistJoinConditionsTest extends BaseTest {
         Certificate certB = new Certificate(2, "Java Cert", certDateB);
         certB.setProvider(providerB);
 
-        //prepare users
+        //Users
         Date dateA = DateUtils.getUtc("2016-06-12 07:10:15");
         Date dateB = DateUtils.getUtc("2010-06-12 08:10:15");
         User userA = new User(1, "Rose", dateA);
         User userB = new User(2, "Mont", dateB);
         User userC = new User(3, "Tom", dateB);
+
+        userA.setMainCertificate(certA);
+        userB.setMainCertificate(certB);
+
         userA.addCertificate(certA);
         userA.addCertificate(certB);
         userB.addCertificate(certB);
+
         saveUsersData(uRepo, Arrays.asList(userA, userB, userC));
+    }
+
+    @Test
+    public void writeAndReadUsersOneToManyRelation() {
+        prepareAndSaveExampleDataToDb();
+
+        List<User> results = uRepo.find(new ConditionsBuilder());
+        assertEquals(3, results.size());
+    }
+
+    @Test
+    public void joinTestChainOfThreeChainedEntities() {
+        prepareAndSaveExampleDataToDb();
 
         //read with no conditions
         List<Provider> providersRead = pRepo.find(new ConditionsBuilder());
@@ -265,308 +87,206 @@ public class DbAssistJoinConditionsTest extends BaseTest {
         assertEquals(providersRead.size(), 2);
         assertEquals(usersRead.size(), 3);
 
-        //complex example
+        //handle joins
         ConditionsBuilder builderUsers = new ConditionsBuilder();
-        ConditionsBuilder.Condition userIdLessThan = builderUsers.lessThan("id", 15);
-
         ConditionsBuilder builderCertificates = builderUsers.getJoinConditionsBuilder("certificates", JoinType.LEFT);
-
         ConditionsBuilder builderProviders = builderCertificates.getJoinConditionsBuilder("provider", JoinType.LEFT);
-        ConditionsBuilder.Condition provNameA = builderProviders.equal("name", "Provider 1");
 
-        ConditionsBuilder builderCountries = builderProviders.getJoinConditionsBuilder("country", JoinType.LEFT);
-        ConditionsBuilder.Condition countryIdLessThan = builderCountries.lessThan("id", 25);
-
-        // WHERE
+        Condition conUserIdLessThan = builderUsers.lessThan("id", 15);
+        Condition conProvName = builderProviders.equal("name", "Provider 1");
         builderUsers.or(
-                userIdLessThan,
-                countryIdLessThan
+                conProvName,
+                conUserIdLessThan
         );
 
+        // ... WHERE provider.name = ? OR user.id < ?
+        List<User> usersReadMultipleJoin = uRepo.find(builderUsers);
+        assertEquals(usersReadMultipleJoin.size(), 3);
+    }
+
+    @Test
+    public void joinTestChainOfFourChainedEntities() {
+        prepareAndSaveExampleDataToDb();
+
+        //read with no conditions
+        List<Provider> providersRead = pRepo.find(new ConditionsBuilder());
+        List<User> usersRead = uRepo.find(new ConditionsBuilder());
+        assertEquals(providersRead.size(), 2);
+        assertEquals(usersRead.size(), 3);
+
+        ConditionsBuilder builderUsers = new ConditionsBuilder();
+        ConditionsBuilder builderCertificates = builderUsers.getJoinConditionsBuilder("certificates", JoinType.LEFT);
+        ConditionsBuilder builderProviders = builderCertificates.getJoinConditionsBuilder("provider", JoinType.LEFT);
+        ConditionsBuilder builderCountries = builderProviders.getJoinConditionsBuilder("country", JoinType.LEFT);
+
+        //conditions from 1st to 4th entity
+        Condition conUserIdLessThan = builderUsers.lessThan("id", 15);
+        Condition conProvName = builderProviders.equal("name", "Provider 1");
+        Condition conCountryIdLessThan = builderCountries.lessThan("id", 25);
+        builderUsers.or(
+                conUserIdLessThan,
+                conCountryIdLessThan
+        );
+
+        // ... WHERE (user.id < ? OR country.id < ?) AND provider.name = ?
         List<User> usersReadMultipleJoin = uRepo.find(builderUsers);
         usersReadMultipleJoin.size();
+        assertEquals(usersReadMultipleJoin.size(), 1);
     }
 
     @Test
-    public void WriteAndReadUsersOneToManyRelation(){
-        //Certificate providers and certificates
-        Provider providerA = new Provider(1, "Provider 1", true);
-        Provider providerB = new Provider(2, "Provider 2", false);
+    public void ComplexJoinWithOneToManyChainRelation() {
+        prepareAndSaveExampleDataToDb();
 
-        Date certDateA = DateUtils.getUtc("2016-06-12 14:54:15");
-        Certificate certA = new Certificate(1, "BHP", certDateA);
-        certA.setProvider(providerA);
+        // chain, one to many
+        // user - certificate - provider - country
+        ConditionsBuilder cb = new ConditionsBuilder();
+        ConditionsBuilder builderCertificate = cb.getJoinConditionsBuilder("mainCertificate", JoinType.LEFT);
+        ConditionsBuilder builderProvider = builderCertificate.getJoinConditionsBuilder("provider", JoinType.LEFT);
+        ConditionsBuilder builderCountry = builderProvider.getJoinConditionsBuilder("country", JoinType.LEFT);
 
-        Date certDateB = DateUtils.getUtc("2014-03-12 11:11:15");
-        Certificate certB = new Certificate(2, "Java Cert", certDateB);
-        certB.setProvider(providerB);
+        Condition conUserIdGreaterThanOrEqual = cb.greaterThanOrEqualTo("id", 0);
+        Condition conUserIdLessThan = cb.lessThan("id", 15);
+        Condition conCertIdLessThan = builderCertificate.lessThan("id", 5);
+        Condition conCertIdGreaterThanOrEqual = builderCertificate.greaterThanOrEqualTo("id", 0);
+        Condition conProvName = builderProvider.equal("name", "Provider 1");
+        Condition conCountryName = builderCountry.equal("name", "USA");
 
-        //prepare users
-        Date date = DateUtils.getUtc("2010-06-12 08:10:15");
-        User userA = new User(1, "Rose", date);
-        User userB = new User(2, "Mont", date);
-        User userC = new User(3, "Tom", date);
-        userA.setMainCertificate(certA);
-        userB.setMainCertificate(certB);
+        cb.or(
+                cb.and(conUserIdLessThan, conUserIdGreaterThanOrEqual),
+                cb.or(
+                        cb.and(conCertIdGreaterThanOrEqual, conCertIdLessThan),
+                        cb.or(conProvName, conCountryName)
+                )
+        );
 
-        saveUsersData(uRepo, Arrays.asList(userA, userB, userC));
-
-        //read
-        List<User> results = uRepo.find(new ConditionsBuilder());
-        assertEquals(3, results.size());
+        // ... WHERE (user.id < ? AND user.id >= ?) OR (certificate.id >= ? AND certificate.id < ?) OR provider.name = ? OR country.name = ?
+        List<User> results = uRepo.find(cb);
+        assertEquals(results.size(), 3);
     }
 
-//    @Test
-//    public void ComplexJoinWithOneToManyChainedRelation(){
-//        //Certificate providers and certificates
-//        Provider providerA = new Provider(1, "Provider 1", true);
-//        Provider providerB = new Provider(2, "Provider 2", false);
-//
-//        Date certDateA = DateUtils.getUtc("2016-05-12 14:54:15");
-//        Certificate certA = new Certificate(1, "BHP", certDateA);
-//        certA.setProvider(providerA);
-//
-//        Date certDateB = DateUtils.getUtc("2014-03-12 11:11:15");
-//        Certificate certB = new Certificate(2, "Java Cert", certDateB);
-//        certB.setProvider(providerB);
-//
-//        //prepare users
-//        Date date = DateUtils.getUtc("2010-06-12 08:10:15");
-//        User userA = new User(1, "Rose", date);
-//        User userB = new User(2, "Mont", date);
-//        User userC = new User(3, "Tom", date);
-//        userA.setMainCertificate(certA);
-//        userB.setMainCertificate(certB);
-//
-//        saveUsersData(uRepo, Arrays.asList(userA, userB, userC));
-//
-//        //chain, one to many
-//        // user->certificate->provider
-//        ConditionsBuilder conditionsBuilder = new ConditionsBuilder();
-//        ConditionsBuilder builderCertificate = conditionsBuilder.getJoinConditionsBuilder("mainCertificate", JoinType.LEFT);
-//        ConditionsBuilder builderProvider = builderCertificate.getJoinConditionsBuilder("provider", JoinType.LEFT);
-//
-//        ConditionsBuilder.Condition uIdGreaterThanOrEqual = conditionsBuilder.greaterThanOrEqualTo("id", 0);
-//        ConditionsBuilder.Condition uIdLessThan = conditionsBuilder.lessThan("id", 15);
-//
-//        ConditionsBuilder.Condition certIdLessThan = builderCertificate.lessThan("id", 5);
-//        ConditionsBuilder.Condition certIdGreaterThanOrEqual = builderCertificate.greaterThanOrEqualTo("id", 0);
-//
-//        ConditionsBuilder.Condition provNameA = builderProvider.equal("name", "Provider 1");
-//        ConditionsBuilder.Condition provNameB = builderProvider.equal("name", "Provider 2");
-//
-//        conditionsBuilder.or(
-//                conditionsBuilder.and(uIdLessThan, uIdGreaterThanOrEqual),
-//                builderCertificate,
-//                builderCertificate.or(
-//                        builderCertificate,
-//                        builderCertificate.and(certIdGreaterThanOrEqual, certIdLessThan),
-//                        builderProvider,
-//                        builderProvider.or(provNameA, provNameB)
-//                    )
-//        );
-//
-//        //ERROR
-//
-//        List<User> results = uRepo.find(conditionsBuilder);
-//        //TODO finish
-//    }
-//
-//
-//
-//    @Test
-//    public void ComplexJoinWithManyToManyNonChainRelation(){
-//        //Certificate providers and certificates
-//        Provider providerA = new Provider(1, "Provider 1", true);
-//        Provider providerB = new Provider(2, "Provider 2", false);
-//
-//        Date certDateA = DateUtils.getUtc("2016-06-12 14:54:15");
-//        Certificate certA = new Certificate(1, "BHP", certDateA);
-//        certA.setProvider(providerA);
-//
-//        Date certDateB = DateUtils.getUtc("2014-03-12 11:11:15");
-//        Certificate certB = new Certificate(2, "Java Cert", certDateB);
-//        certB.setProvider(providerB);
-//
-//        //prepare users
-//        Date date = DateUtils.getUtc("2011-06-12 08:10:15");
-//        User userA = new User(1, "Rose", date);
-//        User userB = new User(2, "Mont", date);
-//        User userC = new User(3, "Tom", date);
-//        userA.addCertificate(certA);
-//        userB.addCertificate(certB);
-//
-//        saveUsersData(uRepo, Arrays.asList(userA, userB, userC));
-//
-//        //non-chain, one to many
-//        //certificate --> user
-//        //            --> provider
-//
-//        ConditionsBuilder conditionsBuilder = new ConditionsBuilder();
-//        ConditionsBuilder builderUsers = conditionsBuilder.getJoinConditionsBuilder("users", JoinType.LEFT);
-//        ConditionsBuilder builderProviders = conditionsBuilder.getJoinConditionsBuilder("provider", JoinType.LEFT);
-//
-//
-//        ConditionsBuilder.Condition certIdGreaterThanOrEqual = conditionsBuilder.greaterThanOrEqualTo("id", 0);
-//        ConditionsBuilder.Condition certIdLessThan = conditionsBuilder.lessThan("id", 5);
-//
-//        ConditionsBuilder.Condition uIdLessThan = builderUsers.lessThan("id", 15);
-//        ConditionsBuilder.Condition uIdGreaterThanOrEqual = builderUsers.greaterThanOrEqualTo("id", 0);
-//
-//        ConditionsBuilder.Condition provNameA = builderProviders.equal("name", "Provider 1");
-//        ConditionsBuilder.Condition provNameB = builderProviders.equal("name", "Provider 2");
-//
-//        conditionsBuilder.or(
-//                conditionsBuilder.and(uIdLessThan, uIdGreaterThanOrEqual),
-//                null,
-//                conditionsBuilder.or(
-//                        builderUsers,
-//                        builderUsers.and(certIdGreaterThanOrEqual, certIdLessThan),
-//                        builderProviders,
-//                        builderProviders.or(provNameA, provNameB)
-//                )
-//        );
-//
-//        List<Certificate> certs = cRepo.find(conditionsBuilder);
-//        assertEquals(certs.size(), 2);
-//        //TODO finish
-//    }
-//
-//    @Test
-//    public void ComplexJoinWithOneToManyNonChainRelation(){
-//        //Certificate providers and certificates
-//        Provider providerA = new Provider(1, "Provider 1", true);
-//        Provider providerB = new Provider(2, "Provider 2", false);
-//
-//        Date certDateA = DateUtils.getUtc("2016-06-12 14:54:15");
-//        Certificate certA = new Certificate(1, "BHP", certDateA);
-//        certA.setProvider(providerA);
-//
-//        Date certDateB = DateUtils.getUtc("2014-03-12 11:11:15");
-//        Certificate certB = new Certificate(2, "Java Cert", certDateB);
-//        certB.setProvider(providerB);
-//
-//        //prepare users
-//        Date date = DateUtils.getUtc("2011-06-12 08:10:15");
-//        User userA = new User(1, "Rose", date);
-//        User userB = new User(2, "Mont", date);
-//        User userC = new User(3, "Tom", date);
-//        userA.setMainCertificate(certA);
-//        userB.setMainCertificate(certB);
-//
-//        saveUsersData(uRepo, Arrays.asList(userA, userB, userC));
-//
-//        //non-chain, one to many
-//        //certificate --> user
-//        //            --> provider
-//
-//        ConditionsBuilder conditionsBuilder = new ConditionsBuilder();
-//        ConditionsBuilder builderUsers = conditionsBuilder.getJoinConditionsBuilder("usersOfMainCert", JoinType.LEFT);
-//        ConditionsBuilder builderProviders = conditionsBuilder.getJoinConditionsBuilder("provider", JoinType.LEFT);
-//
-//
-//        ConditionsBuilder.Condition certIdGreaterThanOrEqual = conditionsBuilder.greaterThanOrEqualTo("id", 0);
-//        ConditionsBuilder.Condition certIdLessThan = conditionsBuilder.lessThan("id", 5);
-//
-//        ConditionsBuilder.Condition uIdLessThan = builderUsers.lessThan("id", 15);
-//        ConditionsBuilder.Condition uIdGreaterThanOrEqual = builderUsers.greaterThanOrEqualTo("id", 0);
-//
-//        ConditionsBuilder.Condition provNameA = builderProviders.equal("name", "Provider 1");
-//        ConditionsBuilder.Condition provNameB = builderProviders.equal("name", "Provider 2");
-//
-//        conditionsBuilder.or(
-//                conditionsBuilder.and(uIdLessThan, uIdGreaterThanOrEqual),
-//                null,
-//                conditionsBuilder.or(
-//                        builderUsers,
-//                        builderUsers.and(certIdGreaterThanOrEqual, certIdLessThan),
-//                        builderProviders,
-//                        builderProviders.or(provNameA, provNameB)
-//                )
-//        );
-//
-//        List<Certificate> certs = cRepo.find(conditionsBuilder);
-//        assertEquals(certs.size(), 2);
-//        //TODO finish
-//    }
-//
     @Test
-    public void criteriaTODO(){
-        //Certificate providers and certificates
-        Provider providerA = new Provider(1, "Provider 1", true);
-        Provider providerB = new Provider(2, "Provider 2", false);
+    public void ComplexJoinWithOneToManyNonChainRelation() {
+        prepareAndSaveExampleDataToDb();
 
-        Date certDateA = DateUtils.getUtc("2016-06-12 14:54:15");
-        Certificate certA = new Certificate(1, "BHP", certDateA);
-        certA.setProvider(providerA);
+        // non-chain, one to many
+        // certificate - user
+        //             - provider - country
 
-        Date certDateB = DateUtils.getUtc("2014-03-12 11:11:15");
-        Certificate certB = new Certificate(2, "Java Cert", certDateB);
-        certB.setProvider(providerB);
+        ConditionsBuilder cb = new ConditionsBuilder();
+        ConditionsBuilder builderUsers = cb.getJoinConditionsBuilder("usersOfMainCert", JoinType.LEFT);
+        ConditionsBuilder builderProviders = cb.getJoinConditionsBuilder("provider", JoinType.LEFT);
+        ConditionsBuilder builderCountries = builderProviders.getJoinConditionsBuilder("country", JoinType.LEFT);
 
-        //prepare users
-        Date date = DateUtils.getUtc("2011-06-12 08:10:15");
-        User userA = new User(1, "Rose", date);
-        User userB = new User(2, "Mont", date);
-        User userC = new User(3, "Tom", date);
-        userA.setMainCertificate(certA);
-        userB.setMainCertificate(certB);
+        Condition conCertIdGreaterThanOrEqual = cb.greaterThanOrEqualTo("id", 0);
+        Condition conCertIdLessThan = cb.lessThan("id", 5);
+        Condition conUserIdLessThan = builderUsers.lessThan("id", 15);
+        Condition conUserIdGreaterThanOrEqual = builderUsers.greaterThanOrEqualTo("id", 0);
+        Condition conProvNameA = builderProviders.equal("name", "Provider 1");
+        Condition conCountryName = builderCountries.equal("name", "USA");
 
-        saveUsersData(uRepo, Arrays.asList(userA, userB, userC));
+        cb.or(
+                cb.and(conUserIdLessThan, conUserIdGreaterThanOrEqual),
+                cb.or(
+                        cb.and(conCertIdGreaterThanOrEqual, conCertIdLessThan),
+                        cb.or(conProvNameA, conCountryName)
+                )
+        );
+
+        // ... WHERE (user.id < ? AND user.id >= ?) OR (certificate.id >= ? AND certificate.id < ?) OR provider.name = ? OR country.name = ?
+        List<Certificate> certs = cRepo.find(cb);
+        assertEquals(certs.size(), 2);
+    }
+
+    @Test
+    public void ComplexJoinWithManyToManyChainRelation() {
+        prepareAndSaveExampleDataToDb();
+        //TODO
+        // chain, many to many
+        // user - certificate - provider - country
+
+        ConditionsBuilder cb = new ConditionsBuilder();
+        ConditionsBuilder builderCertificate = cb.getJoinConditionsBuilder("certificates", JoinType.LEFT);
+        ConditionsBuilder builderProvider = builderCertificate.getJoinConditionsBuilder("provider", JoinType.LEFT);
+        ConditionsBuilder builderCountry = builderProvider.getJoinConditionsBuilder("country", JoinType.LEFT);
+
+        Condition conUserIdGreaterThanOrEqual = cb.greaterThanOrEqualTo("id", 0);
+        Condition conUserIdLessThan = cb.lessThan("id", 15);
+        Condition conCertIdLessThan = builderCertificate.lessThan("id", 5);
+        Condition conCertIdGreaterThanOrEqual = builderCertificate.greaterThanOrEqualTo("id", 0);
+        Condition conProvName = builderProvider.equal("name", "Provider 1");
+        Condition conCountryName = builderCountry.equal("name", "USA");
+
+        cb.or(
+                cb.and(conUserIdLessThan, conUserIdGreaterThanOrEqual),
+                cb.or(
+                        cb.and(conCertIdGreaterThanOrEqual, conCertIdLessThan),
+                        cb.or(conProvName, conCountryName)
+                )
+        );
+
+        // ... WHERE (user.id < ? AND user.id >= ?) OR (certificate.id >= ? AND certificate.id < ?) OR provider.name = ? OR country.name = ?
+        List<User> users = uRepo.find(cb);
+        assertEquals(users.size(), 3);
+    }
+
+    @Test
+    public void ComplexJoinWithManyToManyNonChainRelation() {
+        prepareAndSaveExampleDataToDb();
+
+        // non-chain, many to many
+        // certificate - user
+        //             - provider - country
+
+        ConditionsBuilder cb = new ConditionsBuilder();
+        ConditionsBuilder builderUsers = cb.getJoinConditionsBuilder("users", JoinType.LEFT);
+        ConditionsBuilder builderProviders = cb.getJoinConditionsBuilder("provider", JoinType.LEFT);
+        ConditionsBuilder builderCountries = builderProviders.getJoinConditionsBuilder("country", JoinType.LEFT);
+
+        Condition conCertIdGreaterThanOrEqual = cb.greaterThanOrEqualTo("id", 0);
+        Condition conCertIdLessThan = cb.lessThan("id", 5);
+        Condition conUserIdLessThan = builderUsers.lessThan("id", 15);
+        Condition conUserIdGreaterThanOrEqual = builderUsers.greaterThanOrEqualTo("id", 0);
+        Condition conProvName = builderProviders.equal("name", "Provider 1");
+        Condition conCountryName = builderCountries.equal("name", "USA");
+
+        cb.or(
+                cb.and(conUserIdLessThan, conUserIdGreaterThanOrEqual),
+                cb.or(
+                        cb.and(conCertIdGreaterThanOrEqual, conCertIdLessThan),
+                        cb.or(conProvName, conCountryName)
+                )
+        );
+
+        // ... WHERE (user.id < ? AND user.id >= ?) OR (certificate.id >= ? AND certificate.id < ?) OR provider.name = ? OR country.name = ?
+        List<Certificate> certificates = cRepo.find(cb);
+        assertEquals(certificates.size(), 2);
+    }
+
+    @Test
+    public void joinOnThreeEntitiesChainUsingCriteriaBuilder() {
+        prepareAndSaveExampleDataToDb();
+
         List<Predicate> predicates = new ArrayList<>();
 
-        //select Users
         CriteriaBuilder cb = uRepo.getEntityManager().getCriteriaBuilder();
         CriteriaQuery<User> cq = cb.createQuery(User.class);
+
+        //handle join
         Root<User> rootUser = cq.from(User.class);
-        predicates.add(cb.lessThan(rootUser.get("id"), 15));
-
-        //join to Cert
         Join<User, Certificate> certJoin = rootUser.join("mainCertificate");
-       /// predicates.add(cb.lessThan(certJoin.get("id"), 14));
-
-        //join to provider
         Join<Certificate, Provider> providerJoin = certJoin.join("provider");
+
+        //add conditions
+        predicates.add(cb.lessThan(rootUser.get("id"), 15));
         predicates.add(cb.lessThan(providerJoin.get("id"), 12));
 
         cq.select(rootUser);
-
-        cq.where(cb.and((Predicate[])predicates.toArray(new Predicate[predicates.size()])));
+        cq.where(cb.and((Predicate[]) predicates.toArray(new Predicate[predicates.size()])));
         TypedQuery<User> typedQuery = uRepo.getEntityManager().createQuery(cq);
+
+        // ... WHERE user.id < ? AND provider.id < ?
         List<User> users = typedQuery.getResultList();
         assertEquals(2, users.size());
-
-
-
-
-//
-//        ConditionsBuilder conditionsBuilder = new ConditionsBuilder();
-//        ConditionsBuilder builderUsers = conditionsBuilder.getJoinConditionsBuilder("usersOfMainCert", JoinType.LEFT);
-//        ConditionsBuilder builderProviders = conditionsBuilder.getJoinConditionsBuilder("provider", JoinType.LEFT);
-//
-//
-//        ConditionsBuilder.Condition certIdGreaterThanOrEqual = conditionsBuilder.greaterThanOrEqualTo("id", 0);
-//        ConditionsBuilder.Condition certIdLessThan = conditionsBuilder.lessThan("id", 5);
-//
-//        ConditionsBuilder.Condition uIdLessThan = builderUsers.lessThan("id", 15);
-//        ConditionsBuilder.Condition uIdGreaterThanOrEqual = builderUsers.greaterThanOrEqualTo("id", 0);
-//
-//        ConditionsBuilder.Condition provNameA = builderProviders.equal("name", "Provider 1");
-//        ConditionsBuilder.Condition provNameB = builderProviders.equal("name", "Provider 2");
-//
-//        conditionsBuilder.or(
-//                conditionsBuilder.and(uIdLessThan, uIdGreaterThanOrEqual),
-//                null,
-//                conditionsBuilder.or(
-//                        builderUsers,
-//                        builderUsers.and(certIdGreaterThanOrEqual, certIdLessThan),
-//                        builderProviders,
-//                        builderProviders.or(provNameA, provNameB)
-//                )
-//        );
-//
-//        List<Certificate> certs = cRepo.find(conditionsBuilder);
-//        assertEquals(certs.size(), 2);
-//        TODO finish
     }
 }

@@ -130,25 +130,13 @@ public class ConditionsBuilder {
     }
 
     public Condition or(Condition leftOperandCondition, Condition rightOperandCondition) {
-        return applyLogicalOperator(leftOperandCondition, rightOperandCondition, (cb, p1, p2) -> cb.or(p1, p2));
+        return applyLogicalOperator(leftOperandCondition, rightOperandCondition, CriteriaBuilder::or);
     }
-
-//    public Condition or(ApplicableCondition leftOperandApplicableCondition, ConditionsBuilder rightOperandJoinConditionsBuilder, ApplicableCondition rightOperandApplicableCondition) {
-//        return or(this, leftOperandApplicableCondition, rightOperandJoinConditionsBuilder, rightOperandApplicableCondition);
-//    }
-//
-//    public Condition or(ConditionsBuilder leftOperandJoinConditionsBuilder, ApplicableCondition leftOperandApplicableCondition, ConditionsBuilder rightOperandJoinConditionsBuilder, ApplicableCondition rightOperandApplicableCondition) {
-//        return applyLogicalOperator(leftOperandJoinConditionsBuilder, leftOperandApplicableCondition, rightOperandJoinConditionsBuilder, rightOperandApplicableCondition, (cb, p1, p2) -> cb.or(p1, p2));
-//    }
 
     public Condition and(Condition leftOperandCondition, Condition rightOperandCondition) {
-        return applyLogicalOperator(leftOperandCondition, rightOperandCondition, (cb, p1, p2) -> cb.and(p1, p2));
+        return applyLogicalOperator(leftOperandCondition, rightOperandCondition, CriteriaBuilder::and);
 
     }
-
-//    public Condition and(ApplicableCondition leftOperandApplicableCondition, ConditionsBuilder rightOperandJoinConditionsBuilder, ApplicableCondition rightOperandApplicableCondition) {
-//        return applyLogicalOperator(this, leftOperandApplicableCondition, rightOperandJoinConditionsBuilder, rightOperandApplicableCondition, (cb, p1, p2) -> cb.and(p1, p2));
-//    }
 
     private Condition applyLogicalOperator(Condition leftOperandCondition,
                                            Condition rightOperandCondition,
@@ -279,14 +267,13 @@ public class ConditionsBuilder {
             return from;
         } else{
             if (parentBuilder != null) {
-
                 if (this.getJoinConditionsBuilders().containsValue(parentBuilder)) {
                     //make join
                     fetchParent = from.join(parentBuilder.joinAttribute, parentBuilder.joinType);
                 }else{
                     //recursive
                     From<?, ?> currentFrom = getPrevious(from, parentBuilder);
-                    fetchParent = currentFrom.join(parentBuilder.joinAttribute, parentBuilder.joinType); //TODO rethink
+                    fetchParent = currentFrom.join(parentBuilder.joinAttribute, parentBuilder.joinType);
                 }
             }
         }
@@ -295,19 +282,18 @@ public class ConditionsBuilder {
     }
 
     private From<?, ?> getFrom(From<?, ?> from, ConditionsBuilder joinConditionBuilder) {
-        if (joinConditionBuilder == null || joinConditionBuilder == this) {   //TODO THIS or not
+        if (joinConditionBuilder == null || joinConditionBuilder == this) {
             return from;
         }
 
-        FetchParent<?, ?> fetchParent = null;
-
-        From<?,?> previousFrom = ( From<?,?> ) getPrevious(from, joinConditionBuilder);
-        fetchParent = previousFrom.join(joinConditionBuilder.joinAttribute, joinConditionBuilder.joinType);
+        From<?,?> previousFrom = getPrevious(from, joinConditionBuilder);
+        FetchParent<?, ?> fetchParent = previousFrom.join(joinConditionBuilder.joinAttribute, joinConditionBuilder.joinType);
 
         return (From<?, ?>) fetchParent;
     }
 
     private FetchParent<?, ?> checkExisting(ConditionsBuilder joinCondition, FetchParent<?, ?> fetchParent, Set<?> joinsOrFetches) {
+        //TODO this is not user, to verify if correct
         if (!joinsOrFetches.isEmpty()) {
             LinkedHashSet<?> existingSingularAttributes = (LinkedHashSet<?>) joinsOrFetches;
 
