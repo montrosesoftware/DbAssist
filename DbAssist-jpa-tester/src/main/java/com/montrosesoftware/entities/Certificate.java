@@ -1,10 +1,7 @@
 package com.montrosesoftware.entities;
 
 import javax.persistence.*;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 
 @Entity
 @Table(name = "certificates", schema = "jpa")
@@ -21,10 +18,10 @@ public class Certificate {
     private Date expirationDate;
 
     @ManyToMany(mappedBy="certificates")
-    private List<User> users = new ArrayList<>();
+    private Set<User> users = new HashSet<>();
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "mainCertificate")
-    private List<User> usersOfMainCert = new ArrayList<>();
+    private Set<User> usersOfMainCert = new HashSet<>();
 
     @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinColumn(name = "provider_id")
@@ -62,11 +59,11 @@ public class Certificate {
         this.expirationDate = expirationDate;
     }
 
-    public List<User> getUsers() {
+    public Set<User> getUsers() {
         return users;
     }
 
-    public void setUsers(List<User> users) {
+    public void setUsers(Set<User> users) {
         this.users = users;
     }
 
@@ -87,11 +84,11 @@ public class Certificate {
             provider.getCertificates().add(this);
     }
 
-    public List<User> getUsersOfMainCert() {
+    public Set<User> getUsersOfMainCert() {
         return usersOfMainCert;
     }
 
-    public void setUsersOfMainCert(List<User> usersOfMainCert) {
+    public void setUsersOfMainCert(Set<User> usersOfMainCert) {
         this.usersOfMainCert = usersOfMainCert;
     }
 

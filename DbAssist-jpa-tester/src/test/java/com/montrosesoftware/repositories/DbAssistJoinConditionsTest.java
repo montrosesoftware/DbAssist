@@ -297,9 +297,7 @@ public class DbAssistJoinConditionsTest extends BaseTest {
         prepareAndSaveExampleDataToDb();
 
         ConditionsBuilder builderUsers = new ConditionsBuilder();
-        ConditionsBuilder builderCertificates = builderUsers.getJoinConditionsBuilder("certificates", JoinType.LEFT);
-        //ConditionsBuilder builderProviders = builderCertificates.getJoinConditionsBuilder("provider", JoinType.LEFT);
-        //ConditionsBuilder builderCountries = builderProviders.getJoinConditionsBuilder("country", JoinType.LEFT);
+        ConditionsBuilder builderCertificates = builderUsers.getJoinConditionsBuilder("mainCertificate", JoinType.LEFT);
 
         //conditions on first two entities
         Condition conUserIdLessThan = builderUsers.lessThan("id", 15);
@@ -309,11 +307,9 @@ public class DbAssistJoinConditionsTest extends BaseTest {
                 conCertName
         );
 
-        //fetch
+        //fetches
         Function<FetchParent<?, ?>, FetchParent<?, ?>> fetchA = fp -> fp
-                .fetch("certificates", JoinType.LEFT)
-                .fetch("provider", JoinType.LEFT)
-                .fetch("country", JoinType.LEFT);
+                .fetch("certificates", JoinType.LEFT);
 
         Function<FetchParent<?, ?>, FetchParent<?, ?>> fetchB = fp -> fp
                 .fetch("certificates", JoinType.LEFT)
@@ -323,7 +319,9 @@ public class DbAssistJoinConditionsTest extends BaseTest {
         assertEquals(usersReadMultipleJoin.size(), 3);
 
         User userA = usersReadMultipleJoin.get(0);
-        String countryOfProvider = userA.getCertificates().get(0).getProvider().getCountry().getName();
+        String countryOfProvider = userA.getCertificates().iterator().next().getProvider().getCountry().getName();
         assertNotNull(countryOfProvider);
     }
+
+    //TODO add more fetch tests
 }

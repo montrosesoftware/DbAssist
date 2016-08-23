@@ -2,7 +2,9 @@ package com.montrosesoftware.entities;
 
 import javax.persistence.*;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "providers", schema = "jpa")
@@ -19,7 +21,7 @@ public class Provider {
     private boolean active;
 
     @OneToMany(fetch=FetchType.LAZY, mappedBy = "provider")
-    private List<Certificate> certificates = new ArrayList<>();
+    private Set<Certificate> certificates = new HashSet<>();
 
     @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinColumn(name = "country_id")
@@ -57,11 +59,11 @@ public class Provider {
         this.active = active;
     }
 
-    public List<Certificate> getCertificates() {
+    public Set<Certificate> getCertificates() {
         return certificates;
     }
 
-    public void setCertificates(List<Certificate> certificates) {
+    public void setCertificates(Set<Certificate> certificates) {
         this.certificates = certificates;
     }
 

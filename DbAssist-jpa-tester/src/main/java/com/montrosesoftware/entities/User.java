@@ -4,9 +4,7 @@ import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 
 import javax.persistence.*;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 @Entity
 @Table(name = "users", schema = "jpa")
@@ -34,7 +32,7 @@ public class User {
             schema = "jpa",
             joinColumns=@JoinColumn(name="user_id", referencedColumnName = "id"),
             inverseJoinColumns = @JoinColumn(name="cert_id", referencedColumnName = "id"))
-    private List<Certificate> certificates = new ArrayList<>();
+    private Set<Certificate> certificates = new HashSet<>();
 
     @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinColumn(name = "main_cert_id")
@@ -88,11 +86,11 @@ public class User {
 
     public void setCategory(String category) { this.category = category; }
 
-    public List<Certificate> getCertificates() {
+    public Set<Certificate> getCertificates() {
         return certificates;
     }
 
-    public void setCertificates(List<Certificate> certificates) {
+    public void setCertificates(Set<Certificate> certificates) {
         this.certificates = certificates;
     }
 

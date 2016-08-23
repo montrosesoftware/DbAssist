@@ -2,7 +2,9 @@ package com.montrosesoftware.entities;
 
 import javax.persistence.*;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "countries", schema = "jpa")
@@ -16,7 +18,7 @@ public class Country {
     private String name;
 
     @OneToMany(fetch=FetchType.LAZY, mappedBy = "country")
-    private List<Provider> providers = new ArrayList<>();
+    private Set<Provider> providers = new HashSet<>();
 
     public Country() {}
 
@@ -41,11 +43,11 @@ public class Country {
         this.name = name;
     }
 
-    public List<Provider> getProviders() {
+    public Set<Provider> getProviders() {
         return providers;
     }
 
-    public void setProviders(List<Provider> providers) {
+    public void setProviders(Set<Provider> providers) {
         this.providers = providers;
     }
 

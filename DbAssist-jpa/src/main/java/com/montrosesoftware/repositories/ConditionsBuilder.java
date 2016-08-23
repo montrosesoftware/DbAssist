@@ -54,7 +54,8 @@ public class ConditionsBuilder {
 
     private JoinType joinType;
 
-    public ConditionsBuilder() {}
+    public ConditionsBuilder() {
+    }
 
     private ConditionsBuilder(String joinAttribute, JoinType joinType) {
         this.joinAttribute = joinAttribute;
@@ -89,20 +90,20 @@ public class ConditionsBuilder {
         return addToWhereConditionsAndReturn(new Condition(this, (cb, root) -> cb.equal(root.get(attributeName), getExpression(cb, value, LocalDate.class))));
     }
 
-    public <T extends Comparable<T>> Condition greaterThan(String attributeName, T value){
-        return addToWhereConditionsAndReturn(new Condition(this, (cb, root) -> cb.greaterThan(root.get(attributeName), getExpression(cb, value, (Class<T>)value.getClass()))));
+    public <T extends Comparable<T>> Condition greaterThan(String attributeName, T value) {
+        return addToWhereConditionsAndReturn(new Condition(this, (cb, root) -> cb.greaterThan(root.get(attributeName), getExpression(cb, value, (Class<T>) value.getClass()))));
     }
 
-    public <T extends Comparable<T>> Condition greaterThanOrEqualTo(String attributeName, T value){
-        return addToWhereConditionsAndReturn(new Condition(this, (cb, root) -> cb.greaterThanOrEqualTo(root.get(attributeName), getExpression(cb, value, (Class<T>)value.getClass()))));
+    public <T extends Comparable<T>> Condition greaterThanOrEqualTo(String attributeName, T value) {
+        return addToWhereConditionsAndReturn(new Condition(this, (cb, root) -> cb.greaterThanOrEqualTo(root.get(attributeName), getExpression(cb, value, (Class<T>) value.getClass()))));
     }
 
-    public <T extends Comparable<T>> Condition lessThan(String attributeName, T value){
-        return addToWhereConditionsAndReturn(new Condition(this, (cb, root) -> cb.lessThan(root.get(attributeName), getExpression(cb, value, (Class<T>)value.getClass()))));
+    public <T extends Comparable<T>> Condition lessThan(String attributeName, T value) {
+        return addToWhereConditionsAndReturn(new Condition(this, (cb, root) -> cb.lessThan(root.get(attributeName), getExpression(cb, value, (Class<T>) value.getClass()))));
     }
 
-    public <T extends Comparable<T>> Condition lessThanOrEqualTo(String attributeName, T value){
-        return addToWhereConditionsAndReturn(new Condition(this, (cb, root) -> cb.lessThanOrEqualTo(root.get(attributeName), getExpression(cb, value, (Class<T>)value.getClass()))));
+    public <T extends Comparable<T>> Condition lessThanOrEqualTo(String attributeName, T value) {
+        return addToWhereConditionsAndReturn(new Condition(this, (cb, root) -> cb.lessThanOrEqualTo(root.get(attributeName), getExpression(cb, value, (Class<T>) value.getClass()))));
     }
 
     public <T> Condition in(String attributeName, List<T> values) {
@@ -196,14 +197,14 @@ public class ConditionsBuilder {
         return conditionsBuilder;
     }
 
-    public <T extends Comparable<T>> Condition inRangeCondition(String attributeName, T leftBound, T rightBound){
+    public <T extends Comparable<T>> Condition inRangeCondition(String attributeName, T leftBound, T rightBound) {
         return this.and(
                 this.greaterThanOrEqualTo(attributeName, leftBound),
                 this.lessThanOrEqualTo(attributeName, rightBound)
         );
     }
 
-    public <T extends Comparable<T>> Condition inRangeExclusiveCondition(String attributeName, T leftBound, T rightBound){
+    public <T extends Comparable<T>> Condition inRangeExclusiveCondition(String attributeName, T leftBound, T rightBound) {
         return this.and(
                 this.greaterThan(attributeName, leftBound),
                 this.lessThan(attributeName, rightBound)
@@ -211,7 +212,7 @@ public class ConditionsBuilder {
     }
 
     public void apply(CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder, Root<?> root) {
-        if(!this.getParameters().isEmpty())
+        if (!this.getParameters().isEmpty())
             throw new RuntimeException("The conditions were already used.");
 
         applyPredicates(getPredicates(criteriaQuery, criteriaBuilder, root), criteriaQuery, criteriaBuilder);
@@ -257,43 +258,45 @@ public class ConditionsBuilder {
         return "param" + UUID.randomUUID().toString().replaceAll("-", "").replaceAll("\\d", "");
     }
 
+    private From<?, ?> checkAndGetExistingJoinOrFetch(From<?, ?> from, ConditionsBuilder joinConditionBuilder) {
+        FetchParent<?, ?> fetchParent = null;
+        fetchParent = checkExisting(joinConditionBuilder, fetchParent, from.getJoins());
+        fetchParent = fetchParent != null ? fetchParent : checkExisting(joinConditionBuilder, fetchParent, from.getFetches());
+        return (From<?, ?>) fetchParent;
+    }
 
     private From<?, ?> getFrom(From<?, ?> from, ConditionsBuilder joinConditionBuilder) {
         if (joinConditionBuilder == null || joinConditionBuilder == this) {
             return from;
         }
 
-        FetchParent<?, ?> fetchParent = null;
-        fetchParent = checkExisting(joinConditionBuilder, fetchParent, from.getJoins());
-        fetchParent = fetchParent != null ? fetchParent : checkExisting(joinConditionBuilder, fetchParent, from.getFetches());
-        if(fetchParent == null){
-            From<?,?> previousFrom = getPreviousFrom(from, joinConditionBuilder);
+        FetchParent<?, ?> fetchParent = checkAndGetExistingJoinOrFetch(from, joinConditionBuilder);
+        if (fetchParent == null) {
+            From<?, ?> previousFrom = getPreviousFrom(from, joinConditionBuilder);
             fetchParent = previousFrom.join(joinConditionBuilder.joinAttribute, joinConditionBuilder.joinType);
         }
 
         return (From<?, ?>) fetchParent;
     }
 
-    public From<?, ?> getPreviousFrom(From<?, ?> from, ConditionsBuilder conditionsBuilder){
+    public From<?, ?> getPreviousFrom(From<?, ?> from, ConditionsBuilder conditionsBuilder) {
 
         FetchParent<?, ?> fetchParent = null;
 
         ConditionsBuilder parentBuilder = conditionsBuilder.getJoinParent();
-        if(this == parentBuilder){
+        if (this == parentBuilder) {
             return from;
-        } else{
+        } else {
             if (parentBuilder != null) {
                 if (this.getJoinConditionsBuilders().containsValue(parentBuilder)) {
                     //make join
-                    fetchParent = checkExisting(parentBuilder, fetchParent, from.getJoins());
-                    fetchParent = fetchParent != null ? fetchParent : checkExisting(parentBuilder, fetchParent, from.getFetches());
+                    fetchParent = checkAndGetExistingJoinOrFetch(from, parentBuilder);
                     fetchParent = fetchParent != null ? fetchParent : from.join(parentBuilder.joinAttribute, parentBuilder.joinType);
-                }else{
+                } else {
                     //recursive
                     From<?, ?> previousFrom = getPreviousFrom(from, parentBuilder);
-                    fetchParent = checkExisting(parentBuilder, fetchParent, from.getJoins());
-                    fetchParent = fetchParent != null ? fetchParent : checkExisting(parentBuilder, fetchParent, from.getFetches());
-                    fetchParent = fetchParent != null ? fetchParent : previousFrom.join(parentBuilder.joinAttribute, parentBuilder.joinType); //TODO rethink
+                    fetchParent = checkAndGetExistingJoinOrFetch(from, parentBuilder);
+                    fetchParent = fetchParent != null ? fetchParent : previousFrom.join(parentBuilder.joinAttribute, parentBuilder.joinType);
                 }
             }
         }
@@ -302,7 +305,8 @@ public class ConditionsBuilder {
     }
 
     private FetchParent<?, ?> checkExisting(ConditionsBuilder joinCondition, FetchParent<?, ?> fetchParent, Set<?> joinsOrFetches) {
-        //TODO this is not user, to verify if correct
+        // Method is called to verify if a join or fetch was already made. In such case return existing join
+        // It is necessary to prevent duplicated SQL code for the same joins, when for example applying logical operators on conditions
         if (!joinsOrFetches.isEmpty()) {
             LinkedHashSet<?> existingSingularAttributes = (LinkedHashSet<?>) joinsOrFetches;
 
@@ -318,6 +322,4 @@ public class ConditionsBuilder {
 
         return fetchParent;
     }
-
-
 }
