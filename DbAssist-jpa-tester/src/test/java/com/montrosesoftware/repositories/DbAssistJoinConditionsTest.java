@@ -298,12 +298,12 @@ public class DbAssistJoinConditionsTest extends BaseTest {
 
         ConditionsBuilder builderUsers = new ConditionsBuilder();
         ConditionsBuilder builderCertificates = builderUsers.getJoinConditionsBuilder("certificates", JoinType.LEFT);
-        ConditionsBuilder builderProviders = builderCertificates.getJoinConditionsBuilder("provider", JoinType.LEFT);
+        //ConditionsBuilder builderProviders = builderCertificates.getJoinConditionsBuilder("provider", JoinType.LEFT);
         //ConditionsBuilder builderCountries = builderProviders.getJoinConditionsBuilder("country", JoinType.LEFT);
 
         //conditions on first two entities
         Condition conUserIdLessThan = builderUsers.lessThan("id", 15);
-        Condition conCertName = builderProviders.equal("name", "BHP");
+        Condition conCertName = builderCertificates.equal("name", "BHP");
         builderUsers.or(
                 conUserIdLessThan,
                 conCertName
@@ -319,7 +319,7 @@ public class DbAssistJoinConditionsTest extends BaseTest {
                 .fetch("certificates", JoinType.LEFT)
                 .fetch("provider", JoinType.LEFT);
 
-        List<User> usersReadMultipleJoin = uRepo.find(builderUsers, Arrays.asList(fetchA), null);
+        List<User> usersReadMultipleJoin = uRepo.find(builderUsers, Arrays.asList(fetchA, fetchB), null);
         assertEquals(usersReadMultipleJoin.size(), 3);
 
         User userA = usersReadMultipleJoin.get(0);
