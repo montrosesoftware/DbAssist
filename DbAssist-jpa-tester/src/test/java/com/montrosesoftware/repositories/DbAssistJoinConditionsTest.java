@@ -16,9 +16,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.function.Function;
 
 import static com.montrosesoftware.repositories.TestUtils.saveUsersData;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 public class DbAssistJoinConditionsTest extends BaseTest {
@@ -201,7 +203,7 @@ public class DbAssistJoinConditionsTest extends BaseTest {
     @Test
     public void ComplexJoinWithManyToManyChainRelation() {
         prepareAndSaveExampleDataToDb();
-        //TODO
+
         // chain, many to many
         // user - certificate - provider - country
 
@@ -288,5 +290,40 @@ public class DbAssistJoinConditionsTest extends BaseTest {
         // ... WHERE user.id < ? AND provider.id < ?
         List<User> users = typedQuery.getResultList();
         assertEquals(2, users.size());
+    }
+
+    @Test
+    public void joinAndFetchTestOnFourEntitiesChain() {
+        prepareAndSaveExampleDataToDb();
+
+        ConditionsBuilder builderUsers = new ConditionsBuilder();
+        ConditionsBuilder builderCertificates = builderUsers.getJoinConditionsBuilder("certificates", JoinType.LEFT);
+        //ConditionsBuilder builderProviders = builderCertificates.getJoinConditionsBuilder("provider", JoinType.LEFT);
+        //ConditionsBuilder builderCountries = builderProviders.getJoinConditionsBuilder("country", JoinType.LEFT);
+
+        //conditions on first two entities
+        Condition conUserIdLessThan = builderUsers.lessThan("id", 15);
+        Condition conCertName = builderCertificates.equal("name", "BHP");
+        builderUsers.or(
+                conUserIdLessThan,
+                conCertName
+        );
+
+        //fetch
+        Function<FetchParent<?, ?>, FetchParent<?, ?>> fetchA = fp -> fp
+                .fetch("certificates", JoinType.LEFT)
+                .fetch("provider", JoinType.LEFT)
+                .fetch("country", JoinType.LEFT);
+
+        Function<FetchParent<?, ?>, FetchParent<?, ?>> fetchB = fp -> fp
+                .fetch("certificates", JoinType.LEFT)
+                .fetch("provider", JoinType.LEFT);
+
+        List<User> usersReadMultipleJoin = uRepo.find(builderUsers, Arrays.asList(fetchA, fetchB), null);
+        assertEquals(usersReadMultipleJoin.size(), 3);
+
+        User userA = usersReadMultipleJoin.get(0);
+        String countryOfProvider = userA.getCertificates().get(0).getProvider().getCountry().getName();
+        assertNotNull(countryOfProvider);
     }
 }
