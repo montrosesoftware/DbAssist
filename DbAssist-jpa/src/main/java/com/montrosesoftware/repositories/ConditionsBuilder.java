@@ -286,7 +286,7 @@ public class ConditionsBuilder {
                 }else{
                     //recursive
                     From<?, ?> currentFrom = getPrevious(from, parentBuilder);
-                    fetchParent = currentFrom.join(conditionsBuilder.joinAttribute, conditionsBuilder.joinType); //TODO rethink
+                    fetchParent = currentFrom.join(parentBuilder.joinAttribute, parentBuilder.joinType); //TODO rethink
                 }
             }
         }
