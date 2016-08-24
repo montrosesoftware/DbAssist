@@ -3,6 +3,7 @@ package com.montrosesoftware.repositories;
 import com.montrosesoftware.DateUtils;
 import com.montrosesoftware.config.BaseTest;
 import com.montrosesoftware.entities.User;
+import com.montrosesoftware.helpers.TestUtils;
 import com.montrosesoftware.repositories.ConditionsBuilder;
 import com.montrosesoftware.repositories.UserRepo;
 import org.junit.Test;
@@ -24,7 +25,7 @@ public class DbAssistAggregateTest extends BaseTest {
 
     @Test
     public void countUseTest() {
-        saveUsersData(uRepo, new ArrayList<User>(){{
+        TestUtils.saveUsersData(uRepo, new ArrayList<User>(){{
             add(new User(1, "Mont", ExampleDate));
             add(new User(2, "Mont", ExampleDate));
             add(new User(3, "Rose", ExampleDate));
@@ -58,7 +59,7 @@ public class DbAssistAggregateTest extends BaseTest {
     public void sumMinMaxUseTest(){
         Date date = DateUtils.getUtc("2012-06-12 08:10:15");
         Date dateAnother = DateUtils.getUtc("2020-06-12 15:10:15");
-        saveUsersData(uRepo, new ArrayList<User>(){{
+        TestUtils.saveUsersData(uRepo, new ArrayList<User>(){{
             add(new User(13, "Mont", date));
             add(new User(7, "Mont", date));
             add(new User(5, "Rose", dateAnother));
@@ -91,7 +92,7 @@ public class DbAssistAggregateTest extends BaseTest {
 
     @Test
     public void sumNormalAsLongAndAsDouble(){
-        saveUsersData(uRepo, new ArrayList<User>(){{
+        TestUtils.saveUsersData(uRepo, new ArrayList<User>(){{
             add(new User(1, "Mont", ExampleDate, 14.5, "worker"));
             add(new User(2, "Mont", ExampleDate, 10.1, "worker"));
             add(new User(3, "Rose", ExampleDate, 1.5, "worker"));
@@ -120,7 +121,7 @@ public class DbAssistAggregateTest extends BaseTest {
 
     @Test(expected = RuntimeException.class)
     public void conditionsAreNotReusableAfterCallingAggregate(){
-        saveUsersData(uRepo, new ArrayList<User>(){{
+        TestUtils.saveUsersData(uRepo, new ArrayList<User>(){{
             add(new User(1, "Mont", ExampleDate));
             add(new User(2, "Mont", ExampleDate));
             add(new User(3, "Rose", ExampleDate));
@@ -137,7 +138,7 @@ public class DbAssistAggregateTest extends BaseTest {
 
     @Test
     public void avgAggregate(){
-        saveUsersData(uRepo, new ArrayList<User>(){{
+        TestUtils.saveUsersData(uRepo, new ArrayList<User>(){{
             add(new User(1, "Mont", ExampleDate));
             add(new User(2, "Rose", ExampleDate));
             add(new User(3, "Montrose", ExampleDate));
@@ -158,7 +159,7 @@ public class DbAssistAggregateTest extends BaseTest {
         Date date1 = DateUtils.getUtc("2015-06-12 08:10:15");
         Date date2 = DateUtils.getUtc("2011-06-12 09:10:15");
         Date date3 = DateUtils.getUtc("2025-06-12 10:10:15");
-        saveUsersData(uRepo, new ArrayList<User>(){{
+        TestUtils.saveUsersData(uRepo, new ArrayList<User>(){{
             add(new User(1, "BB", date1));
             add(new User(2, "AA", date2));
             add(new User(3, "CC", date3));
