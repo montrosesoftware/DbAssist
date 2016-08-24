@@ -15,7 +15,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
 
-import static com.montrosesoftware.repositories.TestUtils.prepareAndSaveExampleDataToDb;
+import static com.montrosesoftware.helpers.TestUtils.prepareAndSaveExampleDataToDb;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 

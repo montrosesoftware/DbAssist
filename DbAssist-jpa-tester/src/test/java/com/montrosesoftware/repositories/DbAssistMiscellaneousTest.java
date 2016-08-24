@@ -13,8 +13,8 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
-import static com.montrosesoftware.repositories.TestUtils.collectionsAreEqual;
-import static com.montrosesoftware.repositories.TestUtils.saveUsersData;
+import static com.montrosesoftware.helpers.TestUtils.collectionsAreEqual;
+import static com.montrosesoftware.helpers.TestUtils.saveUsersData;
 import static org.junit.Assert.*;
 
 public class DbAssistMiscellaneousTest extends BaseTest {

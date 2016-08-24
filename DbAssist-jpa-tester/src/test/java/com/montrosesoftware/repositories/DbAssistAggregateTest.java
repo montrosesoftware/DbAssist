@@ -3,13 +3,15 @@ package com.montrosesoftware.repositories;
 import com.montrosesoftware.DateUtils;
 import com.montrosesoftware.config.BaseTest;
 import com.montrosesoftware.entities.User;
+import com.montrosesoftware.repositories.ConditionsBuilder;
+import com.montrosesoftware.repositories.UserRepo;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.ArrayList;
 import java.util.Date;
 
-import static com.montrosesoftware.repositories.TestUtils.saveUsersData;
+import static com.montrosesoftware.helpers.TestUtils.saveUsersData;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
