@@ -6,8 +6,10 @@ import com.montrosesoftware.entities.User;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import javax.persistence.criteria.JoinType;
 import java.util.*;
 
+import static com.montrosesoftware.repositories.TestUtils.prepareAndSaveExampleDataToDb;
 import static com.montrosesoftware.repositories.TestUtils.saveUsersData;
 import static org.apache.commons.lang3.time.DateUtils.addMinutes;
 import static org.junit.Assert.*;
@@ -111,5 +113,27 @@ public class DbAssistLogicalOperationsTest extends BaseTest {
         List<User> resultsD = uRepo.find(conditionsD);
         assertEquals(1, resultsD.size());
         assertEquals(2, resultsD.get(0).getId());
+    }
+
+    @Test
+    public void joinTestMultipleEntitiesWithListOfConditionsOr() {
+        prepareAndSaveExampleDataToDb(uRepo);
+
+        //handle joins
+        ConditionsBuilder builderUsers = new ConditionsBuilder();
+        ConditionsBuilder builderCertificates = builderUsers.getJoinConditionsBuilder("certificates", JoinType.LEFT);
+        ConditionsBuilder builderProviders = builderCertificates.getJoinConditionsBuilder("provider", JoinType.LEFT);
+        ConditionsBuilder builderCountries = builderProviders.getJoinConditionsBuilder("country", JoinType.LEFT);
+
+        ConditionsBuilder.Condition c1 = builderUsers.lessThan("id", 15);
+        ConditionsBuilder.Condition c2 = builderCertificates.lessThan("id", 13);
+        ConditionsBuilder.Condition c3 = builderProviders.lessThan("id", 9);
+        ConditionsBuilder.Condition c4 = builderCountries.equal("name", "Provider 1");
+
+        builderUsers.or(Arrays.asList(c1,c2, c3, c4));
+
+        // ... WHERE c1 OR c2 OR c3 or c4
+        List<User> usersReadMultipleJoin = uRepo.find(builderUsers);
+        assertEquals(usersReadMultipleJoin.size(), 3);
     }
 }

@@ -18,6 +18,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.function.Function;
 
+import static com.montrosesoftware.repositories.TestUtils.prepareAndSaveExampleDataToDb;
 import static com.montrosesoftware.repositories.TestUtils.saveUsersData;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -34,46 +35,9 @@ public class DbAssistJoinConditionsTest extends BaseTest {
     @Autowired
     private ProviderRepo pRepo;
 
-    public void prepareAndSaveExampleDataToDb() {
-        //Countries
-        Country countryA = new Country(1, "Poland");
-        Country countryB = new Country(2, "USA");
-
-        //Certificate providers
-        Provider providerA = new Provider(1, "Provider 1", true);
-        Provider providerB = new Provider(2, "Provider 2", false);
-        providerA.setCountry(countryA);
-        providerB.setCountry(countryB);
-
-        //Certificates
-        Date certDateA = DateUtils.getUtc("2016-06-12 14:54:15");
-        Certificate certA = new Certificate(1, "BHP", certDateA);
-        certA.setProvider(providerA);
-
-        Date certDateB = DateUtils.getUtc("2014-03-12 11:11:15");
-        Certificate certB = new Certificate(2, "Java Cert", certDateB);
-        certB.setProvider(providerB);
-
-        //Users
-        Date dateA = DateUtils.getUtc("2016-06-12 07:10:15");
-        Date dateB = DateUtils.getUtc("2010-06-12 08:10:15");
-        User userA = new User(1, "Rose", dateA);
-        User userB = new User(2, "Mont", dateB);
-        User userC = new User(3, "Tom", dateB);
-
-        userA.setMainCertificate(certA);
-        userB.setMainCertificate(certB);
-
-        userA.addCertificate(certA);
-        userA.addCertificate(certB);
-        userB.addCertificate(certB);
-
-        saveUsersData(uRepo, Arrays.asList(userA, userB, userC));
-    }
-
     @Test
     public void writeAndReadUsersOneToManyRelation() {
-        prepareAndSaveExampleDataToDb();
+        prepareAndSaveExampleDataToDb(uRepo);
 
         List<User> results = uRepo.find(new ConditionsBuilder());
         assertEquals(3, results.size());
@@ -81,13 +45,7 @@ public class DbAssistJoinConditionsTest extends BaseTest {
 
     @Test
     public void joinTestChainOfThreeChainedEntities() {
-        prepareAndSaveExampleDataToDb();
-
-        //read with no conditions
-        List<Provider> providersRead = pRepo.find(new ConditionsBuilder());
-        List<User> usersRead = uRepo.find(new ConditionsBuilder());
-        assertEquals(providersRead.size(), 2);
-        assertEquals(usersRead.size(), 3);
+        prepareAndSaveExampleDataToDb(uRepo);
 
         //handle joins
         ConditionsBuilder builderUsers = new ConditionsBuilder();
@@ -108,13 +66,7 @@ public class DbAssistJoinConditionsTest extends BaseTest {
 
     @Test
     public void joinTestChainOfFourChainedEntities() {
-        prepareAndSaveExampleDataToDb();
-
-        //read with no conditions
-        List<Provider> providersRead = pRepo.find(new ConditionsBuilder());
-        List<User> usersRead = uRepo.find(new ConditionsBuilder());
-        assertEquals(providersRead.size(), 2);
-        assertEquals(usersRead.size(), 3);
+        prepareAndSaveExampleDataToDb(uRepo);
 
         ConditionsBuilder builderUsers = new ConditionsBuilder();
         ConditionsBuilder builderCertificates = builderUsers.getJoinConditionsBuilder("certificates", JoinType.LEFT);
@@ -132,13 +84,12 @@ public class DbAssistJoinConditionsTest extends BaseTest {
 
         // ... WHERE (user.id < ? OR country.id < ?) AND provider.name = ?
         List<User> usersReadMultipleJoin = uRepo.find(builderUsers);
-        usersReadMultipleJoin.size();
         assertEquals(usersReadMultipleJoin.size(), 1);
     }
 
     @Test
     public void ComplexJoinWithOneToManyChainRelation() {
-        prepareAndSaveExampleDataToDb();
+        prepareAndSaveExampleDataToDb(uRepo);
 
         // chain, one to many
         // user - certificate - provider - country
@@ -169,7 +120,7 @@ public class DbAssistJoinConditionsTest extends BaseTest {
 
     @Test
     public void ComplexJoinWithOneToManyNonChainRelation() {
-        prepareAndSaveExampleDataToDb();
+        prepareAndSaveExampleDataToDb(uRepo);
 
         // non-chain, one to many
         // certificate - user
@@ -202,7 +153,7 @@ public class DbAssistJoinConditionsTest extends BaseTest {
 
     @Test
     public void ComplexJoinWithManyToManyChainRelation() {
-        prepareAndSaveExampleDataToDb();
+        prepareAndSaveExampleDataToDb(uRepo);
 
         // chain, many to many
         // user - certificate - provider - country
@@ -234,7 +185,7 @@ public class DbAssistJoinConditionsTest extends BaseTest {
 
     @Test
     public void ComplexJoinWithManyToManyNonChainRelation() {
-        prepareAndSaveExampleDataToDb();
+        prepareAndSaveExampleDataToDb(uRepo);
 
         // non-chain, many to many
         // certificate - user
@@ -267,7 +218,7 @@ public class DbAssistJoinConditionsTest extends BaseTest {
 
     @Test
     public void joinOnThreeEntitiesChainUsingCriteriaBuilder() {
-        prepareAndSaveExampleDataToDb();
+        prepareAndSaveExampleDataToDb(uRepo);
 
         List<Predicate> predicates = new ArrayList<>();
 
@@ -294,10 +245,10 @@ public class DbAssistJoinConditionsTest extends BaseTest {
 
     @Test
     public void joinAndFetchTestOnFourEntitiesChain() {
-        prepareAndSaveExampleDataToDb();
+        prepareAndSaveExampleDataToDb(uRepo);
 
         ConditionsBuilder builderUsers = new ConditionsBuilder();
-        ConditionsBuilder builderCertificates = builderUsers.getJoinConditionsBuilder("mainCertificate", JoinType.LEFT);
+        ConditionsBuilder builderCertificates = builderUsers.getJoinConditionsBuilder("certificates", JoinType.LEFT);
 
         //conditions on first two entities
         Condition conUserIdLessThan = builderUsers.lessThan("id", 15);
@@ -313,15 +264,15 @@ public class DbAssistJoinConditionsTest extends BaseTest {
 
         Function<FetchParent<?, ?>, FetchParent<?, ?>> fetchB = fp -> fp
                 .fetch("certificates", JoinType.LEFT)
-                .fetch("provider", JoinType.LEFT);
+                .fetch("provider", JoinType.LEFT)
+                .fetch("country", JoinType.LEFT);
 
         List<User> usersReadMultipleJoin = uRepo.find(builderUsers, Arrays.asList(fetchA, fetchB), null);
         assertEquals(usersReadMultipleJoin.size(), 3);
 
         User userA = usersReadMultipleJoin.get(0);
-        String countryOfProvider = userA.getCertificates().iterator().next().getProvider().getCountry().getName();
-        assertNotNull(countryOfProvider);
+        assertNotNull(userA);
     }
-
-    //TODO add more fetch tests
 }
+
+

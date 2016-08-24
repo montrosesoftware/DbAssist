@@ -134,6 +134,20 @@ public class ConditionsBuilder {
         return applyLogicalOperator(leftOperandCondition, rightOperandCondition, CriteriaBuilder::or);
     }
 
+    public Condition or(List<Condition> conditions_) {
+        List<Condition> conditions = new LinkedList<>(conditions_);
+
+        if(conditions.size() == 1){
+            return conditions.get(0);
+        } else if(conditions.size() == 2){
+            return or(conditions.get(0), conditions.get(1));
+        } else {
+            conditions.add(2, or(conditions.get(0), conditions.get(1)));
+            conditions = conditions.subList(2, conditions.size());
+            return or(conditions);
+        }
+    }
+
     public Condition and(Condition leftOperandCondition, Condition rightOperandCondition) {
         return applyLogicalOperator(leftOperandCondition, rightOperandCondition, CriteriaBuilder::and);
     }
@@ -265,6 +279,12 @@ public class ConditionsBuilder {
         return (From<?, ?>) fetchParent;
     }
 
+    private From<?, ?> safeJoin(From<?, ?> from, ConditionsBuilder joinConditionBuilder){
+        FetchParent<?, ?> fetchParent = checkAndGetExistingJoinOrFetch(from, joinConditionBuilder);
+        fetchParent = fetchParent != null ? fetchParent : from.join(joinConditionBuilder.joinAttribute, joinConditionBuilder.joinType);
+        return (From<?,?>) fetchParent;
+    }
+
     private From<?, ?> getFrom(From<?, ?> from, ConditionsBuilder joinConditionBuilder) {
         if (joinConditionBuilder == null || joinConditionBuilder == this) {
             return from;
@@ -273,7 +293,7 @@ public class ConditionsBuilder {
         FetchParent<?, ?> fetchParent = checkAndGetExistingJoinOrFetch(from, joinConditionBuilder);
         if (fetchParent == null) {
             From<?, ?> previousFrom = getPreviousFrom(from, joinConditionBuilder);
-            fetchParent = previousFrom.join(joinConditionBuilder.joinAttribute, joinConditionBuilder.joinType);
+            fetchParent = safeJoin(previousFrom, joinConditionBuilder);
         }
 
         return (From<?, ?>) fetchParent;
@@ -290,13 +310,11 @@ public class ConditionsBuilder {
             if (parentBuilder != null) {
                 if (this.getJoinConditionsBuilders().containsValue(parentBuilder)) {
                     //make join
-                    fetchParent = checkAndGetExistingJoinOrFetch(from, parentBuilder);
-                    fetchParent = fetchParent != null ? fetchParent : from.join(parentBuilder.joinAttribute, parentBuilder.joinType);
+                    fetchParent = safeJoin(from, parentBuilder);
                 } else {
                     //recursive
                     From<?, ?> previousFrom = getPreviousFrom(from, parentBuilder);
-                    fetchParent = checkAndGetExistingJoinOrFetch(from, parentBuilder);
-                    fetchParent = fetchParent != null ? fetchParent : previousFrom.join(parentBuilder.joinAttribute, parentBuilder.joinType);
+                    fetchParent = safeJoin(previousFrom, parentBuilder);
                 }
             }
         }
