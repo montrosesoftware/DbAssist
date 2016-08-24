@@ -2,7 +2,6 @@ package com.montrosesoftware.repositories;
 
 import com.montrosesoftware.DateUtils;
 import com.montrosesoftware.entities.Certificate;
-import com.montrosesoftware.repositories.AbstractRepository;
 import org.springframework.stereotype.Repository;
 
 import javax.persistence.EntityManager;

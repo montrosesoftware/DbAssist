@@ -1,9 +1,7 @@
 package com.montrosesoftware.repositories;
 
-import com.montrosesoftware.DateUtils;
 import com.montrosesoftware.config.BaseTest;
 import com.montrosesoftware.entities.Certificate;
-import com.montrosesoftware.entities.Country;
 import com.montrosesoftware.entities.Provider;
 import com.montrosesoftware.entities.User;
 import com.montrosesoftware.repositories.ConditionsBuilder.Condition;
@@ -14,15 +12,12 @@ import javax.persistence.TypedQuery;
 import javax.persistence.criteria.*;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 import java.util.function.Function;
 
 import static com.montrosesoftware.repositories.TestUtils.prepareAndSaveExampleDataToDb;
-import static com.montrosesoftware.repositories.TestUtils.saveUsersData;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 public class DbAssistJoinConditionsTest extends BaseTest {
 

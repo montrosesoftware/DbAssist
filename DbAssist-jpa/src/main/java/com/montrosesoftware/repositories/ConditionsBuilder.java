@@ -273,9 +273,8 @@ public class ConditionsBuilder {
     }
 
     private From<?, ?> checkAndGetExistingJoinOrFetch(From<?, ?> from, ConditionsBuilder joinConditionBuilder) {
-        FetchParent<?, ?> fetchParent = null;
-        fetchParent = checkExisting(joinConditionBuilder, fetchParent, from.getJoins());
-        fetchParent = fetchParent != null ? fetchParent : checkExisting(joinConditionBuilder, fetchParent, from.getFetches());
+        FetchParent<?, ?> fetchParent = checkExisting(joinConditionBuilder, from.getJoins());
+        fetchParent = fetchParent != null ? fetchParent : checkExisting(joinConditionBuilder, from.getFetches());
         return (From<?, ?>) fetchParent;
     }
 
@@ -322,9 +321,12 @@ public class ConditionsBuilder {
         return (From<?, ?>) fetchParent;
     }
 
-    private FetchParent<?, ?> checkExisting(ConditionsBuilder joinCondition, FetchParent<?, ?> fetchParent, Set<?> joinsOrFetches) {
+    private FetchParent<?, ?> checkExisting(ConditionsBuilder joinCondition, Set<?> joinsOrFetches) {
         // Method is called to verify if a join or fetch was already made. In such case return existing join
         // It is necessary to prevent duplicated SQL code for the same joins, when for example applying logical operators on conditions
+
+        FetchParent<?, ?> fetchParent = null;
+
         if (!joinsOrFetches.isEmpty()) {
             LinkedHashSet<?> existingSingularAttributes = (LinkedHashSet<?>) joinsOrFetches;
 

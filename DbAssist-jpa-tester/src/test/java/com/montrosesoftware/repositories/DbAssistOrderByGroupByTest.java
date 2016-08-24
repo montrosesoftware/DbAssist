@@ -7,7 +7,6 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.persistence.Tuple;
-import javax.persistence.criteria.Expression;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;

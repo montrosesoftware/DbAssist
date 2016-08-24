@@ -4,9 +4,6 @@ import com.montrosesoftware.DateUtils;
 import com.montrosesoftware.config.BaseTest;
 import com.montrosesoftware.entities.Certificate;
 import com.montrosesoftware.entities.User;
-import com.montrosesoftware.repositories.CertificateRepo;
-import com.montrosesoftware.repositories.ConditionsBuilder;
-import com.montrosesoftware.repositories.UserRepo;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.junit.Test;
@@ -15,7 +12,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
-import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;

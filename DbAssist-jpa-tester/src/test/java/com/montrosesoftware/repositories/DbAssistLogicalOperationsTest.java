@@ -7,7 +7,10 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.persistence.criteria.JoinType;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
 
 import static com.montrosesoftware.repositories.TestUtils.prepareAndSaveExampleDataToDb;
 import static com.montrosesoftware.repositories.TestUtils.saveUsersData;

@@ -1,10 +1,9 @@
 package com.montrosesoftware.entities;
 
-import org.hibernate.annotations.Fetch;
-import org.hibernate.annotations.FetchMode;
-
 import javax.persistence.*;
-import java.util.*;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "users", schema = "jpa")

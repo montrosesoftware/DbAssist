@@ -8,7 +8,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.persistence.Tuple;
 import javax.persistence.criteria.Selection;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
 
 import static com.montrosesoftware.repositories.TestUtils.collectionsAreEqual;
 import static com.montrosesoftware.repositories.TestUtils.saveUsersData;
