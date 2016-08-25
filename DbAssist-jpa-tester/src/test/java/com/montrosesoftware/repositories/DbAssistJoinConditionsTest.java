@@ -153,28 +153,28 @@ public class DbAssistJoinConditionsTest extends BaseTest {
         // chain, many to many
         // user - certificate - provider - country
 
-        ConditionsBuilder cb = new ConditionsBuilder();
-        ConditionsBuilder builderCertificate = cb.getJoinConditionsBuilder("certificates", JoinType.LEFT);
-        ConditionsBuilder builderProvider = builderCertificate.getJoinConditionsBuilder("provider", JoinType.LEFT);
-        ConditionsBuilder builderCountry = builderProvider.getJoinConditionsBuilder("country", JoinType.LEFT);
+ConditionsBuilder cb = new ConditionsBuilder();
+ConditionsBuilder builderCerts = cb.getJoinConditionsBuilder("certificates", JoinType.LEFT);
+ConditionsBuilder builderProvider = builderCerts.getJoinConditionsBuilder("provider", JoinType.LEFT);
+ConditionsBuilder builderCountry = builderProvider.getJoinConditionsBuilder("country", JoinType.LEFT);
 
-        Condition conUserIdGreaterThanOrEqual = cb.greaterThanOrEqualTo("id", 0);
-        Condition conUserIdLessThan = cb.lessThan("id", 15);
-        Condition conCertIdLessThan = builderCertificate.lessThan("id", 5);
-        Condition conCertIdGreaterThanOrEqual = builderCertificate.greaterThanOrEqualTo("id", 0);
-        Condition conProvName = builderProvider.equal("name", "Provider 1");
-        Condition conCountryName = builderCountry.equal("name", "USA");
+Condition conUserIdGreaterThanOrEqual = cb.greaterThanOrEqualTo("id", 0);
+Condition conUserIdLessThan = cb.lessThan("id", 15);
+Condition conCertIdLessThan = builderCerts.lessThan("id", 5);
+Condition conCertIdGreaterThanOrEqual = builderCerts.greaterThanOrEqualTo("id", 0);
+Condition conProvName = builderProvider.equal("name", "Provider 1");
+Condition conCountryName = builderCountry.equal("name", "USA");
 
+cb.or(
+        cb.and(conUserIdLessThan, conUserIdGreaterThanOrEqual),
         cb.or(
-                cb.and(conUserIdLessThan, conUserIdGreaterThanOrEqual),
-                cb.or(
-                        cb.and(conCertIdGreaterThanOrEqual, conCertIdLessThan),
-                        cb.or(conProvName, conCountryName)
-                )
-        );
+                cb.and(conCertIdGreaterThanOrEqual, conCertIdLessThan),
+                cb.or(conProvName, conCountryName)
+        )
+);
 
-        // ... WHERE (user.id < ? AND user.id >= ?) OR (certificate.id >= ? AND certificate.id < ?) OR provider.name = ? OR country.name = ?
-        List<User> users = uRepo.find(cb);
+// ... WHERE (user.id < ? AND user.id >= ?) OR (certificate.id >= ? AND certificate.id < ?) OR provider.name = ? OR country.name = ?
+List<User> users = uRepo.find(cb);
         assertEquals(users.size(), 3);
     }
 

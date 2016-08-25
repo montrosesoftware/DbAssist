@@ -9,9 +9,8 @@ import org.apache.log4j.Logger;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.util.Collection;
-import java.util.Date;
-import java.util.List;
+import java.sql.Timestamp;
+import java.util.*;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -29,99 +28,64 @@ public class DbAssistDateShiftTest extends BaseTest{
         assertNotNull(cRepo);
     }
 
-    @Test
-    public void dataInsertedByPlainSQLAndReadBySpringIsNotEqual(){
-        Logger.getRootLogger().setLevel(Level.ERROR);
+    private User getExampleUserData(){
+        //prepare example user data
+        Date expectedDatetime = DateUtils.getUtc("2016-06-12 14:54:15");
+        Date expectedDate = DateUtils.getUtc("2016-03-02 00:00:00");
+        Timestamp expectedTimestamp = new Timestamp(expectedDatetime.getTime());
+        User user = new User(1, "Adam Spring", expectedDatetime, expectedTimestamp, expectedDate);
+        return user;
+    }
 
-        //prepare user
-        Date expectedDate = DateUtils.getUtc("2016-06-12 14:54:15");
-        int id = 1;
-        User userToInsert = new User(id, "Adam Spring", expectedDate);
-
-        uRepo.saveAsPlainSQL(userToInsert);
-
-        User userReadSpring = uRepo.get(id);
-
-        assertNotNull(userReadSpring);
-        assertEquals("Names are not the same", userToInsert.getName(), userReadSpring.getName());
-        assertEquals("Dates are not the same", userToInsert.getCreatedAt(), userReadSpring.getCreatedAt());
+    private void assertTimeInDatesNotShifted(User userExpected, User userActual){
+        assertNotNull(userActual);
+        assertEquals("Names are not the same", userExpected.getName(), userActual.getName());
+        assertEquals("Datetimes are not the same", userExpected.getCreatedAt(), userActual.getCreatedAt());
+        assertEquals("Timestamps are not the same", userExpected.getUpdatedAt(), userActual.getUpdatedAt());
+        assertEquals("Dates are not the same", userExpected.getLastLoggedAt(), userActual.getLastLoggedAt());
     }
 
     @Test
-    public void dataInsertedBySQLAndReadUsingCriteriaIsNotEqual(){
-        Logger.getRootLogger().setLevel(Level.ERROR);
-
-        //prepare user
-        Date expectedDate = DateUtils.getUtc("2016-06-12 12:10:15");
-        int id = 1;
-        User userToInsert = new User(id, "Adam Spring", expectedDate);
-
-        //insert
-        uRepo.saveAsPlainSQL(userToInsert);
-
-        //read
-        List users = uRepo.getUsingCriteria();
-        assertEquals(1, users.size());
-        User userReadSpring = (User) users.get(0);
-
-        assertNotNull(userReadSpring);
-        assertEquals("Names are not the same", userToInsert.getName(), userReadSpring.getName());
-        assertEquals("Dates are not the same", userToInsert.getCreatedAt(), userReadSpring.getCreatedAt());
+    public void dataInsertedByPlainSQLAndReadByJPAIsEqual(){
+        User userExpected = getExampleUserData();
+        uRepo.saveAsPlainSQL(userExpected);
+        User userActual = uRepo.get(1);
+        assertTimeInDatesNotShifted(userExpected, userActual);
     }
 
     @Test
-    public void dataInsertedBySQLAndReadUsingSpecificationIsNotEqual(){
-        Logger.getRootLogger().setLevel(Level.ERROR);
-
-        //prepare user
-        Date expectedDate = DateUtils.getUtc("2016-06-12 12:10:15");
-        int id = 1;
-        User userToInsert = new User(id, "Adam Spring", expectedDate);
-
-        //insert
-        uRepo.saveAsPlainSQL(userToInsert);
-
-        //read
-        User userReadUsingSpecs = uRepo.getUsingSpecification(expectedDate);
-
-        assertNotNull(userReadUsingSpecs);
-        assertEquals("Names are not the same", userToInsert.getName(), userReadUsingSpecs.getName());
-        assertEquals("Dates are not the same", userToInsert.getCreatedAt(), userReadUsingSpecs.getCreatedAt());
+    public void dataInsertedByPlainSQLAndReadUsingCriteriaIsEqual(){
+        User userExpected = getExampleUserData();
+        uRepo.saveAsPlainSQL(userExpected);
+        User userActual = uRepo.getUsingCriteria();
+        assertTimeInDatesNotShifted(userExpected, userActual);
     }
 
     @Test
-    public void dataInsertedBySQLAndReadUsingDbAssistConditions(){
-        Logger.getRootLogger().setLevel(Level.ERROR);
-
-        //prepare user
-        Date expectedDate = DateUtils.getUtc("2016-06-12 08:10:15");
-        int id = 1;
-        User userToInsert = new User(id, "Joanna Spring", expectedDate);
-
-        //insert
-        uRepo.saveAsPlainSQL(userToInsert);
-
-        //read
-        User userReadUsingSpecs = uRepo.getUsingConditionsBuilder(expectedDate);
-
-        assertNotNull(userReadUsingSpecs);
-        assertEquals("Names are not the same", userToInsert.getName(), userReadUsingSpecs.getName());
-        assertEquals("Dates are not the same", userToInsert.getCreatedAt(), userReadUsingSpecs.getCreatedAt());
+    public void dataInsertedByPlainSQLAndReadUsingSpecificationIsEqual(){
+        User userExpected = getExampleUserData();
+        uRepo.saveAsPlainSQL(userExpected);
+        User userActual = uRepo.getUsingSpecification(userExpected.getCreatedAt());
+        assertTimeInDatesNotShifted(userExpected, userActual);
     }
 
     @Test
-    public void dataInsertedBySpringAndReadByPlainSQLIsNotEqual(){
-        Logger.getRootLogger().setLevel(Level.ERROR);
+    public void dataInsertedByPlainSQLAndReadUsingDbAssistConditions(){
+        User userExpected = getExampleUserData();
+        uRepo.saveAsPlainSQL(userExpected);
+        User userActual = uRepo.getUsingConditionsBuilder(userExpected.getCreatedAt());
+        assertTimeInDatesNotShifted(userExpected, userActual);
+    }
 
-        Date expectedDate = DateUtils.getUtc("2016-06-12 15:15:15");
-        int id = 1;
-        User userToInsert = new User(id, "Adam Spring", expectedDate);
+    @Test
+    public void dataInsertedByJPAAndReadByPlainSQLIsNotEqual(){
+        User userToInsert = getExampleUserData();
 
         //Plain SQL
         uRepo.saveAsPlainSQL(userToInsert);
 
-        //Spring
-        userToInsert.setId(id+1);
+        //JPA
+        userToInsert.setId(userToInsert.getId()+1);
         uRepo.save(userToInsert);
 
         //read and compare
@@ -138,49 +102,35 @@ public class DbAssistDateShiftTest extends BaseTest{
 
     @Test
     public void certificateRead(){
-        Logger.getRootLogger().setLevel(Level.ERROR);
-
-        //prepare example certificate
         Date expectedDate = DateUtils.getUtc("2016-06-12 14:54:15");
-        int id = 1;
         Certificate certToInsert = new Certificate(1, "BHP", expectedDate);
-
         cRepo.saveAsPlainSQL(certToInsert);
-
-        Certificate certRead = cRepo.get(id);
+        Certificate certRead = cRepo.get(1);
         assertNotNull(certRead);
     }
 
     @Test
-    public void writeAndReadByHibernateJoin(){
-        Logger.getRootLogger().setLevel(Level.ERROR);
+    public void writeAndReadByHibernateWithJoinedEntities(){
+        User userExpected = getExampleUserData();
+        Certificate certActualA = new Certificate(1, "BHP", DateUtils.getUtc("2016-06-12 14:54:15"));
+        Certificate certActualB = new Certificate(2, "Java Cert", DateUtils.getUtc("2014-03-12 11:11:15"));
+        userExpected.addCertificate(certActualA);
+        userExpected.addCertificate(certActualB);
 
-        //prepare user
-        Date expectedDate = DateUtils.getUtc("2016-06-12 08:10:15");
-        int id = 1;
-        User userToInsert = new User(id, "Joanna Spring", expectedDate);
-
-        //prepare certificates
-        Date certDateA = DateUtils.getUtc("2016-06-12 14:54:15");
-        Certificate certA = new Certificate(1, "BHP", certDateA);
-
-        Date certDateB = DateUtils.getUtc("2014-03-12 11:11:15");
-        Certificate certB = new Certificate(2, "Java Cert", certDateB);
-
-        userToInsert.addCertificate(certA);
-        userToInsert.addCertificate(certB);
-
-        uRepo.save(userToInsert);
+        uRepo.save(userExpected);
         uRepo.clearPersistenceContext();
 
-        User userRead = uRepo.get(id);
-        assertNotNull(userRead);
+        User userActual = uRepo.get(1);
+        assertNotNull(userActual);
 
-        Collection<Certificate> certsRead = userRead.getCertificates();
+        List<Certificate> certsRead = new ArrayList<>(userActual.getCertificates());
         assertEquals(2, certsRead.size());
 
-        assertEquals("User dates are not the same", userToInsert.getCreatedAt(), userRead.getCreatedAt());
-//        assertEquals("Certificate A dates are not the same", certA.getExpirationDate(), certsRead.get(0).getExpirationDate());
-//        assertEquals("Certificate B dates are not the same", certB.getExpirationDate(), certsRead.get(1).getExpirationDate());
+        Certificate certExpectedA = certsRead.stream().filter(c -> c.getId() == 1).findFirst().get();
+        Certificate certExpectedB = certsRead.stream().filter(c -> c.getId() == 2).findFirst().get();
+
+        assertTimeInDatesNotShifted(userExpected, userActual);
+        assertEquals("Certificate A dates are not the same", certActualA.getExpirationDate(), certExpectedA.getExpirationDate());
+        assertEquals("Certificate A dates are not the same", certActualB.getExpirationDate(), certExpectedB.getExpirationDate());
     }
 }

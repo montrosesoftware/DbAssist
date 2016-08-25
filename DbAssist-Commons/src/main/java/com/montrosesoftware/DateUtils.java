@@ -1,5 +1,6 @@
 package com.montrosesoftware;
 
+import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -26,9 +27,15 @@ public class DateUtils {
         return format;
     }
 
+    //TODO make generic
     public static String getUtc(Date date) {
         SimpleDateFormat format = getUtcDateFormat();
 
         return format.format(date);
+    }
+
+    public static String getUtc(Timestamp timestamp) {
+        SimpleDateFormat format = getUtcDateFormat();
+        return format.format(timestamp);
     }
 }

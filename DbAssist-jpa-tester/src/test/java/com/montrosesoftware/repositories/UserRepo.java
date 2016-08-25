@@ -35,7 +35,7 @@ public class UserRepo extends AbstractRepository<User> {
     }
 
     public List getDataByPlainSQL(){
-        String sql = "SELECT name, created_at FROM jpa.users";
+        String sql = "SELECT name, created_at, updated_at, last_logged_at FROM jpa.users";
         Query query = entityManager.createNativeQuery(sql);
         List users = query.getResultList();
         return users;
@@ -51,12 +51,17 @@ public class UserRepo extends AbstractRepository<User> {
     }
 
     public void saveAsPlainSQL(User user){
-        String sql = "INSERT INTO jpa.users (id, name, created_at) VALUES (" + user.getId() +", '" + user.getName() + "', '" + DateUtils.getUtc(user.getCreatedAt()) + "')";
+        String sql = "INSERT INTO jpa.users (id, name, created_at, updated_at, last_logged_at) VALUES ("
+                + user.getId() +", '"
+                + user.getName() + "', '"
+                + DateUtils.getUtc(user.getCreatedAt()) + "', '"
+                + DateUtils.getUtc(user.getUpdatedAt()) + "', '"
+                + DateUtils.getUtc(user.getLastLoggedAt()) + "')";
         Query query = entityManager.createNativeQuery(sql);
         query.executeUpdate();
     }
 
-    public List getUsingCriteria(){
+    public User getUsingCriteria(){
         CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
         CriteriaQuery<User> criteriaQuery = criteriaBuilder.createQuery(User.class);
         Root<User> root = criteriaQuery.from(User.class);
@@ -65,8 +70,8 @@ public class UserRepo extends AbstractRepository<User> {
         criteriaQuery.where(p);
 
         TypedQuery<User> typedQuery = entityManager.createQuery(criteriaQuery.select(root));
-
-        return typedQuery.getResultList();
+        List<User> results = typedQuery.getResultList();
+        return results.isEmpty() ? null : results.get(0);
     }
 
     public User getUsingSpecification(Date utcDate){
@@ -84,12 +89,8 @@ public class UserRepo extends AbstractRepository<User> {
         TypedQuery<User> typedQuery = entityManager.createQuery(criteriaQuery);
         typedQuery.setParameter(paramName, utcDate);
 
-        List results = typedQuery.getResultList();
-        if (results.isEmpty()){
-            return null;
-        }else{
-            return (User) results.get(0);
-        }
+        List<User> results = typedQuery.getResultList();
+        return results.isEmpty() ? null : results.get(0);
     }
 
     public User getUsingConditionsBuilder(Date utcDate){
@@ -98,11 +99,6 @@ public class UserRepo extends AbstractRepository<User> {
         conditionsBuilder.equal("createdAt", utcDate);
 
         List<User> results = find(conditionsBuilder, null, null);
-
-        if (results.isEmpty()){
-            return null;
-        } else {
-            return results.get(0);
-        }
+        return results.isEmpty() ? null : results.get(0);
     }
 }

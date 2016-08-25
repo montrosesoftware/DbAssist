@@ -1,6 +1,7 @@
 package com.montrosesoftware.entities;
 
 import javax.persistence.*;
+import java.sql.Timestamp;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
@@ -18,6 +19,12 @@ public class User {
 
     @Column(name = "created_at")
     private Date createdAt;
+
+    @Column(name = "updated_at")
+    private Timestamp updatedAt;
+
+    @Column(name = "last_logged_at")
+    private Date lastLoggedAt; //TODO think about it
 
     @Column(name = "salary")
     private Double salary;
@@ -43,6 +50,16 @@ public class User {
         this.id = id;
         this.name = name;
         this.createdAt = createdAt;
+        this.updatedAt = new Timestamp(createdAt.getTime());
+        this.lastLoggedAt = new Date(createdAt.getTime());
+    }
+
+    public User(int id, String name, Date createdAt, Timestamp updatedAt, Date lastLoggedAt) {
+        this.id = id;
+        this.name = name;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
+        this.lastLoggedAt = lastLoggedAt;
     }
 
     public User(int id, String name, Date createdAt, Double salary, String category) {
@@ -75,6 +92,22 @@ public class User {
 
     public void setCreatedAt(Date createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public Timestamp getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(Timestamp updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+
+    public Date getLastLoggedAt() {
+        return lastLoggedAt;
+    }
+
+    public void setLastLoggedAt(Date lastLoggedAt) {
+        this.lastLoggedAt = lastLoggedAt;
     }
 
     public Double getSalary() { return salary; }

@@ -22,7 +22,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.TimeZone;
 
-public class UtcTimestampType extends AbstractSingleColumnStandardBasicType<Date> implements VersionType<Date>, LiteralType<Date> {
+public class UtcDateType extends AbstractSingleColumnStandardBasicType<Date> implements VersionType<Date>, LiteralType<Date> {
 
     private static final long serialVersionUID = 1L;
 
@@ -68,7 +68,7 @@ public class UtcTimestampType extends AbstractSingleColumnStandardBasicType<Date
         }
     }
 
-    public UtcTimestampType() {
+    public UtcDateType() {
         super(UtcTimestampTypeDescriptor.INSTANCE, JdbcTimestampTypeDescriptor.INSTANCE);
     }
 

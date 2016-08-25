@@ -6,6 +6,18 @@
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog/1.6
          http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-1.6.xsd">
 
+    <changeSet id="ee9c49a9-44f5-4d0e-88d7-1db936821671" author="MontroseSoftware">
+        <addColumn schemaName="jpa" tableName="users">
+            <column name="updated_at" type="timestamp"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="6de3858c-15a2-4a59-9236-1941e66f08f5" author="MontroseSoftware">
+        <addColumn schemaName="jpa" tableName="users">
+            <column name="last_logged_at" type="date"/>
+        </addColumn>
+    </changeSet>
+
     <changeSet id="49526237-86a8-48b4-919d-9198caf6edfc" author="MontroseSoftware">
         <addColumn schemaName="jpa" tableName="users">
             <column name="salary" type="double"/>
