@@ -24,7 +24,7 @@ public class User {
     private Timestamp updatedAt;
 
     @Column(name = "last_logged_at")
-    private Date lastLoggedAt; //TODO think about it
+    private Date lastLoggedAt;
 
     @Column(name = "salary")
     private Double salary;

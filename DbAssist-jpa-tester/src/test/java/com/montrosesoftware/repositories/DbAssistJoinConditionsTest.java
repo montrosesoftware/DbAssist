@@ -153,28 +153,28 @@ public class DbAssistJoinConditionsTest extends BaseTest {
         // chain, many to many
         // user - certificate - provider - country
 
-ConditionsBuilder cb = new ConditionsBuilder();
-ConditionsBuilder builderCerts = cb.getJoinConditionsBuilder("certificates", JoinType.LEFT);
-ConditionsBuilder builderProvider = builderCerts.getJoinConditionsBuilder("provider", JoinType.LEFT);
-ConditionsBuilder builderCountry = builderProvider.getJoinConditionsBuilder("country", JoinType.LEFT);
+        ConditionsBuilder cb = new ConditionsBuilder();
+        ConditionsBuilder builderCerts = cb.getJoinConditionsBuilder("certificates", JoinType.LEFT);
+        ConditionsBuilder builderProvider = builderCerts.getJoinConditionsBuilder("provider", JoinType.LEFT);
+        ConditionsBuilder builderCountry = builderProvider.getJoinConditionsBuilder("country", JoinType.LEFT);
 
-Condition conUserIdGreaterThanOrEqual = cb.greaterThanOrEqualTo("id", 0);
-Condition conUserIdLessThan = cb.lessThan("id", 15);
-Condition conCertIdLessThan = builderCerts.lessThan("id", 5);
-Condition conCertIdGreaterThanOrEqual = builderCerts.greaterThanOrEqualTo("id", 0);
-Condition conProvName = builderProvider.equal("name", "Provider 1");
-Condition conCountryName = builderCountry.equal("name", "USA");
+        Condition conUserIdGreaterThanOrEqual = cb.greaterThanOrEqualTo("id", 0);
+        Condition conUserIdLessThan = cb.lessThan("id", 15);
+        Condition conCertIdLessThan = builderCerts.lessThan("id", 5);
+        Condition conCertIdGreaterThanOrEqual = builderCerts.greaterThanOrEqualTo("id", 0);
+        Condition conProvName = builderProvider.equal("name", "Provider 1");
+        Condition conCountryName = builderCountry.equal("name", "USA");
 
-cb.or(
-        cb.and(conUserIdLessThan, conUserIdGreaterThanOrEqual),
         cb.or(
-                cb.and(conCertIdGreaterThanOrEqual, conCertIdLessThan),
-                cb.or(conProvName, conCountryName)
-        )
-);
+                cb.and(conUserIdLessThan, conUserIdGreaterThanOrEqual),
+                cb.or(
+                        cb.and(conCertIdGreaterThanOrEqual, conCertIdLessThan),
+                        cb.or(conProvName, conCountryName)
+                )
+        );
 
 // ... WHERE (user.id < ? AND user.id >= ?) OR (certificate.id >= ? AND certificate.id < ?) OR provider.name = ? OR country.name = ?
-List<User> users = uRepo.find(cb);
+        List<User> users = uRepo.find(cb);
         assertEquals(users.size(), 3);
     }
 
@@ -253,16 +253,18 @@ List<User> users = uRepo.find(cb);
                 conCertName
         );
 
-        //fetches
-        Function<FetchParent<?, ?>, FetchParent<?, ?>> fetchA = fp -> fp
+        //fetches:
+        FetchesBuilder fetchesBuilder = new FetchesBuilder();
+
+        fetchesBuilder
                 .fetch("certificates", JoinType.LEFT);
 
-        Function<FetchParent<?, ?>, FetchParent<?, ?>> fetchB = fp -> fp
+        fetchesBuilder
                 .fetch("certificates", JoinType.LEFT)
                 .fetch("provider", JoinType.LEFT)
                 .fetch("country", JoinType.LEFT);
 
-        List<User> usersReadMultipleJoin = uRepo.find(builderUsers, Arrays.asList(fetchA, fetchB), null);
+        List<User> usersReadMultipleJoin = uRepo.find(builderUsers, fetchesBuilder, null);
         assertEquals(usersReadMultipleJoin.size(), 3);
 
         User userA = usersReadMultipleJoin.get(0);

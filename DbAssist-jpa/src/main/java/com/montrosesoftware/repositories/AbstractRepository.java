@@ -42,13 +42,15 @@ public abstract class AbstractRepository<T> {
         this.typeParameterClass = typeParameterClass;
     }
 
-    protected List<T> find(ConditionsBuilder conditionsBuilder, List<Function<FetchParent<?, ?>, FetchParent<?, ?>>> fetchCallbacks, OrderBy<T> orderBy) {
+    protected List<T> find(ConditionsBuilder conditionsBuilder, FetchesBuilder fetchesBuilder, OrderBy<T> orderBy) {
 
         CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
         CriteriaQuery<T> criteriaQuery = criteriaBuilder.createQuery(typeParameterClass);
         Root<T> root = criteriaQuery.from(typeParameterClass);
 
-        applyFetchCallbacks(fetchCallbacks, root);
+        if(fetchesBuilder != null) {
+            fetchesBuilder.applyFetches(root);
+        }
 
         criteriaQuery.select(root);
 
@@ -74,7 +76,7 @@ public abstract class AbstractRepository<T> {
 
     protected List<Tuple> findAttributes(SelectionList<T> selectionList,
                                          ConditionsBuilder conditionsBuilder,
-                                         List<Function<FetchParent<?, ?>, FetchParent<?, ?>>> fetchCallbacks,
+                                         FetchesBuilder fetchesBuilder,
                                          OrderBy<T> orderBy,
                                          GroupBy<T> groupBy) {
 
@@ -82,7 +84,9 @@ public abstract class AbstractRepository<T> {
         CriteriaQuery<Tuple> criteriaQuery = criteriaBuilder.createTupleQuery();
         Root<T> root = criteriaQuery.from(typeParameterClass);
 
-        applyFetchCallbacks(fetchCallbacks, root);
+        if(fetchesBuilder != null) {
+            fetchesBuilder.applyFetches(root);
+        }
 
         criteriaQuery.multiselect(selectionList.apply(criteriaBuilder, root));
 
@@ -109,25 +113,25 @@ public abstract class AbstractRepository<T> {
 
     protected <A> List<A> findAttribute(String attributeName,
                                         ConditionsBuilder conditionsBuilder,
-                                        List<Function<FetchParent<?, ?>, FetchParent<?, ?>>> fetchCallbacks,
+                                        FetchesBuilder fetchesBuilder,
                                         OrderBy<T> orderBy,
                                         SelectFunction<CriteriaBuilder, Path<A>, Selection<A>> selectCallback) {
-        return findAttribute(attributeName, false, conditionsBuilder, fetchCallbacks, orderBy, selectCallback);
+        return findAttribute(attributeName, false, conditionsBuilder, fetchesBuilder, orderBy, selectCallback);
     }
 
     protected <A> List<A> findAttributeDistinct(String attributeName,
                                                 ConditionsBuilder conditionsBuilder,
-                                                List<Function<FetchParent<?, ?>, FetchParent<?, ?>>> fetchCallbacks,
+                                                FetchesBuilder fetchesBuilder,
                                                 OrderBy<T> orderBy,
                                                 SelectFunction<CriteriaBuilder,
                                                         Path<A>, Selection<A>> selectCallback) {
-        return findAttribute(attributeName, true, conditionsBuilder, fetchCallbacks, orderBy, selectCallback);
+        return findAttribute(attributeName, true, conditionsBuilder, fetchesBuilder, orderBy, selectCallback);
     }
 
     private <A> List<A> findAttribute(String attributeName,
                                       boolean selectDistinct,
                                       ConditionsBuilder conditionsBuilder,
-                                      List<Function<FetchParent<?, ?>, FetchParent<?, ?>>> fetchCallbacks,
+                                      FetchesBuilder fetchesBuilder,
                                       OrderBy<T> orderBy,
                                       SelectFunction<CriteriaBuilder, Path<A>, Selection<A>> selectCallback) {
 
@@ -135,7 +139,9 @@ public abstract class AbstractRepository<T> {
         CriteriaQuery<A> criteriaQuery = criteriaBuilder.createQuery(getType(attributeName));
         Root<T> root = criteriaQuery.from(typeParameterClass);
 
-        applyFetchCallbacks(fetchCallbacks, root);
+        if(fetchesBuilder != null) {
+            fetchesBuilder.applyFetches(root);
+        }
 
         Selection<? extends A> selection;
 
@@ -183,18 +189,18 @@ public abstract class AbstractRepository<T> {
         }
     }
 
-    /**
-     * Multiple fetches might be chained together to force eager-loading of associations.
-     * See: http://stackoverflow.com/questions/8521338/how-to-fetch-all-data-in-one-query
-     */
-    private void applyFetchCallbacks(List<Function<FetchParent<?, ?>, FetchParent<?, ?>>> fetchCallbacks, Root<T> root) {
-        FetchParent<?, ?> rootFetchParent = root;
-        if (fetchCallbacks != null) {
-            for (Function<FetchParent<?, ?>, FetchParent<?, ?>> fetchCallback : fetchCallbacks) {
-                fetchCallback.apply(rootFetchParent);
-            }
-        }
-    }
+//    /**
+//     * Multiple fetches might be chained together to force eager-loading of associations.
+//     * See: http://stackoverflow.com/questions/8521338/how-to-fetch-all-data-in-one-query
+//     */
+//    private void applyFetchCallbacks(List<Function<FetchParent<?, ?>, FetchParent<?, ?>>> fetchCallbacks, Root<T> root) {
+//        FetchParent<?, ?> rootFetchParent = root;
+//        if (fetchCallbacks != null) {
+//            for (Function<FetchParent<?, ?>, FetchParent<?, ?>> fetchCallback : fetchCallbacks) {
+//                fetchCallback.apply(rootFetchParent);
+//            }
+//        }
+//    }
 
     private Class getType(String attributeName){
         Metamodel metamodel = entityManager.getMetamodel();
