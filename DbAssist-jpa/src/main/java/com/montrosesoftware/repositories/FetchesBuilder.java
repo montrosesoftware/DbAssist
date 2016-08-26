@@ -2,32 +2,22 @@ package com.montrosesoftware.repositories;
 
 import javax.persistence.criteria.FetchParent;
 import javax.persistence.criteria.JoinType;
-import java.util.HashMap;
 
-public class FetchesBuilder {
-
-    private HashMap<String, FetchesBuilder> fetchesBuilders = new HashMap<>();
-
-    private String joinAttribute;
-
-    private JoinType joinType;
+public class FetchesBuilder extends BaseBuilder<FetchesBuilder> {
 
     public FetchesBuilder(){}
 
     public FetchesBuilder(String joinAttribute, JoinType joinType) {
-        this.joinAttribute = joinAttribute;
-        this.joinType = joinType;
+        super(joinAttribute, joinType);
+    }
+
+    @Override
+    public FetchesBuilder getInstance(String joinAttribute, JoinType joinType) {
+        return new FetchesBuilder(joinAttribute, joinType);
     }
 
     public FetchesBuilder fetch(String joinAttribute, JoinType joinType) {
-        FetchesBuilder fetchesBuilder = fetchesBuilders.get(joinAttribute);
-
-        if (fetchesBuilder == null) {
-            fetchesBuilder = new FetchesBuilder(joinAttribute, joinType);
-            fetchesBuilders.put(joinAttribute, fetchesBuilder);
-        }
-
-        return fetchesBuilder;
+        return getBuilder(joinAttribute, joinType);
     }
 
     public void applyFetches(FetchParent<?, ?> root){
@@ -36,7 +26,7 @@ public class FetchesBuilder {
         if (!(joinAttribute == null))
             rootFetchParent = root.fetch(joinAttribute, joinType);
 
-        for(FetchesBuilder fb : fetchesBuilders.values()){
+        for(FetchesBuilder fb : builders.values()){
             fb.applyFetches(rootFetchParent);
         }
     }

@@ -12,7 +12,6 @@ import javax.persistence.metamodel.Metamodel;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.function.Function;
 
 public abstract class AbstractRepository<T> {
 
@@ -179,7 +178,7 @@ public abstract class AbstractRepository<T> {
             return null;
         }
 
-        conditionsBuilder.apply(criteriaQuery, criteriaBuilder, root);
+        conditionsBuilder.applyConditions(criteriaQuery, criteriaBuilder, root);
         return conditionsBuilder;
     }
 
@@ -188,19 +187,6 @@ public abstract class AbstractRepository<T> {
             conditionsBuilder.setParameters(typedQuery);
         }
     }
-
-//    /**
-//     * Multiple fetches might be chained together to force eager-loading of associations.
-//     * See: http://stackoverflow.com/questions/8521338/how-to-fetch-all-data-in-one-query
-//     */
-//    private void applyFetchCallbacks(List<Function<FetchParent<?, ?>, FetchParent<?, ?>>> fetchCallbacks, Root<T> root) {
-//        FetchParent<?, ?> rootFetchParent = root;
-//        if (fetchCallbacks != null) {
-//            for (Function<FetchParent<?, ?>, FetchParent<?, ?>> fetchCallback : fetchCallbacks) {
-//                fetchCallback.apply(rootFetchParent);
-//            }
-//        }
-//    }
 
     private Class getType(String attributeName){
         Metamodel metamodel = entityManager.getMetamodel();
@@ -239,7 +225,7 @@ public abstract class AbstractRepository<T> {
             cq = cb.createQuery(Number.class);
             root = cq.from(typeParameterClass);
             prepareQuery(attributeName);
-            conditionsBuilder.apply(cq, cb, root);
+            applyConditions(conditionsBuilder, cb, cq, root);
             return prepareReturn(attributeName, conditionsBuilder);
         }
     }
@@ -362,7 +348,7 @@ public abstract class AbstractRepository<T> {
             cq = cb.createQuery(Comparable.class);
             root = cq.from(typeParameterClass);
             prepareQuery(attributeName);
-            conditionsBuilder.apply(cq, cb, root);
+            applyConditions(conditionsBuilder, cb, cq, root);
             return prepareReturn(attributeName, conditionsBuilder);
         }
     }

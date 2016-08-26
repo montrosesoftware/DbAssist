@@ -9,44 +9,27 @@ import javax.persistence.metamodel.Attribute;
 import java.time.LocalDate;
 import java.util.*;
 
-public class ConditionsBuilder {
+public class ConditionsBuilder extends BaseBuilder<ConditionsBuilder> {
 
     @FunctionalInterface
     interface ThreeArgsFunction<A1, A2, A3, R> {
         R apply(A1 arg1, A2 arg2, A3 arg3);
     }
 
-    // Per single join
-    private HashMap<String, ConditionsBuilder> joinConditionsBuilders = new HashMap<>();
-
-    private HashMap<String, ConditionsBuilder> getJoinConditionsBuilders() {
-        return joinConditionsBuilders;
-    }
-
-    private ConditionsBuilder joinParent = null;
-
     private Condition whereConditions = null;
 
     private HashMap<String, Object> parameters = new HashMap<>();
-
-    private String joinAttribute;
-
-    private JoinType joinType;
 
     public ConditionsBuilder() {
     }
 
     private ConditionsBuilder(String joinAttribute, JoinType joinType) {
-        this.joinAttribute = joinAttribute;
-        this.joinType = joinType;
+        super(joinAttribute, joinType);
     }
 
-    public ConditionsBuilder getJoinParent() {
-        return joinParent;
-    }
-
-    public void setJoinParent(ConditionsBuilder joinParent) {
-        this.joinParent = joinParent;
+    @Override
+    public ConditionsBuilder getInstance(String joinAttribute, JoinType joinType){
+        return new ConditionsBuilder(joinAttribute, joinType);
     }
 
     public HashMap<String, Object> getParameters() {
@@ -109,7 +92,7 @@ public class ConditionsBuilder {
         return new HierarchyCondition(this, (cb, root) -> root.get(attributeName).isNotNull());
     }
 
-    public Condition apply(HierarchyCondition hierarchyCondition){
+    public Condition apply(HierarchyCondition hierarchyCondition) {
         return assignWhereConditionsAndReturn(hierarchyCondition.apply(this));
     }
 
@@ -136,8 +119,8 @@ public class ConditionsBuilder {
     }
 
     public Condition applyLogicalOperator(Condition leftOperandCondition,
-                                                             Condition rightOperandCondition,
-                                                             ThreeArgsFunction<CriteriaBuilder, Predicate, Predicate, Predicate> logicalOperator) {
+                                          Condition rightOperandCondition,
+                                          ThreeArgsFunction<CriteriaBuilder, Predicate, Predicate, Predicate> logicalOperator) {
 
         if (leftOperandCondition == null || rightOperandCondition == null) {
             return null;
@@ -165,18 +148,6 @@ public class ConditionsBuilder {
         return condition;
     }
 
-    public ConditionsBuilder getJoinConditionsBuilder(String joinAttribute, JoinType joinType) {
-        ConditionsBuilder conditionsBuilder = joinConditionsBuilders.get(joinAttribute);
-
-        if (conditionsBuilder == null) {
-            conditionsBuilder = new ConditionsBuilder(joinAttribute, joinType);
-            conditionsBuilder.setJoinParent(this);
-            joinConditionsBuilders.put(joinAttribute, conditionsBuilder);
-        }
-
-        return conditionsBuilder;
-    }
-
     public <T extends Comparable<T>> HierarchyCondition inRangeCondition(String attributeName, T leftBound, T rightBound) {
         return and(
                 this.greaterThanOrEqualTo(attributeName, leftBound),
@@ -191,41 +162,34 @@ public class ConditionsBuilder {
         );
     }
 
-    public void apply(CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder, Root<?> root) {
+    public void applyConditions(CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder, Root<?> root) {
         if (!this.getParameters().isEmpty())
             throw new RuntimeException("The conditions were already used.");
 
-        applyPredicates(getPredicates(criteriaQuery, criteriaBuilder, root), criteriaQuery, criteriaBuilder);
+        applyPredicate(getPredicate(criteriaQuery, criteriaBuilder, root), criteriaQuery, criteriaBuilder);
     }
 
     public TypedQuery<?> setParameters(TypedQuery<?> typedQuery) {
         parameters.forEach(typedQuery::setParameter);
 
-        if (joinConditionsBuilders != null && !joinConditionsBuilders.isEmpty()) {
-            joinConditionsBuilders.forEach((joinAttribute, joinCondition) -> joinCondition.setParameters(typedQuery));
+        if (builders != null && !builders.isEmpty()) {
+            builders.forEach((joinAttribute, joinCondition) -> joinCondition.setParameters(typedQuery));
         }
 
         return typedQuery;
     }
 
-    private List<Predicate> getPredicates(CriteriaQuery<?> query, CriteriaBuilder cb, From<?, ?> root) {
+    private Predicate getPredicate(CriteriaQuery<?> query, CriteriaBuilder cb, From<?, ?> root) {
         //TODO probably completely rewrite, no need to other join builders for predicates
-        List<Predicate> predicates = new LinkedList<>();
-        if(whereConditions != null)
-            predicates.add(whereConditions.getApplicableCondition().apply(cb,root));
+        Predicate predicate = null;
+        if (whereConditions != null)
+            predicate = whereConditions.getApplicableCondition().apply(cb, root);
 
-        if (joinConditionsBuilders != null && !joinConditionsBuilders.isEmpty()) {
-            joinConditionsBuilders.forEach((joinAttribute, joinCondition) -> {
-                From<?, ?> from = getFrom(root, joinCondition);
-                predicates.addAll(joinCondition.getPredicates(query, cb, from));
-            });
-        }
-
-        return predicates;
+        return predicate;
     }
 
-    private CriteriaQuery<?> applyPredicates(List<Predicate> predicates, CriteriaQuery<?> query, CriteriaBuilder cb) {
-        return query.where(cb.and(predicates.toArray(new Predicate[predicates.size()])));
+    private CriteriaQuery<?> applyPredicate(Predicate predicate, CriteriaQuery<?> query, CriteriaBuilder cb) {
+        return predicate == null ? query : query.where(cb.and(predicate));
     }
 
     private <T> ParameterExpression<T> getExpression(CriteriaBuilder cb, Object value, Class<T> typeParameterClass) {
@@ -269,12 +233,12 @@ public class ConditionsBuilder {
 
         FetchParent<?, ?> fetchParent = null;
 
-        ConditionsBuilder parentBuilder = conditionsBuilder.getJoinParent();
+        ConditionsBuilder parentBuilder = conditionsBuilder.getParent();
         if (this == parentBuilder) {
             return from;
         } else {
             if (parentBuilder != null) {
-                if (this.getJoinConditionsBuilders().containsValue(parentBuilder)) {
+                if (this.getBuilders().containsValue(parentBuilder)) {
                     //make join
                     fetchParent = safeJoin(from, parentBuilder);
                 } else {

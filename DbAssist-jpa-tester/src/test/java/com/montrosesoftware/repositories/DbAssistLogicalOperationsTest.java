@@ -131,9 +131,9 @@ public class DbAssistLogicalOperationsTest extends BaseTest {
 
         //handle joins
         ConditionsBuilder builderUsers = new ConditionsBuilder();
-        ConditionsBuilder builderCertificates = builderUsers.getJoinConditionsBuilder("certificates", JoinType.LEFT);
-        ConditionsBuilder builderProviders = builderCertificates.getJoinConditionsBuilder("provider", JoinType.LEFT);
-        ConditionsBuilder builderCountries = builderProviders.getJoinConditionsBuilder("country", JoinType.LEFT);
+        ConditionsBuilder builderCertificates = builderUsers.getBuilder("certificates", JoinType.LEFT);
+        ConditionsBuilder builderProviders = builderCertificates.getBuilder("provider", JoinType.LEFT);
+        ConditionsBuilder builderCountries = builderProviders.getBuilder("country", JoinType.LEFT);
 
         HierarchyCondition c1 = builderUsers.lessThan("id", 15);
         HierarchyCondition c2 = builderCertificates.lessThan("id", 13);
@@ -150,12 +150,12 @@ public class DbAssistLogicalOperationsTest extends BaseTest {
     }
 
     @Test
-    public void hierarchy(){
-        //handle joins
+    public void hierarchyConditionUseTest(){
+                //handle joins
         ConditionsBuilder builderUsers = new ConditionsBuilder();
-        ConditionsBuilder builderCertificates = builderUsers.getJoinConditionsBuilder("certificates", JoinType.LEFT);
-        ConditionsBuilder builderProviders = builderCertificates.getJoinConditionsBuilder("provider", JoinType.LEFT);
-        ConditionsBuilder builderCountries = builderProviders.getJoinConditionsBuilder("country", JoinType.LEFT);
+        ConditionsBuilder builderCertificates = builderUsers.getBuilder("certificates", JoinType.LEFT);
+        ConditionsBuilder builderProviders = builderCertificates.getBuilder("provider", JoinType.LEFT);
+        ConditionsBuilder builderCountries = builderProviders.getBuilder("country", JoinType.LEFT);
 
         HierarchyCondition c1 = builderUsers.lessThan("id", 15);
         HierarchyCondition c2 = builderCertificates.lessThan("id", 13);
@@ -163,11 +163,10 @@ public class DbAssistLogicalOperationsTest extends BaseTest {
         HierarchyCondition c4 = builderCountries.equal("name", "USA");
 
         HierarchyCondition hc = and(or(and(c1, c2),c3),c4);
-
         builderUsers.apply(hc);
 
+        // ... WHERE (user.id < ? AND certificate.id < ? OR provider.id < ?) AND country.name = ?
         List<User> results = uRepo.find(builderUsers);
-
-        hc.toString();
+        assertEquals(results.size(), 0);
     }
 }

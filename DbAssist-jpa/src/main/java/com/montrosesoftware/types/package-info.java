@@ -1,6 +1,6 @@
 /**
  * Treat all the dates in DB as UTC
- * This will apply the TypeDef for all entities having Date attribute
+ * This will applyConditions the TypeDef for all entities having Date attribute
  */
 @TypeDefs(
         {
