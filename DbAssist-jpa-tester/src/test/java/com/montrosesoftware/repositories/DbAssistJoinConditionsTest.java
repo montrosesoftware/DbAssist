@@ -45,8 +45,8 @@ public class DbAssistJoinConditionsTest extends BaseTest {
 
         //handle joins
         ConditionsBuilder builderUsers = new ConditionsBuilder();
-        ConditionsBuilder builderCertificates = builderUsers.getBuilder("certificates", JoinType.LEFT);
-        ConditionsBuilder builderProviders = builderCertificates.getBuilder("provider", JoinType.LEFT);
+        ConditionsBuilder builderCertificates = builderUsers.join("certificates", JoinType.LEFT);
+        ConditionsBuilder builderProviders = builderCertificates.join("provider", JoinType.LEFT);
 
         HierarchyCondition conUserIdLessThan = builderUsers.lessThan("id", 15);
         HierarchyCondition conProvName = builderProviders.equal("name", "Provider 1");
@@ -66,9 +66,9 @@ public class DbAssistJoinConditionsTest extends BaseTest {
         prepareAndSaveExampleDataToDb(uRepo);
 
         ConditionsBuilder builderUsers = new ConditionsBuilder();
-        ConditionsBuilder builderCertificates = builderUsers.getBuilder("certificates", JoinType.LEFT);
-        ConditionsBuilder builderProviders = builderCertificates.getBuilder("provider", JoinType.LEFT);
-        ConditionsBuilder builderCountries = builderProviders.getBuilder("country", JoinType.LEFT);
+        ConditionsBuilder builderCertificates = builderUsers.join("certificates", JoinType.LEFT);
+        ConditionsBuilder builderProviders = builderCertificates.join("provider", JoinType.LEFT);
+        ConditionsBuilder builderCountries = builderProviders.join("country", JoinType.LEFT);
 
         //conditions from 1st to 4th entity
         HierarchyCondition conUserIdLessThan = builderUsers.lessThan("id", 15);
@@ -90,9 +90,9 @@ public class DbAssistJoinConditionsTest extends BaseTest {
         // chain, one to many
         // user - certificate - provider - country
         ConditionsBuilder cb = new ConditionsBuilder();
-        ConditionsBuilder builderCertificate = cb.getBuilder("mainCertificate", JoinType.LEFT);
-        ConditionsBuilder builderProvider = builderCertificate.getBuilder("provider", JoinType.LEFT);
-        ConditionsBuilder builderCountry = builderProvider.getBuilder("country", JoinType.LEFT);
+        ConditionsBuilder builderCertificate = cb.join("mainCertificate", JoinType.LEFT);
+        ConditionsBuilder builderProvider = builderCertificate.join("provider", JoinType.LEFT);
+        ConditionsBuilder builderCountry = builderProvider.join("country", JoinType.LEFT);
 
         HierarchyCondition conUserIdGreaterThanOrEqual = cb.greaterThanOrEqualTo("id", 0);
         HierarchyCondition conUserIdLessThan = cb.lessThan("id", 15);
@@ -124,9 +124,9 @@ public class DbAssistJoinConditionsTest extends BaseTest {
         //             - provider - country
 
         ConditionsBuilder cb = new ConditionsBuilder();
-        ConditionsBuilder builderUsers = cb.getBuilder("usersOfMainCert", JoinType.LEFT);
-        ConditionsBuilder builderProviders = cb.getBuilder("provider", JoinType.LEFT);
-        ConditionsBuilder builderCountries = builderProviders.getBuilder("country", JoinType.LEFT);
+        ConditionsBuilder builderUsers = cb.join("usersOfMainCert", JoinType.LEFT);
+        ConditionsBuilder builderProviders = cb.join("provider", JoinType.LEFT);
+        ConditionsBuilder builderCountries = builderProviders.join("country", JoinType.LEFT);
 
         HierarchyCondition conCertIdGreaterThanOrEqual = cb.greaterThanOrEqualTo("id", 0);
         HierarchyCondition conCertIdLessThan = cb.lessThan("id", 5);
@@ -157,9 +157,9 @@ public class DbAssistJoinConditionsTest extends BaseTest {
         // user - certificate - provider - country
 
         ConditionsBuilder cb = new ConditionsBuilder();
-        ConditionsBuilder builderCerts = cb.getBuilder("certificates", JoinType.LEFT);
-        ConditionsBuilder builderProvider = builderCerts.getBuilder("provider", JoinType.LEFT);
-        ConditionsBuilder builderCountry = builderProvider.getBuilder("country", JoinType.LEFT);
+        ConditionsBuilder builderCerts = cb.join("certificates", JoinType.LEFT);
+        ConditionsBuilder builderProvider = builderCerts.join("provider", JoinType.LEFT);
+        ConditionsBuilder builderCountry = builderProvider.join("country", JoinType.LEFT);
 
         HierarchyCondition conUserIdGreaterThanOrEqual = cb.greaterThanOrEqualTo("id", 0);
         HierarchyCondition conUserIdLessThan = cb.lessThan("id", 15);
@@ -190,9 +190,9 @@ public class DbAssistJoinConditionsTest extends BaseTest {
         //             - provider - country
 
         ConditionsBuilder cb = new ConditionsBuilder();
-        ConditionsBuilder builderUsers = cb.getBuilder("users", JoinType.LEFT);
-        ConditionsBuilder builderProviders = cb.getBuilder("provider", JoinType.LEFT);
-        ConditionsBuilder builderCountries = builderProviders.getBuilder("country", JoinType.LEFT);
+        ConditionsBuilder builderUsers = cb.join("users", JoinType.LEFT);
+        ConditionsBuilder builderProviders = cb.join("provider", JoinType.LEFT);
+        ConditionsBuilder builderCountries = builderProviders.join("country", JoinType.LEFT);
 
         HierarchyCondition conCertIdGreaterThanOrEqual = cb.greaterThanOrEqualTo("id", 0);
         HierarchyCondition conCertIdLessThan = cb.lessThan("id", 5);
@@ -247,7 +247,7 @@ public class DbAssistJoinConditionsTest extends BaseTest {
         prepareAndSaveExampleDataToDb(uRepo);
 
         ConditionsBuilder builderUsers = new ConditionsBuilder();
-        ConditionsBuilder builderCertificates = builderUsers.getBuilder("certificates", JoinType.LEFT);
+        ConditionsBuilder builderCertificates = builderUsers.join("certificates", JoinType.LEFT);
 
         //conditions on first two entities
         HierarchyCondition conUserIdLessThan = builderUsers.lessThan("id", 15);
@@ -271,6 +271,25 @@ public class DbAssistJoinConditionsTest extends BaseTest {
 
         User userA = usersReadMultipleJoin.get(0);
         assertNotNull(userA);
+    }
+
+    @Test
+    public void forkedFetchTest(){
+        prepareAndSaveExampleDataToDb(uRepo);
+
+        ConditionsBuilder builderUsers = new ConditionsBuilder();
+
+        FetchesBuilder fetchesBuilder = new FetchesBuilder();
+        fetchesBuilder
+                .fetch("certificates", JoinType.LEFT)
+                .fetch("usersOfMainCert", JoinType.LEFT);
+
+        fetchesBuilder
+                .fetch("certificates", JoinType.LEFT)
+                .fetch("provider", JoinType.LEFT);
+
+        List<User> users = uRepo.find(builderUsers, fetchesBuilder, null);
+        assertEquals(users.size(), 3);
     }
 }
 

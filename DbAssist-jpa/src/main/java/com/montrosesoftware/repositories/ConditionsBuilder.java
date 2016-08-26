@@ -28,7 +28,7 @@ public class ConditionsBuilder extends BaseBuilder<ConditionsBuilder> {
     }
 
     @Override
-    public ConditionsBuilder getInstance(String joinAttribute, JoinType joinType){
+    public ConditionsBuilder getInstance(String joinAttribute, JoinType joinType) {
         return new ConditionsBuilder(joinAttribute, joinType);
     }
 
@@ -94,6 +94,10 @@ public class ConditionsBuilder extends BaseBuilder<ConditionsBuilder> {
 
     public Condition apply(HierarchyCondition hierarchyCondition) {
         return assignWhereConditionsAndReturn(hierarchyCondition.apply(this));
+    }
+
+    public ConditionsBuilder join(String joinAttribute, JoinType joinType) {
+        return getBuilder(joinAttribute, joinType);
     }
 
     public static HierarchyCondition and(HierarchyCondition hcLeft, HierarchyCondition hcRight) {
