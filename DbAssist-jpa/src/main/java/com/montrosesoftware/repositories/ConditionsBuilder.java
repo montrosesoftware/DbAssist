@@ -1,6 +1,6 @@
 package com.montrosesoftware.repositories;
 
-import org.hibernate.annotations.common.util.impl.Log;
+import com.montrosesoftware.repositories.HierarchyCondition.Condition;
 import org.hibernate.jpa.criteria.path.AbstractJoinImpl;
 
 import javax.persistence.TypedQuery;
@@ -25,7 +25,7 @@ public class ConditionsBuilder {
 
     private ConditionsBuilder joinParent = null;
 
-    private LinkedList<Condition> whereConditions = new LinkedList<>();
+    private Condition whereConditions = null;
 
     private HashMap<String, Object> parameters = new HashMap<>();
 
@@ -110,7 +110,15 @@ public class ConditionsBuilder {
     }
 
     public Condition apply(HierarchyCondition hierarchyCondition){
-        return addToWhereConditionsAndReturn(hierarchyCondition.apply(this));
+        return assignWhereConditionsAndReturn(hierarchyCondition.apply(this));
+    }
+
+    public static HierarchyCondition and(HierarchyCondition hcLeft, HierarchyCondition hcRight) {
+        return new HierarchyCondition(hcLeft, hcRight, HierarchyCondition.LogicalOperator.AND);
+    }
+
+    public static HierarchyCondition or(HierarchyCondition hcLeft, HierarchyCondition hcRight) {
+        return new HierarchyCondition(hcLeft, hcRight, HierarchyCondition.LogicalOperator.OR);
     }
 
     public static HierarchyCondition or(List<HierarchyCondition> conditions_) {
@@ -127,17 +135,9 @@ public class ConditionsBuilder {
         }
     }
 
-    public static HierarchyCondition and(HierarchyCondition hcLeft, HierarchyCondition hcRight) {
-        return new HierarchyCondition(hcLeft, hcRight, HierarchyCondition.LogicalOperator.AND);
-    }
-
-    public static HierarchyCondition or(HierarchyCondition hcLeft, HierarchyCondition hcRight) {
-        return new HierarchyCondition(hcLeft, hcRight, HierarchyCondition.LogicalOperator.OR);
-    }
-
     public Condition applyLogicalOperator(Condition leftOperandCondition,
-                                           Condition rightOperandCondition,
-                                           ThreeArgsFunction<CriteriaBuilder, Predicate, Predicate, Predicate> logicalOperator) {
+                                                             Condition rightOperandCondition,
+                                                             ThreeArgsFunction<CriteriaBuilder, Predicate, Predicate, Predicate> logicalOperator) {
 
         if (leftOperandCondition == null || rightOperandCondition == null) {
             return null;
@@ -146,7 +146,7 @@ public class ConditionsBuilder {
         ConditionsBuilder leftOperandJoinConditionsBuilder = leftOperandCondition.getConditionsBuilder();
         ConditionsBuilder rightOperandJoinConditionsBuilder = rightOperandCondition.getConditionsBuilder();
 
-        ApplicableCondition applicableCondition = (cb, root) -> {
+        HierarchyCondition.ApplicableCondition applicableCondition = (cb, root) -> {
             From<?, ?> leftFrom = getFrom(root, leftOperandJoinConditionsBuilder);
             From<?, ?> rightFrom = getFrom(root, rightOperandJoinConditionsBuilder);
 
@@ -160,9 +160,8 @@ public class ConditionsBuilder {
         return root.get(attributeName).in(getExpression(cb, values, List.class));
     }
 
-    private Condition addToWhereConditionsAndReturn(Condition condition) {
-        whereConditions.add(condition);
-
+    private Condition assignWhereConditionsAndReturn(Condition condition) {
+        whereConditions = condition;
         return condition;
     }
 
@@ -210,9 +209,10 @@ public class ConditionsBuilder {
     }
 
     private List<Predicate> getPredicates(CriteriaQuery<?> query, CriteriaBuilder cb, From<?, ?> root) {
-        List<Predicate> predicates = new LinkedList<Predicate>();
-
-        whereConditions.forEach(condition -> predicates.add(condition.getApplicableCondition().apply(cb, root)));
+        //TODO probably completely rewrite, no need to other join builders for predicates
+        List<Predicate> predicates = new LinkedList<>();
+        if(whereConditions != null)
+            predicates.add(whereConditions.getApplicableCondition().apply(cb,root));
 
         if (joinConditionsBuilders != null && !joinConditionsBuilders.isEmpty()) {
             joinConditionsBuilders.forEach((joinAttribute, joinCondition) -> {
