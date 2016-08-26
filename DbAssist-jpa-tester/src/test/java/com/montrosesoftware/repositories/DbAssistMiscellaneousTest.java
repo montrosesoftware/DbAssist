@@ -33,7 +33,8 @@ public class DbAssistMiscellaneousTest extends BaseTest {
 
         //WHERE id >= 1 AND id <= 1
         ConditionsBuilder conditions = new ConditionsBuilder();
-        conditions.inRangeCondition("id", 1, 1);
+        HierarchyCondition hc = conditions.inRangeCondition("id", 1, 1);
+        conditions.apply(hc);
 
         //Conditions can be used only once, after calling find() or findAttribute()
         //we have to create a new instance of Conditions that we want to use
@@ -53,7 +54,8 @@ public class DbAssistMiscellaneousTest extends BaseTest {
         }});
 
         ConditionsBuilder c = new ConditionsBuilder();
-        c.equal("createdAt", date);
+        HierarchyCondition hc = c.equal("createdAt", date);
+        c.apply(hc);
         List<String> namesRead = uRepo.findAttribute("name", c);
 
         assertEquals(namesRead.size(),2);
@@ -77,7 +79,8 @@ public class DbAssistMiscellaneousTest extends BaseTest {
         };
 
         ConditionsBuilder c = new ConditionsBuilder();
-        c.inRangeCondition("id",1,2);
+        HierarchyCondition hc = c.inRangeCondition("id",1,2);
+        c.apply(hc);
         List<Tuple> tuples = uRepo.findAttributes(selectionList, c);
         List<Integer> idsRead = new ArrayList<>();
         List<String> namesRead = new ArrayList<>();
@@ -105,14 +108,16 @@ public class DbAssistMiscellaneousTest extends BaseTest {
 
         //WHERE created_at IS NULL
         ConditionsBuilder condDateNull = new ConditionsBuilder();
-        condDateNull.isNull("createdAt");
+        HierarchyCondition hcDateNull = condDateNull.isNull("createdAt");
+        condDateNull.apply(hcDateNull);
         List<String> resultsDateNull = uRepo.findAttribute("name", condDateNull);
         assertEquals(1, resultsDateNull.size());
         assertEquals("Mont", resultsDateNull.get(0));
 
         //WHERE created_at IS NOT NULL
         ConditionsBuilder condDateNotNull = new ConditionsBuilder();
-        condDateNotNull.isNotNull("createdAt");
+        HierarchyCondition hcDateNotNull = condDateNotNull.isNotNull("createdAt");
+        condDateNotNull.apply(hcDateNotNull);
         List<String> resultsDateNotNull = uRepo.findAttribute("name", condDateNotNull);
         assertEquals(1, resultsDateNotNull.size());
         assertEquals("Rose", resultsDateNotNull.get(0));
@@ -128,7 +133,8 @@ public class DbAssistMiscellaneousTest extends BaseTest {
 
         //WHERE name NOT LIKE 'Mont%'
         ConditionsBuilder conditionsA = new ConditionsBuilder();
-        conditionsA.like("name", "Mont%");
+        HierarchyCondition hcA = conditionsA.like("name", "Mont%");
+        conditionsA.apply(hcA);
         List<String> resultsA = uRepo.findAttribute("name", conditionsA);
         assertEquals(2, resultsA.size());
         assertEquals("Mont", resultsA.get(0));
@@ -136,7 +142,8 @@ public class DbAssistMiscellaneousTest extends BaseTest {
 
         // WHERE name LIKE 'Mont%'
         ConditionsBuilder conditionsB = new ConditionsBuilder();
-        conditionsB.notLike("name", "Mont%");
+        HierarchyCondition hcB = conditionsB.notLike("name", "Mont%");
+        conditionsB.apply(hcB);
         List<String> resultsB = uRepo.findAttribute("name", conditionsB);
         assertEquals(1, resultsB.size());
         assertEquals("Rose", resultsB.get(0));
@@ -167,14 +174,16 @@ public class DbAssistMiscellaneousTest extends BaseTest {
 
         List<String> names = new ArrayList<>(Arrays.asList("B", "C"));
         ConditionsBuilder cA = new ConditionsBuilder();
-        cA.in("name", names);
+        HierarchyCondition hcA = cA.in("name", names);
+        cA.apply(hcA);
 
         List<String> namesReadA = uRepo.findAttribute("name", cA);
         assertEquals(namesReadA.size(), 2);
         assertTrue(collectionsAreEqual(names, namesReadA));
 
         ConditionsBuilder cB = new ConditionsBuilder();
-        cB.notIn("name", names);
+        HierarchyCondition hcB = cB.notIn("name", names);
+        cB.apply(hcB);
 
         List<String> namesReadB = uRepo.findAttribute("name", cB);
         assertEquals(namesReadB.size(), 1);

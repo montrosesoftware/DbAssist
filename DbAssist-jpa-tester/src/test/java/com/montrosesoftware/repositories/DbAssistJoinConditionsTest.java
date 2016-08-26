@@ -4,7 +4,6 @@ import com.montrosesoftware.config.BaseTest;
 import com.montrosesoftware.entities.Certificate;
 import com.montrosesoftware.entities.Provider;
 import com.montrosesoftware.entities.User;
-import com.montrosesoftware.repositories.ConditionsBuilder.Condition;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -16,6 +15,8 @@ import java.util.List;
 import java.util.function.Function;
 
 import static com.montrosesoftware.helpers.TestUtils.prepareAndSaveExampleDataToDb;
+import static com.montrosesoftware.repositories.ConditionsBuilder.and;
+import static com.montrosesoftware.repositories.ConditionsBuilder.or;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -47,12 +48,13 @@ public class DbAssistJoinConditionsTest extends BaseTest {
         ConditionsBuilder builderCertificates = builderUsers.getJoinConditionsBuilder("certificates", JoinType.LEFT);
         ConditionsBuilder builderProviders = builderCertificates.getJoinConditionsBuilder("provider", JoinType.LEFT);
 
-        Condition conUserIdLessThan = builderUsers.lessThan("id", 15);
-        Condition conProvName = builderProviders.equal("name", "Provider 1");
-        builderUsers.or(
+        HierarchyCondition conUserIdLessThan = builderUsers.lessThan("id", 15);
+        HierarchyCondition conProvName = builderProviders.equal("name", "Provider 1");
+        HierarchyCondition hc = or(
                 conProvName,
                 conUserIdLessThan
         );
+        builderUsers.apply(hc);
 
         // ... WHERE provider.name = ? OR user.id < ?
         List<User> usersReadMultipleJoin = uRepo.find(builderUsers);
@@ -69,13 +71,12 @@ public class DbAssistJoinConditionsTest extends BaseTest {
         ConditionsBuilder builderCountries = builderProviders.getJoinConditionsBuilder("country", JoinType.LEFT);
 
         //conditions from 1st to 4th entity
-        Condition conUserIdLessThan = builderUsers.lessThan("id", 15);
-        Condition conProvName = builderProviders.equal("name", "Provider 1");
-        Condition conCountryIdLessThan = builderCountries.lessThan("id", 25);
-        builderUsers.or(
-                conUserIdLessThan,
-                conCountryIdLessThan
-        );
+        HierarchyCondition conUserIdLessThan = builderUsers.lessThan("id", 15);
+        HierarchyCondition conProvName = builderProviders.equal("name", "Provider 1");
+        HierarchyCondition conCountryIdLessThan = builderCountries.lessThan("id", 25);
+
+        HierarchyCondition hc = and(or(conUserIdLessThan, conCountryIdLessThan), conProvName);
+        builderUsers.apply(hc);
 
         // ... WHERE (user.id < ? OR country.id < ?) AND provider.name = ?
         List<User> usersReadMultipleJoin = uRepo.find(builderUsers);
@@ -93,20 +94,21 @@ public class DbAssistJoinConditionsTest extends BaseTest {
         ConditionsBuilder builderProvider = builderCertificate.getJoinConditionsBuilder("provider", JoinType.LEFT);
         ConditionsBuilder builderCountry = builderProvider.getJoinConditionsBuilder("country", JoinType.LEFT);
 
-        Condition conUserIdGreaterThanOrEqual = cb.greaterThanOrEqualTo("id", 0);
-        Condition conUserIdLessThan = cb.lessThan("id", 15);
-        Condition conCertIdLessThan = builderCertificate.lessThan("id", 5);
-        Condition conCertIdGreaterThanOrEqual = builderCertificate.greaterThanOrEqualTo("id", 0);
-        Condition conProvName = builderProvider.equal("name", "Provider 1");
-        Condition conCountryName = builderCountry.equal("name", "USA");
+        HierarchyCondition conUserIdGreaterThanOrEqual = cb.greaterThanOrEqualTo("id", 0);
+        HierarchyCondition conUserIdLessThan = cb.lessThan("id", 15);
+        HierarchyCondition conCertIdLessThan = builderCertificate.lessThan("id", 5);
+        HierarchyCondition conCertIdGreaterThanOrEqual = builderCertificate.greaterThanOrEqualTo("id", 0);
+        HierarchyCondition conProvName = builderProvider.equal("name", "Provider 1");
+        HierarchyCondition conCountryName = builderCountry.equal("name", "USA");
 
-        cb.or(
-                cb.and(conUserIdLessThan, conUserIdGreaterThanOrEqual),
-                cb.or(
-                        cb.and(conCertIdGreaterThanOrEqual, conCertIdLessThan),
-                        cb.or(conProvName, conCountryName)
+        HierarchyCondition hc = or(
+                and(conUserIdLessThan, conUserIdGreaterThanOrEqual),
+                or(
+                        and(conCertIdGreaterThanOrEqual, conCertIdLessThan),
+                        or(conProvName, conCountryName)
                 )
         );
+        cb.apply(hc);
 
         // ... WHERE (user.id < ? AND user.id >= ?) OR (certificate.id >= ? AND certificate.id < ?) OR provider.name = ? OR country.name = ?
         List<User> results = uRepo.find(cb);
@@ -126,20 +128,21 @@ public class DbAssistJoinConditionsTest extends BaseTest {
         ConditionsBuilder builderProviders = cb.getJoinConditionsBuilder("provider", JoinType.LEFT);
         ConditionsBuilder builderCountries = builderProviders.getJoinConditionsBuilder("country", JoinType.LEFT);
 
-        Condition conCertIdGreaterThanOrEqual = cb.greaterThanOrEqualTo("id", 0);
-        Condition conCertIdLessThan = cb.lessThan("id", 5);
-        Condition conUserIdLessThan = builderUsers.lessThan("id", 15);
-        Condition conUserIdGreaterThanOrEqual = builderUsers.greaterThanOrEqualTo("id", 0);
-        Condition conProvNameA = builderProviders.equal("name", "Provider 1");
-        Condition conCountryName = builderCountries.equal("name", "USA");
+        HierarchyCondition conCertIdGreaterThanOrEqual = cb.greaterThanOrEqualTo("id", 0);
+        HierarchyCondition conCertIdLessThan = cb.lessThan("id", 5);
+        HierarchyCondition conUserIdLessThan = builderUsers.lessThan("id", 15);
+        HierarchyCondition conUserIdGreaterThanOrEqual = builderUsers.greaterThanOrEqualTo("id", 0);
+        HierarchyCondition conProvNameA = builderProviders.equal("name", "Provider 1");
+        HierarchyCondition conCountryName = builderCountries.equal("name", "USA");
 
-        cb.or(
-                cb.and(conUserIdLessThan, conUserIdGreaterThanOrEqual),
-                cb.or(
-                        cb.and(conCertIdGreaterThanOrEqual, conCertIdLessThan),
-                        cb.or(conProvNameA, conCountryName)
+        HierarchyCondition hc = or(
+                and(conUserIdLessThan, conUserIdGreaterThanOrEqual),
+                or(
+                        and(conCertIdGreaterThanOrEqual, conCertIdLessThan),
+                        or(conProvNameA, conCountryName)
                 )
         );
+        cb.apply(hc);
 
         // ... WHERE (user.id < ? AND user.id >= ?) OR (certificate.id >= ? AND certificate.id < ?) OR provider.name = ? OR country.name = ?
         List<Certificate> certs = cRepo.find(cb);
@@ -158,18 +161,18 @@ public class DbAssistJoinConditionsTest extends BaseTest {
         ConditionsBuilder builderProvider = builderCerts.getJoinConditionsBuilder("provider", JoinType.LEFT);
         ConditionsBuilder builderCountry = builderProvider.getJoinConditionsBuilder("country", JoinType.LEFT);
 
-        Condition conUserIdGreaterThanOrEqual = cb.greaterThanOrEqualTo("id", 0);
-        Condition conUserIdLessThan = cb.lessThan("id", 15);
-        Condition conCertIdLessThan = builderCerts.lessThan("id", 5);
-        Condition conCertIdGreaterThanOrEqual = builderCerts.greaterThanOrEqualTo("id", 0);
-        Condition conProvName = builderProvider.equal("name", "Provider 1");
-        Condition conCountryName = builderCountry.equal("name", "USA");
+        HierarchyCondition conUserIdGreaterThanOrEqual = cb.greaterThanOrEqualTo("id", 0);
+        HierarchyCondition conUserIdLessThan = cb.lessThan("id", 15);
+        HierarchyCondition conCertIdLessThan = builderCerts.lessThan("id", 5);
+        HierarchyCondition conCertIdGreaterThanOrEqual = builderCerts.greaterThanOrEqualTo("id", 0);
+        HierarchyCondition conProvName = builderProvider.equal("name", "Provider 1");
+        HierarchyCondition conCountryName = builderCountry.equal("name", "USA");
 
-        cb.or(
+        or(
                 cb.and(conUserIdLessThan, conUserIdGreaterThanOrEqual),
-                cb.or(
+                or(
                         cb.and(conCertIdGreaterThanOrEqual, conCertIdLessThan),
-                        cb.or(conProvName, conCountryName)
+                        or(conProvName, conCountryName)
                 )
         );
 
@@ -191,20 +194,21 @@ public class DbAssistJoinConditionsTest extends BaseTest {
         ConditionsBuilder builderProviders = cb.getJoinConditionsBuilder("provider", JoinType.LEFT);
         ConditionsBuilder builderCountries = builderProviders.getJoinConditionsBuilder("country", JoinType.LEFT);
 
-        Condition conCertIdGreaterThanOrEqual = cb.greaterThanOrEqualTo("id", 0);
-        Condition conCertIdLessThan = cb.lessThan("id", 5);
-        Condition conUserIdLessThan = builderUsers.lessThan("id", 15);
-        Condition conUserIdGreaterThanOrEqual = builderUsers.greaterThanOrEqualTo("id", 0);
-        Condition conProvName = builderProviders.equal("name", "Provider 1");
-        Condition conCountryName = builderCountries.equal("name", "USA");
+        HierarchyCondition conCertIdGreaterThanOrEqual = cb.greaterThanOrEqualTo("id", 0);
+        HierarchyCondition conCertIdLessThan = cb.lessThan("id", 5);
+        HierarchyCondition conUserIdLessThan = builderUsers.lessThan("id", 15);
+        HierarchyCondition conUserIdGreaterThanOrEqual = builderUsers.greaterThanOrEqualTo("id", 0);
+        HierarchyCondition conProvName = builderProviders.equal("name", "Provider 1");
+        HierarchyCondition conCountryName = builderCountries.equal("name", "USA");
 
-        cb.or(
-                cb.and(conUserIdLessThan, conUserIdGreaterThanOrEqual),
-                cb.or(
-                        cb.and(conCertIdGreaterThanOrEqual, conCertIdLessThan),
-                        cb.or(conProvName, conCountryName)
+        HierarchyCondition hc = or(
+                and(conUserIdLessThan, conUserIdGreaterThanOrEqual),
+                or(
+                        and(conCertIdGreaterThanOrEqual, conCertIdLessThan),
+                        or(conProvName, conCountryName)
                 )
         );
+        cb.apply(hc);
 
         // ... WHERE (user.id < ? AND user.id >= ?) OR (certificate.id >= ? AND certificate.id < ?) OR provider.name = ? OR country.name = ?
         List<Certificate> certificates = cRepo.find(cb);
@@ -246,12 +250,13 @@ public class DbAssistJoinConditionsTest extends BaseTest {
         ConditionsBuilder builderCertificates = builderUsers.getJoinConditionsBuilder("certificates", JoinType.LEFT);
 
         //conditions on first two entities
-        Condition conUserIdLessThan = builderUsers.lessThan("id", 15);
-        Condition conCertName = builderCertificates.equal("name", "BHP");
-        builderUsers.or(
+        HierarchyCondition conUserIdLessThan = builderUsers.lessThan("id", 15);
+        HierarchyCondition conCertName = builderCertificates.equal("name", "BHP");
+        HierarchyCondition hc = or(
                 conUserIdLessThan,
                 conCertName
         );
+        builderUsers.apply(hc);
 
         //fetches:
         FetchesBuilder fetchesBuilder = new FetchesBuilder();

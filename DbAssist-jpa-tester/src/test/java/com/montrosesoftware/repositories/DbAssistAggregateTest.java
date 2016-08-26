@@ -33,17 +33,22 @@ public class DbAssistAggregateTest extends BaseTest {
 
         // SELECT COUNT(id) FROM users WHERE name = 'Mont'
         ConditionsBuilder cA = new ConditionsBuilder();
-        cA.equal("name", "Mont");
+        HierarchyCondition hcA = cA.equal("name", "Mont");
+        cA.apply(hcA);
         Long countA = uRepo.count(cA);
         assertEquals(countA.longValue(), 2);
 
         ConditionsBuilder cB = new ConditionsBuilder();
-        cB.equal("name", "Rose");
+        HierarchyCondition hcB = cB.equal("name", "Rose");
+        cB.apply(hcB);
+
         Long countB = uRepo.count(cB);
         assertEquals(countB.longValue(), 1);
 
         ConditionsBuilder cC = new ConditionsBuilder();
-        cC.equal("name", "Whatever");
+        HierarchyCondition hcC = cC.equal("name", "Whatever");
+        cC.apply(hcC);
+
         Long countC = uRepo.count(cC);
         assertEquals(countC.longValue(), 0);
     }
@@ -67,17 +72,20 @@ public class DbAssistAggregateTest extends BaseTest {
 
         // SELECT SUM(id) FROM users WHERE created_at = date
         ConditionsBuilder cA = new ConditionsBuilder();
-        cA.equal("createdAt", date);
+        HierarchyCondition hcA = cA.equal("createdAt", date);
+        cA.apply(hcA);
         Integer sum = uRepo.sum(cA, "id");
         assertEquals(sum.intValue(), 20);
 
         ConditionsBuilder cB = new ConditionsBuilder();
-        cB.equal("createdAt", date);
+        HierarchyCondition hcB = cB.equal("createdAt", date);
+        cB.apply(hcB);
         Integer min = uRepo.min(cB, "id");
         assertEquals(min.intValue(), 7);
 
         ConditionsBuilder cC = new ConditionsBuilder();
-        cC.equal("createdAt", date);
+        HierarchyCondition hcC = cC.equal("createdAt", date);
+        cC.apply(hcC);
         Integer max = uRepo.max(cC, "id");
         assertEquals(max.intValue(), 13);
     }
@@ -129,7 +137,8 @@ public class DbAssistAggregateTest extends BaseTest {
 
         // SELECT COUNT(id) FROM users WHERE name = 'Mont'
         ConditionsBuilder c = new ConditionsBuilder();
-        c.equal("name", "Mont");
+        HierarchyCondition hc = c.equal("name", "Mont");
+        c.apply(hc);
         Long count = uRepo.count(c);
         assertEquals(count.longValue(), 2);
 

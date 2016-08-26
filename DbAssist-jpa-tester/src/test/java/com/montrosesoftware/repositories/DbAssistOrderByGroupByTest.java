@@ -64,7 +64,8 @@ public class DbAssistOrderByGroupByTest extends BaseTest {
         );
 
         ConditionsBuilder conditions = new ConditionsBuilder();
-        conditions.equal("category", "worker");
+        HierarchyCondition hc = conditions.equal("category", "worker");
+        conditions.apply(hc);
 
         AbstractRepository.GroupBy<User> groupBy = (root) -> Arrays.asList(
                 root.get("category")

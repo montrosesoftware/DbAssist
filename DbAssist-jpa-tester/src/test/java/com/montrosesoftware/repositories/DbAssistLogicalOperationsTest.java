@@ -14,8 +14,10 @@ import java.util.List;
 
 import static com.montrosesoftware.helpers.TestUtils.prepareAndSaveExampleDataToDb;
 import static com.montrosesoftware.helpers.TestUtils.saveUsersData;
+import static com.montrosesoftware.repositories.ConditionsBuilder.or;
 import static org.apache.commons.lang3.time.DateUtils.addMinutes;
 import static org.junit.Assert.*;
+import static com.montrosesoftware.repositories.ConditionsBuilder.and;
 
 public class DbAssistLogicalOperationsTest extends BaseTest {
 
@@ -36,19 +38,18 @@ public class DbAssistLogicalOperationsTest extends BaseTest {
 
         // WHERE created_at > dateBefore AND created_at < dateAfter
         ConditionsBuilder cA = new ConditionsBuilder();
-        cA.and(
-                cA.greaterThan("createdAt", dateBefore),
-                cA.lessThan("createdAt", dateAfter)
-        );
+        HierarchyCondition hcA = and(cA.greaterThan("createdAt", dateBefore), cA.lessThan("createdAt", dateAfter));
+        cA.apply(hcA);
         List<User> resultsA = uRepo.find(cA);
         assertEquals(1, resultsA.size());
 
         // WHERE created_at > dateAfter AND created_at < dateBefore
         ConditionsBuilder cB = new ConditionsBuilder();
-        cB.and(
+        HierarchyCondition hcB = and(
                 cB.greaterThan("createdAt", dateAfter),
                 cB.lessThan("createdAt", dateBefore)
         );
+        cB.apply(hcB);
         List<User> resultsB = uRepo.find(cB);
         assertEquals(0,resultsB.size());
     }
@@ -64,10 +65,11 @@ public class DbAssistLogicalOperationsTest extends BaseTest {
 
         // WHERE id >= 1 AND id <= 2 OR name = "C"
         ConditionsBuilder c = new ConditionsBuilder();
-        c.or(
-                c.and(c.greaterThanOrEqualTo("id", 1), c.lessThanOrEqualTo("id", 2)),
+        HierarchyCondition hc = or(
+                and(c.greaterThanOrEqualTo("id", 1), c.lessThanOrEqualTo("id", 2)),
                 c.equal("name", names.get(4))
         );
+        c.apply(hc);
 
         List<User> results = uRepo.find(c);
         assertEquals(4, results.size());
@@ -89,7 +91,8 @@ public class DbAssistLogicalOperationsTest extends BaseTest {
 
         // WHERE created_at >= ? AND created_at <= ?
         ConditionsBuilder conditionsA = new ConditionsBuilder();
-        conditionsA.inRangeCondition("createdAt", date2, addMinutes(date3, 1));
+        HierarchyCondition hcA = conditionsA.inRangeCondition("createdAt", date2, addMinutes(date3, 1));
+        conditionsA.apply(hcA);
         List<User> resultsA = uRepo.find(conditionsA);
         assertEquals(2, resultsA.size());
         assertTrue(resultsA.get(0).getCreatedAt().compareTo(date2) == 0);
@@ -98,21 +101,25 @@ public class DbAssistLogicalOperationsTest extends BaseTest {
         //we cannot reuse the previous conditions (find(...) was already executed)
         // WHERE (created_at >= ? AND created_at <= ?) AND (id >= ? AND id <= ?)
         ConditionsBuilder conditionsB = new ConditionsBuilder();
-        conditionsB.inRangeCondition("createdAt", date2, addMinutes(date3, 1));
-        conditionsB.inRangeCondition("id", 3, 4);
+        HierarchyCondition hcB = and(
+                conditionsB.inRangeCondition("createdAt", date2, addMinutes(date3, 1)),
+                conditionsB.inRangeCondition("id", 3, 4));
+        conditionsB.apply(hcB);
         List<User> resultsB = uRepo.find(conditionsB);
         assertEquals(1, resultsB.size());
         assertEquals(3, resultsB.get(0).getId());
 
         //incorrect boundaries
         ConditionsBuilder conditionsC = new ConditionsBuilder();
-        conditionsC.inRangeCondition("createdAt", date3, date2);
+        HierarchyCondition hcC = conditionsC.inRangeCondition("createdAt", date3, date2);
+        conditionsC.apply(hcC);
         List<User> resultsC = uRepo.find(conditionsC);
         assertEquals(0,resultsC.size());
 
         // WHERE (id > 1 AND id < 3)
         ConditionsBuilder conditionsD = new ConditionsBuilder();
-        conditionsD.inRangeExclusiveCondition("id",1,3);
+        HierarchyCondition hcD = conditionsD.inRangeExclusiveCondition("id",1,3);
+        conditionsD.apply(hcD);
         List<User> resultsD = uRepo.find(conditionsD);
         assertEquals(1, resultsD.size());
         assertEquals(2, resultsD.get(0).getId());
@@ -128,15 +135,39 @@ public class DbAssistLogicalOperationsTest extends BaseTest {
         ConditionsBuilder builderProviders = builderCertificates.getJoinConditionsBuilder("provider", JoinType.LEFT);
         ConditionsBuilder builderCountries = builderProviders.getJoinConditionsBuilder("country", JoinType.LEFT);
 
-        ConditionsBuilder.Condition c1 = builderUsers.lessThan("id", 15);
-        ConditionsBuilder.Condition c2 = builderCertificates.lessThan("id", 13);
-        ConditionsBuilder.Condition c3 = builderProviders.lessThan("id", 9);
-        ConditionsBuilder.Condition c4 = builderCountries.equal("name", "Provider 1");
+        HierarchyCondition c1 = builderUsers.lessThan("id", 15);
+        HierarchyCondition c2 = builderCertificates.lessThan("id", 13);
+        HierarchyCondition c3 = builderProviders.lessThan("id", 9);
+        HierarchyCondition c4 = builderCountries.equal("name", "Provider 1");
 
-        builderUsers.or(Arrays.asList(c1,c2, c3, c4));
+        HierarchyCondition hc = or(Arrays.asList(c1,c2, c3, c4));
+
+        builderUsers.apply(hc);
 
         // ... WHERE c1 OR c2 OR c3 or c4
         List<User> usersReadMultipleJoin = uRepo.find(builderUsers);
         assertEquals(usersReadMultipleJoin.size(), 3);
+    }
+
+    @Test
+    public void hierarchy(){
+        //handle joins
+        ConditionsBuilder builderUsers = new ConditionsBuilder();
+        ConditionsBuilder builderCertificates = builderUsers.getJoinConditionsBuilder("certificates", JoinType.LEFT);
+        ConditionsBuilder builderProviders = builderCertificates.getJoinConditionsBuilder("provider", JoinType.LEFT);
+        ConditionsBuilder builderCountries = builderProviders.getJoinConditionsBuilder("country", JoinType.LEFT);
+
+        HierarchyCondition c1 = builderUsers.lessThan("id", 15);
+        HierarchyCondition c2 = builderCertificates.lessThan("id", 13);
+        HierarchyCondition c3 = builderProviders.lessThan("id", 9);
+        HierarchyCondition c4 = builderCountries.equal("name", "USA");
+
+        HierarchyCondition hc = and(or(and(c1, c2),c3),c4);
+
+        builderUsers.apply(hc);
+
+        List<User> results = uRepo.find(builderUsers);
+
+        hc.toString();
     }
 }

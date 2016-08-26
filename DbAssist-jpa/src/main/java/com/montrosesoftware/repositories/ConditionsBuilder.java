@@ -1,5 +1,6 @@
 package com.montrosesoftware.repositories;
 
+import org.hibernate.annotations.common.util.impl.Log;
 import org.hibernate.jpa.criteria.path.AbstractJoinImpl;
 
 import javax.persistence.TypedQuery;
@@ -9,28 +10,6 @@ import java.time.LocalDate;
 import java.util.*;
 
 public class ConditionsBuilder {
-
-    public interface ApplicableCondition {
-        Predicate apply(CriteriaBuilder cb, From<?, ?> root);
-    }
-
-    public class Condition {
-        private ApplicableCondition applicableCondition;
-        private ConditionsBuilder conditionsBuilder;
-
-        public Condition(ConditionsBuilder conditionsBuilder, ApplicableCondition applicableCondition) {
-            this.applicableCondition = applicableCondition;
-            this.conditionsBuilder = conditionsBuilder;
-        }
-
-        public ApplicableCondition getApplicableCondition() {
-            return applicableCondition;
-        }
-
-        public ConditionsBuilder getConditionsBuilder() {
-            return conditionsBuilder;
-        }
-    }
 
     @FunctionalInterface
     interface ThreeArgsFunction<A1, A2, A3, R> {
@@ -74,72 +53,72 @@ public class ConditionsBuilder {
         return parameters;
     }
 
-    public Condition equal(String attributeName, String value) {
-        return addToWhereConditionsAndReturn(new Condition(this, (cb, root) -> cb.equal(root.get(attributeName), getExpression(cb, value, String.class))));
+    public HierarchyCondition equal(String attributeName, String value) {
+        return new HierarchyCondition(this, (cb, root) -> cb.equal(root.get(attributeName), getExpression(cb, value, String.class)));
     }
 
-    public Condition equal(String attributeName, Number value) {
-        return addToWhereConditionsAndReturn(new Condition(null, (cb, root) -> cb.equal(root.get(attributeName), getExpression(cb, value, Number.class))));
+    public HierarchyCondition equal(String attributeName, Number value) {
+        return new HierarchyCondition(this, (cb, root) -> cb.equal(root.get(attributeName), getExpression(cb, value, Number.class)));
     }
 
-    public Condition equal(String attributeName, Date value) {
-        return addToWhereConditionsAndReturn(new Condition(this, (cb, root) -> cb.equal(root.get(attributeName), getExpression(cb, value, Date.class))));
+    public HierarchyCondition equal(String attributeName, Date value) {
+        return new HierarchyCondition(this, (cb, root) -> cb.equal(root.get(attributeName), getExpression(cb, value, Date.class)));
     }
 
-    public Condition equal(String attributeName, LocalDate value) {
-        return addToWhereConditionsAndReturn(new Condition(this, (cb, root) -> cb.equal(root.get(attributeName), getExpression(cb, value, LocalDate.class))));
+    public HierarchyCondition equal(String attributeName, LocalDate value) {
+        return new HierarchyCondition(this, (cb, root) -> cb.equal(root.get(attributeName), getExpression(cb, value, LocalDate.class)));
     }
 
-    public <T extends Comparable<T>> Condition greaterThan(String attributeName, T value) {
-        return addToWhereConditionsAndReturn(new Condition(this, (cb, root) -> cb.greaterThan(root.get(attributeName), getExpression(cb, value, (Class<T>) value.getClass()))));
+    public <T extends Comparable<T>> HierarchyCondition greaterThan(String attributeName, T value) {
+        return new HierarchyCondition(this, (cb, root) -> cb.greaterThan(root.get(attributeName), getExpression(cb, value, (Class<T>) value.getClass())));
     }
 
-    public <T extends Comparable<T>> Condition greaterThanOrEqualTo(String attributeName, T value) {
-        return addToWhereConditionsAndReturn(new Condition(this, (cb, root) -> cb.greaterThanOrEqualTo(root.get(attributeName), getExpression(cb, value, (Class<T>) value.getClass()))));
+    public <T extends Comparable<T>> HierarchyCondition greaterThanOrEqualTo(String attributeName, T value) {
+        return new HierarchyCondition(this, (cb, root) -> cb.greaterThanOrEqualTo(root.get(attributeName), getExpression(cb, value, (Class<T>) value.getClass())));
     }
 
-    public <T extends Comparable<T>> Condition lessThan(String attributeName, T value) {
-        return addToWhereConditionsAndReturn(new Condition(this, (cb, root) -> cb.lessThan(root.get(attributeName), getExpression(cb, value, (Class<T>) value.getClass()))));
+    public <T extends Comparable<T>> HierarchyCondition lessThan(String attributeName, T value) {
+        return new HierarchyCondition(this, (cb, root) -> cb.lessThan(root.get(attributeName), getExpression(cb, value, (Class<T>) value.getClass())));
     }
 
-    public <T extends Comparable<T>> Condition lessThanOrEqualTo(String attributeName, T value) {
-        return addToWhereConditionsAndReturn(new Condition(this, (cb, root) -> cb.lessThanOrEqualTo(root.get(attributeName), getExpression(cb, value, (Class<T>) value.getClass()))));
+    public <T extends Comparable<T>> HierarchyCondition lessThanOrEqualTo(String attributeName, T value) {
+        return new HierarchyCondition(this, (cb, root) -> cb.lessThanOrEqualTo(root.get(attributeName), getExpression(cb, value, (Class<T>) value.getClass())));
     }
 
-    public <T> Condition in(String attributeName, List<T> values) {
-        return addToWhereConditionsAndReturn(new Condition(this, (cb, root) -> getInPredicate(attributeName, values, cb, root)));
+    public <T> HierarchyCondition in(String attributeName, List<T> values) {
+        return new HierarchyCondition(this, (cb, root) -> getInPredicate(attributeName, values, cb, root));
     }
 
-    public Condition notIn(String attributeName, List<String> values) {
-        return addToWhereConditionsAndReturn(new Condition(this, (cb, root) -> getInPredicate(attributeName, values, cb, root).not()));
+    public HierarchyCondition notIn(String attributeName, List<String> values) {
+        return new HierarchyCondition(this, (cb, root) -> getInPredicate(attributeName, values, cb, root).not());
     }
 
-    public Condition like(String attributeName, String value) {
-        return addToWhereConditionsAndReturn(new Condition(this, (cb, root) -> cb.like(root.get(attributeName), getExpression(cb, value, String.class))));
+    public HierarchyCondition like(String attributeName, String value) {
+        return new HierarchyCondition(this, (cb, root) -> cb.like(root.get(attributeName), getExpression(cb, value, String.class)));
     }
 
-    public Condition notLike(String attributeName, String value) {
-        return addToWhereConditionsAndReturn(new Condition(this, (cb, root) -> cb.like(root.get(attributeName), getExpression(cb, value, String.class)).not()));
+    public HierarchyCondition notLike(String attributeName, String value) {
+        return new HierarchyCondition(this, (cb, root) -> cb.like(root.get(attributeName), getExpression(cb, value, String.class)).not());
     }
 
-    public Condition isNull(String attributeName) {
-        return addToWhereConditionsAndReturn(new Condition(this, (cb, root) -> root.get(attributeName).isNull()));
+    public HierarchyCondition isNull(String attributeName) {
+        return new HierarchyCondition(this, (cb, root) -> root.get(attributeName).isNull());
     }
 
-    public Condition isNotNull(String attributeName) {
-        return addToWhereConditionsAndReturn(new Condition(this, (cb, root) -> root.get(attributeName).isNotNull()));
+    public HierarchyCondition isNotNull(String attributeName) {
+        return new HierarchyCondition(this, (cb, root) -> root.get(attributeName).isNotNull());
     }
 
-    public Condition or(Condition leftOperandCondition, Condition rightOperandCondition) {
-        return applyLogicalOperator(leftOperandCondition, rightOperandCondition, CriteriaBuilder::or);
+    public Condition apply(HierarchyCondition hierarchyCondition){
+        return addToWhereConditionsAndReturn(hierarchyCondition.apply(this));
     }
 
-    public Condition or(List<Condition> conditions_) {
-        List<Condition> conditions = new LinkedList<>(conditions_);
+    public static HierarchyCondition or(List<HierarchyCondition> conditions_) {
+        List<HierarchyCondition> conditions = new LinkedList<>(conditions_);
 
-        if(conditions.size() == 1){
+        if (conditions.size() == 1) {
             return conditions.get(0);
-        } else if(conditions.size() == 2){
+        } else if (conditions.size() == 2) {
             return or(conditions.get(0), conditions.get(1));
         } else {
             conditions.add(2, or(conditions.get(0), conditions.get(1)));
@@ -148,11 +127,15 @@ public class ConditionsBuilder {
         }
     }
 
-    public Condition and(Condition leftOperandCondition, Condition rightOperandCondition) {
-        return applyLogicalOperator(leftOperandCondition, rightOperandCondition, CriteriaBuilder::and);
+    public static HierarchyCondition and(HierarchyCondition hcLeft, HierarchyCondition hcRight) {
+        return new HierarchyCondition(hcLeft, hcRight, HierarchyCondition.LogicalOperator.AND);
     }
 
-    private Condition applyLogicalOperator(Condition leftOperandCondition,
+    public static HierarchyCondition or(HierarchyCondition hcLeft, HierarchyCondition hcRight) {
+        return new HierarchyCondition(hcLeft, hcRight, HierarchyCondition.LogicalOperator.OR);
+    }
+
+    public Condition applyLogicalOperator(Condition leftOperandCondition,
                                            Condition rightOperandCondition,
                                            ThreeArgsFunction<CriteriaBuilder, Predicate, Predicate, Predicate> logicalOperator) {
 
@@ -163,22 +146,6 @@ public class ConditionsBuilder {
         ConditionsBuilder leftOperandJoinConditionsBuilder = leftOperandCondition.getConditionsBuilder();
         ConditionsBuilder rightOperandJoinConditionsBuilder = rightOperandCondition.getConditionsBuilder();
 
-        if (leftOperandJoinConditionsBuilder != null && leftOperandJoinConditionsBuilder.whereConditions.contains(leftOperandCondition)) {
-            leftOperandJoinConditionsBuilder.whereConditions.remove(leftOperandCondition);
-        }
-
-        if (leftOperandJoinConditionsBuilder != null && leftOperandJoinConditionsBuilder.whereConditions.contains(rightOperandCondition)) {
-            leftOperandJoinConditionsBuilder.whereConditions.remove(rightOperandCondition);
-        }
-
-        if (rightOperandJoinConditionsBuilder != null && rightOperandJoinConditionsBuilder.whereConditions.contains(leftOperandCondition)) {
-            rightOperandJoinConditionsBuilder.whereConditions.remove(leftOperandCondition);
-        }
-
-        if (rightOperandJoinConditionsBuilder != null && rightOperandJoinConditionsBuilder.whereConditions.contains(rightOperandCondition)) {
-            rightOperandJoinConditionsBuilder.whereConditions.remove(rightOperandCondition);
-        }
-
         ApplicableCondition applicableCondition = (cb, root) -> {
             From<?, ?> leftFrom = getFrom(root, leftOperandJoinConditionsBuilder);
             From<?, ?> rightFrom = getFrom(root, rightOperandJoinConditionsBuilder);
@@ -186,7 +153,7 @@ public class ConditionsBuilder {
             return logicalOperator.apply(cb, leftOperandCondition.getApplicableCondition().apply(cb, leftFrom), rightOperandCondition.getApplicableCondition().apply(cb, rightFrom));
         };
 
-        return addToWhereConditionsAndReturn(new Condition(this, applicableCondition));
+        return new Condition(this, applicableCondition);
     }
 
     private <T> Predicate getInPredicate(String attributeName, List<T> values, CriteriaBuilder cb, From<?, ?> root) {
@@ -211,15 +178,15 @@ public class ConditionsBuilder {
         return conditionsBuilder;
     }
 
-    public <T extends Comparable<T>> Condition inRangeCondition(String attributeName, T leftBound, T rightBound) {
-        return this.and(
+    public <T extends Comparable<T>> HierarchyCondition inRangeCondition(String attributeName, T leftBound, T rightBound) {
+        return and(
                 this.greaterThanOrEqualTo(attributeName, leftBound),
                 this.lessThanOrEqualTo(attributeName, rightBound)
         );
     }
 
-    public <T extends Comparable<T>> Condition inRangeExclusiveCondition(String attributeName, T leftBound, T rightBound) {
-        return this.and(
+    public <T extends Comparable<T>> HierarchyCondition inRangeExclusiveCondition(String attributeName, T leftBound, T rightBound) {
+        return and(
                 this.greaterThan(attributeName, leftBound),
                 this.lessThan(attributeName, rightBound)
         );
@@ -278,10 +245,10 @@ public class ConditionsBuilder {
         return (From<?, ?>) fetchParent;
     }
 
-    private From<?, ?> safeJoin(From<?, ?> from, ConditionsBuilder joinConditionBuilder){
+    private From<?, ?> safeJoin(From<?, ?> from, ConditionsBuilder joinConditionBuilder) {
         FetchParent<?, ?> fetchParent = checkAndGetExistingJoinOrFetch(from, joinConditionBuilder);
         fetchParent = fetchParent != null ? fetchParent : from.join(joinConditionBuilder.joinAttribute, joinConditionBuilder.joinType);
-        return (From<?,?>) fetchParent;
+        return (From<?, ?>) fetchParent;
     }
 
     private From<?, ?> getFrom(From<?, ?> from, ConditionsBuilder joinConditionBuilder) {
