@@ -23,13 +23,13 @@ public class ConditionsBuilder extends BaseBuilder<ConditionsBuilder> {
     public ConditionsBuilder() {
     }
 
-    private ConditionsBuilder(String joinAttribute, JoinType joinType) {
-        super(joinAttribute, joinType);
+    private ConditionsBuilder(String joinAttribute, JoinType joinType, ConditionsBuilder parent) {
+        super(joinAttribute, joinType, parent);
     }
 
     @Override
-    public ConditionsBuilder getInstance(String joinAttribute, JoinType joinType) {
-        return new ConditionsBuilder(joinAttribute, joinType);
+    public ConditionsBuilder getInstance(String joinAttribute, JoinType joinType, ConditionsBuilder parent) {
+        return new ConditionsBuilder(joinAttribute, joinType, parent);
     }
 
     public HashMap<String, Object> getParameters() {
@@ -93,7 +93,8 @@ public class ConditionsBuilder extends BaseBuilder<ConditionsBuilder> {
     }
 
     public Condition apply(HierarchyCondition hierarchyCondition) {
-        return assignWhereConditionsAndReturn(hierarchyCondition.apply(this));
+        whereConditions = hierarchyCondition.apply(this);
+        return whereConditions;
     }
 
     public ConditionsBuilder join(String joinAttribute, JoinType joinType) {
@@ -108,17 +109,31 @@ public class ConditionsBuilder extends BaseBuilder<ConditionsBuilder> {
         return new HierarchyCondition(hcLeft, hcRight, HierarchyCondition.LogicalOperator.OR);
     }
 
-    public static HierarchyCondition or(List<HierarchyCondition> conditions_) {
-        List<HierarchyCondition> conditions = new LinkedList<>(conditions_);
+    public static HierarchyCondition and(List<HierarchyCondition> conditions) {
+
+        if (conditions.size() == 1) {
+            return conditions.get(0);
+        } else if (conditions.size() == 2) {
+            return and(conditions.get(0), conditions.get(1));
+        } else {
+            List<HierarchyCondition> subConditions = new LinkedList<>();
+            subConditions.add(and(conditions.get(0), conditions.get(1)));
+            subConditions.addAll(1, conditions.subList(2, conditions.size()));
+            return and(subConditions);
+        }
+    }
+
+    public static HierarchyCondition or(List<HierarchyCondition> conditions) {
 
         if (conditions.size() == 1) {
             return conditions.get(0);
         } else if (conditions.size() == 2) {
             return or(conditions.get(0), conditions.get(1));
         } else {
-            conditions.add(2, or(conditions.get(0), conditions.get(1)));
-            conditions = conditions.subList(2, conditions.size());
-            return or(conditions);
+            List<HierarchyCondition> subConditions = new LinkedList<>();
+            subConditions.add(or(conditions.get(0), conditions.get(1)));
+            subConditions.addAll(1, conditions.subList(2, conditions.size()));
+            return or(subConditions);
         }
     }
 
@@ -184,7 +199,6 @@ public class ConditionsBuilder extends BaseBuilder<ConditionsBuilder> {
     }
 
     private Predicate getPredicate(CriteriaQuery<?> query, CriteriaBuilder cb, From<?, ?> root) {
-        //TODO probably completely rewrite, no need to other join builders for predicates
         Predicate predicate = null;
         if (whereConditions != null)
             predicate = whereConditions.getApplicableCondition().apply(cb, root);
@@ -219,41 +233,44 @@ public class ConditionsBuilder extends BaseBuilder<ConditionsBuilder> {
         return (From<?, ?>) fetchParent;
     }
 
-    private From<?, ?> getFrom(From<?, ?> from, ConditionsBuilder joinConditionBuilder) {
-        if (joinConditionBuilder == null || joinConditionBuilder == this) {
-            return from;
+    private From<?, ?> getFrom(From<?, ?> rootFrom, ConditionsBuilder joinConditionBuilder) {
+        if (joinConditionBuilder == null)
+            throw new RuntimeException("joinConditionsBuilder should be not null");
+
+        if (joinConditionBuilder == this)
+            return rootFrom;
+
+        From<?, ?> from = checkAndGetExistingJoinOrFetch(rootFrom, joinConditionBuilder);
+        if (from == null) {
+            From<?, ?> previousFrom = getPreviousFrom(rootFrom, joinConditionBuilder);
+            from = safeJoin(previousFrom, joinConditionBuilder);
         }
 
-        FetchParent<?, ?> fetchParent = checkAndGetExistingJoinOrFetch(from, joinConditionBuilder);
-        if (fetchParent == null) {
-            From<?, ?> previousFrom = getPreviousFrom(from, joinConditionBuilder);
-            fetchParent = safeJoin(previousFrom, joinConditionBuilder);
-        }
-
-        return (From<?, ?>) fetchParent;
+        return from;
     }
 
     public From<?, ?> getPreviousFrom(From<?, ?> from, ConditionsBuilder conditionsBuilder) {
 
-        FetchParent<?, ?> fetchParent = null;
+        From<?, ?> newFrom = null;
 
         ConditionsBuilder parentBuilder = conditionsBuilder.getParent();
+
         if (this == parentBuilder) {
             return from;
-        } else {
-            if (parentBuilder != null) {
-                if (this.getBuilders().containsValue(parentBuilder)) {
-                    //make join
-                    fetchParent = safeJoin(from, parentBuilder);
-                } else {
-                    //recursive
-                    From<?, ?> previousFrom = getPreviousFrom(from, parentBuilder);
-                    fetchParent = safeJoin(previousFrom, parentBuilder);
-                }
+        }
+
+        if (parentBuilder != null) {
+            if (this.getBuilders().containsValue(parentBuilder)) {
+                //make join
+                newFrom = safeJoin(from, parentBuilder);
+            } else {
+                //recursive
+                From<?, ?> previousFrom = getPreviousFrom(from, parentBuilder);
+                newFrom = safeJoin(previousFrom, parentBuilder);
             }
         }
 
-        return (From<?, ?>) fetchParent;
+        return newFrom;
     }
 
     private FetchParent<?, ?> checkExisting(ConditionsBuilder joinCondition, Set<?> joinsOrFetches) {
@@ -263,14 +280,14 @@ public class ConditionsBuilder extends BaseBuilder<ConditionsBuilder> {
         FetchParent<?, ?> fetchParent = null;
 
         if (!joinsOrFetches.isEmpty()) {
-            LinkedHashSet<?> existingSingularAttributes = (LinkedHashSet<?>) joinsOrFetches;
 
-            for (Object existingSingularAttribute : existingSingularAttributes) {
+            for (Object existingSingularAttribute : joinsOrFetches) {
                 AbstractJoinImpl<?, ?> existingSingularAttributeJoin = (AbstractJoinImpl<?, ?>) existingSingularAttribute;
                 Attribute<?, ?> joinAttribute = existingSingularAttributeJoin.getAttribute();
 
                 if (joinAttribute.getName().equals(joinCondition.joinAttribute)) {
                     fetchParent = existingSingularAttributeJoin;
+                    break;
                 }
             }
         }

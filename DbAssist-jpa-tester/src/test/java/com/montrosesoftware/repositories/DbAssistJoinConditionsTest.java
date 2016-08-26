@@ -48,7 +48,7 @@ public class DbAssistJoinConditionsTest extends BaseTest {
         ConditionsBuilder builderCertificates = builderUsers.join("certificates", JoinType.LEFT);
         ConditionsBuilder builderProviders = builderCertificates.join("provider", JoinType.LEFT);
 
-        HierarchyCondition conUserIdLessThan = builderUsers.lessThan("id", 15);
+        HierarchyCondition conUserIdLessThan = builderUsers.lessThan("id", 3);
         HierarchyCondition conProvName = builderProviders.equal("name", "Provider 1");
         HierarchyCondition hc = or(
                 conProvName,
@@ -58,7 +58,7 @@ public class DbAssistJoinConditionsTest extends BaseTest {
 
         // ... WHERE provider.name = ? OR user.id < ?
         List<User> usersReadMultipleJoin = uRepo.find(builderUsers);
-        assertEquals(usersReadMultipleJoin.size(), 3);
+        assertEquals(usersReadMultipleJoin.size(), 2);
     }
 
     @Test
@@ -95,7 +95,7 @@ public class DbAssistJoinConditionsTest extends BaseTest {
         ConditionsBuilder builderCountry = builderProvider.join("country", JoinType.LEFT);
 
         HierarchyCondition conUserIdGreaterThanOrEqual = cb.greaterThanOrEqualTo("id", 0);
-        HierarchyCondition conUserIdLessThan = cb.lessThan("id", 15);
+        HierarchyCondition conUserIdLessThan = cb.lessThan("id", 3);
         HierarchyCondition conCertIdLessThan = builderCertificate.lessThan("id", 5);
         HierarchyCondition conCertIdGreaterThanOrEqual = builderCertificate.greaterThanOrEqualTo("id", 0);
         HierarchyCondition conProvName = builderProvider.equal("name", "Provider 1");
@@ -112,7 +112,7 @@ public class DbAssistJoinConditionsTest extends BaseTest {
 
         // ... WHERE (user.id < ? AND user.id >= ?) OR (certificate.id >= ? AND certificate.id < ?) OR provider.name = ? OR country.name = ?
         List<User> results = uRepo.find(cb);
-        assertEquals(results.size(), 3);
+        assertEquals(results.size(), 2);
     }
 
     @Test
@@ -129,9 +129,9 @@ public class DbAssistJoinConditionsTest extends BaseTest {
         ConditionsBuilder builderCountries = builderProviders.join("country", JoinType.LEFT);
 
         HierarchyCondition conCertIdGreaterThanOrEqual = cb.greaterThanOrEqualTo("id", 0);
-        HierarchyCondition conCertIdLessThan = cb.lessThan("id", 5);
-        HierarchyCondition conUserIdLessThan = builderUsers.lessThan("id", 15);
-        HierarchyCondition conUserIdGreaterThanOrEqual = builderUsers.greaterThanOrEqualTo("id", 0);
+        HierarchyCondition conCertIdLessThan = cb.lessThan("id", 2);
+        HierarchyCondition conUserIdLessThan = builderUsers.lessThan("id", 3);
+        HierarchyCondition conUserIdGreaterThanOrEqual = builderUsers.greaterThanOrEqualTo("id", 1);
         HierarchyCondition conProvNameA = builderProviders.equal("name", "Provider 1");
         HierarchyCondition conCountryName = builderCountries.equal("name", "USA");
 
@@ -147,6 +147,7 @@ public class DbAssistJoinConditionsTest extends BaseTest {
         // ... WHERE (user.id < ? AND user.id >= ?) OR (certificate.id >= ? AND certificate.id < ?) OR provider.name = ? OR country.name = ?
         List<Certificate> certs = cRepo.find(cb);
         assertEquals(certs.size(), 2);
+        //TODO think of another conditions, which return only one entity
     }
 
     @Test
@@ -162,23 +163,24 @@ public class DbAssistJoinConditionsTest extends BaseTest {
         ConditionsBuilder builderCountry = builderProvider.join("country", JoinType.LEFT);
 
         HierarchyCondition conUserIdGreaterThanOrEqual = cb.greaterThanOrEqualTo("id", 0);
-        HierarchyCondition conUserIdLessThan = cb.lessThan("id", 15);
+        HierarchyCondition conUserIdLessThan = cb.lessThan("id", 3);
         HierarchyCondition conCertIdLessThan = builderCerts.lessThan("id", 5);
         HierarchyCondition conCertIdGreaterThanOrEqual = builderCerts.greaterThanOrEqualTo("id", 0);
         HierarchyCondition conProvName = builderProvider.equal("name", "Provider 1");
         HierarchyCondition conCountryName = builderCountry.equal("name", "USA");
 
-        or(
+        HierarchyCondition hc = or(
                 cb.and(conUserIdLessThan, conUserIdGreaterThanOrEqual),
                 or(
                         cb.and(conCertIdGreaterThanOrEqual, conCertIdLessThan),
                         or(conProvName, conCountryName)
                 )
         );
+        cb.apply(hc);
 
 // ... WHERE (user.id < ? AND user.id >= ?) OR (certificate.id >= ? AND certificate.id < ?) OR provider.name = ? OR country.name = ?
         List<User> users = uRepo.find(cb);
-        assertEquals(users.size(), 3);
+        assertEquals(users.size(), 2);
     }
 
     @Test
@@ -195,7 +197,7 @@ public class DbAssistJoinConditionsTest extends BaseTest {
         ConditionsBuilder builderCountries = builderProviders.join("country", JoinType.LEFT);
 
         HierarchyCondition conCertIdGreaterThanOrEqual = cb.greaterThanOrEqualTo("id", 0);
-        HierarchyCondition conCertIdLessThan = cb.lessThan("id", 5);
+        HierarchyCondition conCertIdLessThan = cb.lessThan("id", 2);
         HierarchyCondition conUserIdLessThan = builderUsers.lessThan("id", 15);
         HierarchyCondition conUserIdGreaterThanOrEqual = builderUsers.greaterThanOrEqualTo("id", 0);
         HierarchyCondition conProvName = builderProviders.equal("name", "Provider 1");
@@ -213,6 +215,7 @@ public class DbAssistJoinConditionsTest extends BaseTest {
         // ... WHERE (user.id < ? AND user.id >= ?) OR (certificate.id >= ? AND certificate.id < ?) OR provider.name = ? OR country.name = ?
         List<Certificate> certificates = cRepo.find(cb);
         assertEquals(certificates.size(), 2);
+        //TODO think of another conditions, which return only one entity
     }
 
     @Test
@@ -274,7 +277,7 @@ public class DbAssistJoinConditionsTest extends BaseTest {
     }
 
     @Test
-    public void forkedFetchTest(){
+    public void forkedFetchTest() {
         prepareAndSaveExampleDataToDb(uRepo);
 
         ConditionsBuilder builderUsers = new ConditionsBuilder();
@@ -289,6 +292,7 @@ public class DbAssistJoinConditionsTest extends BaseTest {
                 .fetch("provider", JoinType.LEFT);
 
         List<User> users = uRepo.find(builderUsers, fetchesBuilder, null);
+        //TODO close transaction try to access
         assertEquals(users.size(), 3);
     }
 }

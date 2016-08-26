@@ -15,23 +15,23 @@ public abstract class BaseBuilder<T extends BaseBuilder> {
 
     public BaseBuilder(){}
 
-    public BaseBuilder(String joinAttribute, JoinType joinType) {
+    public BaseBuilder(String joinAttribute, JoinType joinType, T parent) {
         this.joinAttribute = joinAttribute;
         this.joinType = joinType;
+        this.parent = parent;
     }
 
     public HashMap<String, T> getBuilders() {
         return builders;
     }
 
-    public abstract T getInstance(String joinAttribute, JoinType joinType);
+    public abstract T getInstance(String joinAttribute, JoinType joinType, T parent);
 
     protected T getBuilder(String joinAttribute, JoinType joinType) {
         T builder = builders.get(joinAttribute);
 
         if (builder == null) {
-            builder = getInstance(joinAttribute, joinType);
-            builder.setParent(this);
+            builder = getInstance(joinAttribute, joinType, (T) this);
             builders.put(joinAttribute, builder);
         }
 
@@ -40,9 +40,5 @@ public abstract class BaseBuilder<T extends BaseBuilder> {
 
     public T getParent() {
         return parent;
-    }
-
-    public void setParent(T parent) {
-        this.parent = parent;
     }
 }

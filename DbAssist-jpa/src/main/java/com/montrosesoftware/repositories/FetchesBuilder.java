@@ -7,13 +7,13 @@ public class FetchesBuilder extends BaseBuilder<FetchesBuilder> {
 
     public FetchesBuilder(){}
 
-    public FetchesBuilder(String joinAttribute, JoinType joinType) {
-        super(joinAttribute, joinType);
+    public FetchesBuilder(String joinAttribute, JoinType joinType, FetchesBuilder parent) {
+        super(joinAttribute, joinType, parent);
     }
 
     @Override
-    public FetchesBuilder getInstance(String joinAttribute, JoinType joinType) {
-        return new FetchesBuilder(joinAttribute, joinType);
+    public FetchesBuilder getInstance(String joinAttribute, JoinType joinType, FetchesBuilder parent) {
+        return new FetchesBuilder(joinAttribute, joinType, parent);
     }
 
     public FetchesBuilder fetch(String joinAttribute, JoinType joinType) {

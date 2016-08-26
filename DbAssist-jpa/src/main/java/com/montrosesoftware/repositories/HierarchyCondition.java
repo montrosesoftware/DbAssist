@@ -4,10 +4,8 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.From;
 import javax.persistence.criteria.Predicate;
 
+//TODO abstract
 public class HierarchyCondition {
-
-    public HierarchyCondition() {
-    }
 
     public HierarchyCondition(Condition condition) {
         this.condition = condition;
@@ -33,14 +31,13 @@ public class HierarchyCondition {
         if (left != null && right != null) {
             if (logicalOperator == LogicalOperator.AND)
                 return conditionsBuilder.applyLogicalOperator(left.apply(conditionsBuilder), right.apply(conditionsBuilder), CriteriaBuilder::and);
-
             else
                 return conditionsBuilder.applyLogicalOperator(left.apply(conditionsBuilder), right.apply(conditionsBuilder), CriteriaBuilder::or);
         }
         return condition;
     }
 
-    public static interface ApplicableCondition {
+    public interface ApplicableCondition {
         Predicate apply(CriteriaBuilder cb, From<?, ?> root);
     }
 

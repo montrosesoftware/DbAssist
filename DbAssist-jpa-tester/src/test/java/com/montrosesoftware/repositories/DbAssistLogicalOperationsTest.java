@@ -140,13 +140,38 @@ public class DbAssistLogicalOperationsTest extends BaseTest {
         HierarchyCondition c3 = builderProviders.lessThan("id", 9);
         HierarchyCondition c4 = builderCountries.equal("name", "Provider 1");
 
-        HierarchyCondition hc = or(Arrays.asList(c1,c2, c3, c4));
+        HierarchyCondition hc = or(Arrays.asList(c1, c2, c3, c4));
 
         builderUsers.apply(hc);
 
-        // ... WHERE c1 OR c2 OR c3 or c4
+        // ... WHERE c1 OR c2 OR c3 OR c4
         List<User> usersReadMultipleJoin = uRepo.find(builderUsers);
         assertEquals(usersReadMultipleJoin.size(), 3);
+    }
+
+    @Test
+    public void joinTestMultipleEntitiesWithListOfConditionsAnd() {
+        prepareAndSaveExampleDataToDb(uRepo);
+
+        //handle joins
+        ConditionsBuilder builderUsers = new ConditionsBuilder();
+        ConditionsBuilder builderCertificates = builderUsers.join("certificates", JoinType.LEFT);
+        ConditionsBuilder builderProviders = builderCertificates.join("provider", JoinType.LEFT);
+        ConditionsBuilder builderCountries = builderProviders.join("country", JoinType.LEFT);
+
+        HierarchyCondition c1 = builderUsers.lessThan("id", 12);
+        HierarchyCondition c2 = builderCertificates.lessThan("id", 13);
+        HierarchyCondition c3 = builderProviders.lessThan("id", 9);
+        HierarchyCondition c4 = builderCountries.equal("name", "Provider 1");
+
+        HierarchyCondition hc = and(Arrays.asList(c1, c2, c3, c4));
+
+        builderUsers.apply(hc);
+
+        // ... WHERE c1 AND c2 AND c3 AND c4
+        List<User> usersReadMultipleJoin = uRepo.find(builderUsers);
+        assertEquals(usersReadMultipleJoin.size(), 0);
+        //TODO change conditions
     }
 
     @Test
