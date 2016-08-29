@@ -4,18 +4,18 @@ import com.montrosesoftware.DateUtils;
 import com.montrosesoftware.config.BaseTest;
 import com.montrosesoftware.entities.Certificate;
 import com.montrosesoftware.entities.User;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.sql.Timestamp;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-public class DbAssistDateShiftTest extends BaseTest{
+public class DbAssistDateShiftTest extends BaseTest {
 
     @Autowired
     private UserRepo uRepo;
@@ -23,21 +23,23 @@ public class DbAssistDateShiftTest extends BaseTest{
     @Autowired
     private CertificateRepo cRepo;
 
-    @Test public void repositoriesProperlyAutowiredTest(){
+    @Test
+    public void repositoriesProperlyAutowiredTest() {
         assertNotNull(uRepo);
         assertNotNull(cRepo);
     }
 
-    private User getExampleUserData(){
+    private User getExampleUserData() {
         //prepare example user data
         Date expectedDatetime = DateUtils.getUtc("2016-06-12 14:54:15");
-        Date expectedDate = DateUtils.getUtc("2016-03-02 00:00:00");
+       // Date expectedDate = DateUtils.getUtc("2016-03-02 00:00:00");
+        Date expectedDateOnly = DateUtils.getUtc("2016-03-02", true);   //TODO rethink
         Timestamp expectedTimestamp = new Timestamp(expectedDatetime.getTime());
-        User user = new User(1, "Adam Spring", expectedDatetime, expectedTimestamp, expectedDate);
+        User user = new User(1, "Adam Spring", expectedDatetime, expectedTimestamp, expectedDateOnly);
         return user;
     }
 
-    private void assertTimeInDatesNotShifted(User userExpected, User userActual){
+    private void assertTimeInDatesNotShifted(User userExpected, User userActual) {
         assertNotNull(userActual);
         assertEquals("Names are not the same", userExpected.getName(), userActual.getName());
         assertEquals("Datetimes are not the same", userExpected.getCreatedAt(), userActual.getCreatedAt());
@@ -46,7 +48,7 @@ public class DbAssistDateShiftTest extends BaseTest{
     }
 
     @Test
-    public void dataInsertedByPlainSQLAndReadByJPAIsEqual(){
+    public void dataInsertedByPlainSQLAndReadByJPAIsEqual() {
         User userExpected = getExampleUserData();
         uRepo.saveAsPlainSQL(userExpected);
         User userActual = uRepo.get(1);
@@ -54,7 +56,7 @@ public class DbAssistDateShiftTest extends BaseTest{
     }
 
     @Test
-    public void dataInsertedByPlainSQLAndReadUsingCriteriaIsEqual(){
+    public void dataInsertedByPlainSQLAndReadUsingCriteriaIsEqual() {
         User userExpected = getExampleUserData();
         uRepo.saveAsPlainSQL(userExpected);
         User userActual = uRepo.getUsingCriteria();
@@ -62,7 +64,7 @@ public class DbAssistDateShiftTest extends BaseTest{
     }
 
     @Test
-    public void dataInsertedByPlainSQLAndReadUsingSpecificationIsEqual(){
+    public void dataInsertedByPlainSQLAndReadUsingSpecificationIsEqual() {
         User userExpected = getExampleUserData();
         uRepo.saveAsPlainSQL(userExpected);
         User userActual = uRepo.getUsingSpecification(userExpected.getCreatedAt());
@@ -70,7 +72,7 @@ public class DbAssistDateShiftTest extends BaseTest{
     }
 
     @Test
-    public void dataInsertedByPlainSQLAndReadUsingDbAssistConditions(){
+    public void dataInsertedByPlainSQLAndReadUsingDbAssistConditions() {
         User userExpected = getExampleUserData();
         uRepo.saveAsPlainSQL(userExpected);
         User userActual = uRepo.getUsingConditionsBuilder(userExpected.getCreatedAt());
@@ -78,22 +80,22 @@ public class DbAssistDateShiftTest extends BaseTest{
     }
 
     @Test
-    public void dataInsertedByJPAAndReadByPlainSQLIsNotEqual(){
-        User userToInsert = getExampleUserData();
+    public void dataInsertedByJPAAndReadByPlainSQLIsNotEqual() {
+        User userToSave = getExampleUserData();
 
-        //Plain SQL
-        uRepo.saveAsPlainSQL(userToInsert);
+        //plain SQL
+        uRepo.saveAsPlainSQL(userToSave);
 
-        //JPA
-        userToInsert.setId(userToInsert.getId()+1);
-        uRepo.save(userToInsert);
+        //hibernate
+        userToSave.setId(userToSave.getId() + 1);
+        uRepo.save(userToSave);
 
         //read and compare
         List<Object[]> userObjects = uRepo.getDataByPlainSQL();
         assertEquals(2, userObjects.size());
 
-        int columnsAmount = userObjects.get(0).length;
-        for (int i = 0; i < columnsAmount; i++) {
+        int columnsNumber = userObjects.get(0).length;
+        for (int i = 0; i < columnsNumber; i++) {
             Object[] first = userObjects.get(0);
             Object[] second = userObjects.get(1);
             assertEquals(first[i], second[i]);
@@ -101,7 +103,7 @@ public class DbAssistDateShiftTest extends BaseTest{
     }
 
     @Test
-    public void certificateRead(){
+    public void certificateRead() {
         Date expectedDate = DateUtils.getUtc("2016-06-12 14:54:15");
         Certificate certToInsert = new Certificate(1, "BHP", expectedDate);
         cRepo.saveAsPlainSQL(certToInsert);
@@ -110,7 +112,7 @@ public class DbAssistDateShiftTest extends BaseTest{
     }
 
     @Test
-    public void writeAndReadByHibernateWithJoinedEntities(){
+    public void writeAndReadByHibernateWithJoinedEntities() {
         User userExpected = getExampleUserData();
         Certificate certActualA = new Certificate(1, "BHP", DateUtils.getUtc("2016-06-12 14:54:15"));
         Certificate certActualB = new Certificate(2, "Java Cert", DateUtils.getUtc("2014-03-12 11:11:15"));
