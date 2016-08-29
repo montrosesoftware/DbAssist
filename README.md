@@ -5,13 +5,13 @@ Project also introduces ConditionsBuilder class which enables the user to easily
 
 ## Installation
 
-1. Install Microsoft JDBC Driver 4.0 from link https://www.microsoft.com/en-us/download/details.aspx?id=11774 (tested on versions: TODO)
+* Install Microsoft JDBC Driver 4.0 from link https://www.microsoft.com/en-us/download/details.aspx?id=11774 (tested on versions: TODO)
 
 Installation can be done by changing the .jar name to sqljdbc4-4.0.jar and copying that file into Maven local repository \.m2\repository\com\microsoft\sqlserver\sqljdbc4\4.0\ 
 
-2. Install the fix by adding following dependency into your project's .pom file:
+* Install the fix by adding the following dependency into your project's .pom file:
 
-For JPA Annotations:
+### For JPA Annotations:
 ```xml
 <dependency>
     <groupId>com.montrosesoftware</groupId>
@@ -20,7 +20,7 @@ For JPA Annotations:
 </dependency>
 ```
 
-For HBM files:
+### For HBM files:
 ```xml
 <dependency>
     <groupId>com.montrosesoftware</groupId>
@@ -31,8 +31,11 @@ For HBM files:
 
 ## Compatibility
 
-For JPA Annotations: from Hibernate 4.3.11.Final to 5.2.2.Final
-For .hbm files: TODO
+### For JPA Annotations: 
+From Hibernate 4.3.11.Final to 5.2.2.Final
+
+### For .hbm files:
+TODO
 
 ## Usage
 
@@ -62,7 +65,7 @@ Result:
 WHERE (c1 AND c2) OR c3 OR (c4 AND c5)
 ```
 
-More examples and tutorial for DbAssist library is available on the wiki page: TODO
+More examples and the tutorial for DbAssist library is available on the wiki page: TODO
 
 ## Contributing
 
