@@ -5,21 +5,29 @@ Project also introduces ConditionsBuilder class which enables the user to easily
 
 ## Installation
 
-To simply install the fix, add following dependency into Maven .pom file:
+1. Install Microsoft JDBC Driver 4.0 from link https://www.microsoft.com/en-us/download/details.aspx?id=11774 (tested on versions: TODO)
+
+Installation can be done by changing the .jar name to sqljdbc4-4.0.jar and copying that file into Maven local repository \.m2\repository\com\microsoft\sqlserver\sqljdbc4\4.0\ 
+
+2. Install the fix by adding following dependency into your project's .pom file:
 
 For JPA Annotations:
+```xml
 <dependency>
     <groupId>com.montrosesoftware</groupId>
     <artifactId>DbAssist-jpa</artifactId>
     <version>1.0-SNAPSHOT</version>
 </dependency>
+```
 
 For HBM files:
+```xml
 <dependency>
     <groupId>com.montrosesoftware</groupId>
     <artifactId>DbAssist-hbm</artifactId>
     <version>1.0-SNAPSHOT</version>
 </dependency>
+```
 
 ## Compatibility
 
@@ -28,6 +36,7 @@ For .hbm files: TODO
 
 ## Usage
 
+```java
 ConditionsBuilder cb = new ConditionsBuilder();
 
 //prepare conditions
@@ -46,9 +55,12 @@ HierarchyCondition hc = or(
 cb.apply(hc);
 
 List<User> users = uRepo.find(cb);
+```
 
 Result:
+```sql
 WHERE (c1 AND c2) OR c3 OR (c4 AND c5)
+```
 
 More examples and tutorial for DbAssist library is available on the wiki page: TODO
 
