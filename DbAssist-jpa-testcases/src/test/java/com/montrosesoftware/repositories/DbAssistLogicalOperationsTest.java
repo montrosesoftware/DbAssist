@@ -12,10 +12,10 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
+import static com.montrosesoftware.helpers.TestUtils.addMinutes;
 import static com.montrosesoftware.helpers.TestUtils.prepareAndSaveExampleDataToDb;
 import static com.montrosesoftware.helpers.TestUtils.saveUsersData;
 import static com.montrosesoftware.repositories.ConditionsBuilder.or;
-import static org.apache.commons.lang3.time.DateUtils.addMinutes;
 import static org.junit.Assert.*;
 import static com.montrosesoftware.repositories.ConditionsBuilder.and;
 
