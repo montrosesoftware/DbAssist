@@ -44,9 +44,7 @@
     </build>
 
     <modules>
-        <module>DbAssist-hbm</module>
         <module>DbAssist-commons</module>
-        <module>DbAssist-hbm-tester</module>
     </modules>
 
 </project>
