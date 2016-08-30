@@ -4,8 +4,8 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.montrosesoftware</groupId>
-    <artifactId>DbAssist-jpa-tester</artifactId>
+    <groupId>com.montrosesoftware.test</groupId>
+    <artifactId>DbAssist-jpa-4.3.11-test</artifactId>
     <version>1.0-SNAPSHOT</version>
 
     <parent>
@@ -26,48 +26,33 @@
                     <target>1.8</target>
                 </configuration>
             </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <version>2.6</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>test-jar</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.19.1</version>
+                <version>2.15</version>
                 <configuration>
-                    <skipTests>true</skipTests>
+                    <dependenciesToScan>
+                        <dependency>com.montrosesoftware:DbAssist-jpa-tester</dependency>
+                    </dependenciesToScan>
                 </configuration>
             </plugin>
-
         </plugins>
     </build>
 
     <dependencies>
-
         <dependency>
             <groupId>com.montrosesoftware</groupId>
-            <artifactId>DbAssist-jpa</artifactId>
+            <artifactId>DbAssist-jpa-tester</artifactId>
             <version>1.0-SNAPSHOT</version>
+            <scope>test</scope>
+            <type>test-jar</type>
         </dependency>
 
         <dependency>
             <groupId>com.montrosesoftware</groupId>
-            <artifactId>DbAssist-commons</artifactId>
+            <artifactId>DbAssist-jpa-fix</artifactId>
             <version>1.0-SNAPSHOT</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.microsoft.sqlserver</groupId>
-            <artifactId>sqljdbc4</artifactId>
-            <version>4.0</version>
         </dependency>
 
         <dependency>
