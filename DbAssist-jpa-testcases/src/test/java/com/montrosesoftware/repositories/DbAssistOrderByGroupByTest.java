@@ -34,12 +34,12 @@ public class DbAssistOrderByGroupByTest extends BaseTest {
             add(new User(3, "A", date1));
         }});
 
-        ConditionsBuilder c = new ConditionsBuilder();
+        ConditionsBuilder cb = new ConditionsBuilder();
         AbstractRepository.OrderBy<User> userOrderBy = (builder, root) -> Arrays.asList(
                 builder.asc(root.get("name")),
                 builder.desc(root.get("createdAt"))
         );
-        List<User> results = uRepo.find(c, null, userOrderBy);
+        List<User> results = uRepo.find(cb, null, userOrderBy);
 
         assertEquals(results.size(), 3);
         assertTrue(results.get(0).getId() == 2);
