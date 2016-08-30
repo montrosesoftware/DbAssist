@@ -13,6 +13,11 @@ import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 
+/**
+ * Abstract class providing methods for reading entity data from DB
+ * and necessary variables and interfaces used by these methods
+ * @param <T> the entity class
+ */
 public abstract class AbstractRepository<T> {
 
     @FunctionalInterface
@@ -41,6 +46,14 @@ public abstract class AbstractRepository<T> {
         this.typeParameterClass = typeParameterClass;
     }
 
+    /**
+     * The method prepares the SQL query to read the entity, applies fetch callbacks, conditions and sets specified
+     * order on the generated query. Then it runs the query and returns the list of the entity objects.
+     * @param conditionsBuilder class containing conditions to apply on the query
+     * @param fetchesBuilder    class containing fetch callbacks to apply on the query
+     * @param orderBy           list of lambdas specifying order of the returned list
+     * @return                  list of found entities in the database
+     */
     protected List<T> find(ConditionsBuilder conditionsBuilder, FetchesBuilder fetchesBuilder, OrderBy<T> orderBy) {
 
         CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
@@ -73,6 +86,17 @@ public abstract class AbstractRepository<T> {
         return find(conditionsBuilder, null, null);
     }
 
+    /**
+     * The method prepares the SQL query to read a few specific attributes of the entity, applies fetch callbacks,
+     * conditions and sets the specified order on the generated query. Then it runs the query and returns the list of
+     * tuples (one tuple per found entity in the DB) containing the values read from the specified columns in the DB.
+     * @param selectionList         specifies which entity attributes to read or which aggregate methods to use
+     * @param conditionsBuilder     class containing conditions to apply on the query
+     * @param fetchesBuilder        class containing fetch callbacks to apply on the query
+     * @param orderBy               list of lambdas specifying order of the returned list
+     * @param groupBy               list of lambdas specifying grouping
+     * @return                      list of tuples containing values corresponding to columns/aggregates specified in the selection list
+     */
     protected List<Tuple> findAttributes(SelectionList<T> selectionList,
                                          ConditionsBuilder conditionsBuilder,
                                          FetchesBuilder fetchesBuilder,
@@ -110,23 +134,18 @@ public abstract class AbstractRepository<T> {
         return findAttributes(selectionList, conditionsBuilder, null, null, null);
     }
 
-    protected <A> List<A> findAttribute(String attributeName,
-                                        ConditionsBuilder conditionsBuilder,
-                                        FetchesBuilder fetchesBuilder,
-                                        OrderBy<T> orderBy,
-                                        SelectFunction<CriteriaBuilder, Path<A>, Selection<A>> selectCallback) {
-        return findAttribute(attributeName, false, conditionsBuilder, fetchesBuilder, orderBy, selectCallback);
-    }
-
-    protected <A> List<A> findAttributeDistinct(String attributeName,
-                                                ConditionsBuilder conditionsBuilder,
-                                                FetchesBuilder fetchesBuilder,
-                                                OrderBy<T> orderBy,
-                                                SelectFunction<CriteriaBuilder,
-                                                        Path<A>, Selection<A>> selectCallback) {
-        return findAttribute(attributeName, true, conditionsBuilder, fetchesBuilder, orderBy, selectCallback);
-    }
-
+    /**
+     * The method prepares the SQL query to read a specific attribute of the entity, applies fetch callbacks, conditions and sets specified
+     * order on the generated query. Then it runs the query and returns the list of the values read from the corresponding column in the DB.
+     * @param attributeName     the name of the entity attribute to read from the database
+     * @param selectDistinct    specify whether duplicate query results will be eliminated
+     * @param conditionsBuilder class containing conditions to apply on the query
+     * @param fetchesBuilder    class containing fetch callbacks to apply on the query
+     * @param orderBy           list of lambdas specifying order of the returned list
+     * @param selectCallback
+     * @param <A>               the attribute class
+     * @return                  list of the values read from the DB
+     */
     private <A> List<A> findAttribute(String attributeName,
                                       boolean selectDistinct,
                                       ConditionsBuilder conditionsBuilder,
@@ -167,6 +186,23 @@ public abstract class AbstractRepository<T> {
         setParameters(conditionsBuilder, typedQuery);
 
         return typedQuery.getResultList();
+    }
+
+    protected <A> List<A> findAttribute(String attributeName,
+                                        ConditionsBuilder conditionsBuilder,
+                                        FetchesBuilder fetchesBuilder,
+                                        OrderBy<T> orderBy,
+                                        SelectFunction<CriteriaBuilder, Path<A>, Selection<A>> selectCallback) {
+        return findAttribute(attributeName, false, conditionsBuilder, fetchesBuilder, orderBy, selectCallback);
+    }
+
+    protected <A> List<A> findAttributeDistinct(String attributeName,
+                                                ConditionsBuilder conditionsBuilder,
+                                                FetchesBuilder fetchesBuilder,
+                                                OrderBy<T> orderBy,
+                                                SelectFunction<CriteriaBuilder,
+                                                        Path<A>, Selection<A>> selectCallback) {
+        return findAttribute(attributeName, true, conditionsBuilder, fetchesBuilder, orderBy, selectCallback);
     }
 
     protected <A> List<A> findAttribute(String attributeName, ConditionsBuilder conditionsBuilder){

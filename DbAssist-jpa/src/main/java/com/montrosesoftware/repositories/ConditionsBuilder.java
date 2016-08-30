@@ -9,6 +9,9 @@ import javax.persistence.metamodel.Attribute;
 import java.time.LocalDate;
 import java.util.*;
 
+/**
+ * Class provides methods to create and store conditions that we set on the entity or joined entities
+ */
 public class ConditionsBuilder extends BaseBuilder<ConditionsBuilder> {
 
     @FunctionalInterface
@@ -92,11 +95,34 @@ public class ConditionsBuilder extends BaseBuilder<ConditionsBuilder> {
         return new LeafCondition(this, (cb, root) -> root.get(attributeName).isNotNull());
     }
 
+    public <T extends Comparable<T>> HierarchyCondition inRangeCondition(String attributeName, T leftBound, T rightBound) {
+        return and(
+                this.greaterThanOrEqualTo(attributeName, leftBound),
+                this.lessThanOrEqualTo(attributeName, rightBound)
+        );
+    }
+
+    public <T extends Comparable<T>> HierarchyCondition inRangeExclusiveCondition(String attributeName, T leftBound, T rightBound) {
+        return and(
+                this.greaterThan(attributeName, leftBound),
+                this.lessThan(attributeName, rightBound)
+        );
+    }
+
+    /**
+     * Applies passed hierarchy of conditions to this ConditionsBuilder and saves the resultant complex Condition
+     * @param hierarchyCondition    the logical combination (hierarchy) of conditions to be applied
+     * @return                      the result of applying all the HierarchyConditions into one lambda (inside Condition)
+     */
     public Condition apply(HierarchyCondition hierarchyCondition) {
         whereConditions = hierarchyCondition.apply(this);
         return whereConditions;
     }
 
+    /**
+     * Method creates or retrieves existing ConditionsBuilder (corresponding to the join specified by
+     * joinAttribute and joinType)
+     */
     public ConditionsBuilder join(String joinAttribute, JoinType joinType) {
         return getBuilder(joinAttribute, joinType);
     }
@@ -137,6 +163,10 @@ public class ConditionsBuilder extends BaseBuilder<ConditionsBuilder> {
         }
     }
 
+    /**
+     * Method used to logically combine two conditions into one with logical operator (using lambdas)
+     * @return    new combined Condition
+     */
     public Condition applyLogicalOperator(Condition leftOperandCondition,
                                           Condition rightOperandCondition,
                                           ThreeArgsFunction<CriteriaBuilder, Predicate, Predicate, Predicate> logicalOperator) {
@@ -160,25 +190,6 @@ public class ConditionsBuilder extends BaseBuilder<ConditionsBuilder> {
 
     private <T> Predicate getInPredicate(String attributeName, List<T> values, CriteriaBuilder cb, From<?, ?> root) {
         return root.get(attributeName).in(getExpression(cb, values, List.class));
-    }
-
-    private Condition assignWhereConditionsAndReturn(Condition condition) {
-        whereConditions = condition;
-        return condition;
-    }
-
-    public <T extends Comparable<T>> HierarchyCondition inRangeCondition(String attributeName, T leftBound, T rightBound) {
-        return and(
-                this.greaterThanOrEqualTo(attributeName, leftBound),
-                this.lessThanOrEqualTo(attributeName, rightBound)
-        );
-    }
-
-    public <T extends Comparable<T>> HierarchyCondition inRangeExclusiveCondition(String attributeName, T leftBound, T rightBound) {
-        return and(
-                this.greaterThan(attributeName, leftBound),
-                this.lessThan(attributeName, rightBound)
-        );
     }
 
     public void applyConditions(CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder, Root<?> root) {

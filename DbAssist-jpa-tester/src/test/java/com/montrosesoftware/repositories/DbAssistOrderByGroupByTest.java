@@ -19,17 +19,16 @@ import static org.junit.Assert.assertTrue;
 
 public class DbAssistOrderByGroupByTest extends BaseTest {
 
+    private static final Date ExampleDate = DateUtils.getUtc("2012-06-12 08:10:15");
+    private static final double Delta = 1e-15;
     @Autowired
     private UserRepo uRepo;
 
-    private static final Date ExampleDate = DateUtils.getUtc("2012-06-12 08:10:15");
-    private static final double Delta = 1e-15;
-
     @Test
-    public void orderByDateUse(){
+    public void orderByDateUse() {
         Date date1 = ExampleDate;
         Date date2 = addMinutes(ExampleDate, 10);
-        saveUsersData(uRepo, new ArrayList<User>(){{
+        saveUsersData(uRepo, new ArrayList<User>() {{
             add(new User(1, "B", date2));
             add(new User(2, "A", date2));
             add(new User(3, "A", date1));
@@ -39,7 +38,7 @@ public class DbAssistOrderByGroupByTest extends BaseTest {
         AbstractRepository.OrderBy<User> userOrderBy = (builder, root) -> Arrays.asList(
                 builder.asc(root.get("name")),
                 builder.desc(root.get("createdAt"))
-                );
+        );
         List<User> results = uRepo.find(c, null, userOrderBy);
 
         assertEquals(results.size(), 3);
@@ -49,8 +48,8 @@ public class DbAssistOrderByGroupByTest extends BaseTest {
     }
 
     @Test
-    public void groupByWithAggregates(){
-        saveUsersData(uRepo, new ArrayList<User>(){{
+    public void groupByWithAggregates() {
+        saveUsersData(uRepo, new ArrayList<User>() {{
             add(new User(1, "Mont", ExampleDate, 14.5, "worker"));
             add(new User(2, "Mont", ExampleDate, 10.1, "worker"));
             add(new User(3, "Rose", ExampleDate, 1.5, "worker"));
@@ -72,10 +71,11 @@ public class DbAssistOrderByGroupByTest extends BaseTest {
         );
 
         List<Tuple> results = uRepo.findAttributes(selectionList, conditions, null, null, groupBy);
+        Tuple groupWorkersResults = results.get(0);
 
-        Double sumSalaryWorkers = (Double) results.get(0).get(0);
-        Double avgSalaryWorkers = (Double) results.get(0).get(1);
-        Long numWorkers = (Long) results.get(0).get(2);
+        Double sumSalaryWorkers = (Double) groupWorkersResults.get(0);
+        Double avgSalaryWorkers = (Double) groupWorkersResults.get(1);
+        Long numWorkers = (Long) groupWorkersResults.get(2);
 
         assertEquals(numWorkers.longValue(), 3);
         assertEquals(sumSalaryWorkers, 14.5 + 10.1 + 1.5, Delta);

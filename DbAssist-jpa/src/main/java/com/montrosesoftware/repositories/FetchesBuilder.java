@@ -16,6 +16,9 @@ public class FetchesBuilder extends BaseBuilder<FetchesBuilder> {
         return new FetchesBuilder(joinAttribute, joinType, parent);
     }
 
+    /**
+     * Method creates or retrieves existing FetchesBuilder corresponding to the fetch specified by joinAttribute and joinType
+     */
     public FetchesBuilder fetch(String joinAttribute, JoinType joinType) {
         return getBuilder(joinAttribute, joinType);
     }
