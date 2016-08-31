@@ -244,7 +244,7 @@ public class ConditionsBuilder extends BaseBuilder<ConditionsBuilder> {
         return (From<?, ?>) fetchParent;
     }
 
-    private From<?, ?> getFrom(From<?, ?> rootFrom, ConditionsBuilder joinConditionBuilder) {
+    public From<?, ?> getFrom(From<?, ?> rootFrom, ConditionsBuilder joinConditionBuilder) {
         if (joinConditionBuilder == null)
             throw new RuntimeException("joinConditionsBuilder should be not null");
 

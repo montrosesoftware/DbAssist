@@ -4,13 +4,16 @@ import com.montrosesoftware.config.BaseTest;
 import com.montrosesoftware.entities.Certificate;
 import com.montrosesoftware.entities.Provider;
 import com.montrosesoftware.entities.User;
+import com.montrosesoftware.repositories.OrderBy.OrderType;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.*;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 import static com.montrosesoftware.helpers.TestUtils.prepareAndSaveExampleDataToDb;
@@ -18,7 +21,8 @@ import static com.montrosesoftware.repositories.ConditionsBuilder.and;
 import static com.montrosesoftware.repositories.ConditionsBuilder.or;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import com.montrosesoftware.repositories.AbstractRepository.OrderByContainer;
+
+
 public class DbAssistJoinConditionsTest extends BaseTest {
 
     @Autowired
@@ -299,22 +303,47 @@ public class DbAssistJoinConditionsTest extends BaseTest {
     public void orderByJoinedAttribute() {
         prepareAndSaveExampleDataToDb(uRepo);
 
-        ConditionsBuilder builderUsers = new ConditionsBuilder();
-        ConditionsBuilder builderCertificates = builderUsers.join("certificates", JoinType.LEFT);
+        ConditionsBuilder rootBuilder = new ConditionsBuilder();
+        ConditionsBuilder builderCerts = rootBuilder.join("certificates", JoinType.LEFT);
 
+        //prepare complex ordering settings
+        OrderBy orderUsersA = new OrderBy(rootBuilder, new LinkedHashMap<String, OrderType>() {{
+            put("name", OrderType.ASC);
+            put("id", OrderType.DESC);
+        }});
 
-        AbstractRepository.OrderBy<User> userOrderBy = (builder, root) -> Arrays.asList(
-                builder.asc(root.get("name"))
-        );
-        AbstractRepository.OrderByContainer<User> = new AbstractRepository.OrderByContainer<User>(builderUsers, userOrderBy)
+        //for joined entity
+        OrderBy orderCerts = new OrderBy(builderCerts, new LinkedHashMap<String, OrderType>() {{
+            put("name", OrderType.DESC);
+        }});
 
+        OrderBy orderUsersB = new OrderBy(rootBuilder, new LinkedHashMap<String, OrderType>() {{
+            put("createdAt", OrderType.DESC);
+        }});
 
+        List<User> results = uRepo.find(rootBuilder, Arrays.asList(orderUsersA, orderCerts, orderUsersB));
+        //TODO finish
+    }
 
-        AbstractRepository.OrderBy<Certificate> certOrderBy = (builder, root) -> Arrays.asList(
-                builder.asc(root.get("name"))
-        );
+    @Test
+    public void orderByJoinedAttributeUsingJPA() {
+        prepareAndSaveExampleDataToDb(uRepo);
 
-        List<User> results = uRepo.find(userOrderBy);
+        EntityManager em = uRepo.getEntityManager();
+        CriteriaBuilder cb = em.getCriteriaBuilder();
+
+        CriteriaQuery<User> cq = cb.createQuery(User.class);
+        Root<User> root = cq.from(User.class);
+        Join<User, Certificate> joinCert = root.join("certificates");
+
+        cq.select(root);
+        List<Order> orderList = new ArrayList<>();
+        orderList.add(cb.asc(root.get("name")));
+        orderList.add(cb.asc(joinCert.get("name")));
+
+        cq.orderBy(orderList);
+        TypedQuery<User> q = em.createQuery(cq);
+        List<User> result = q.getResultList();
 
     }
 }
