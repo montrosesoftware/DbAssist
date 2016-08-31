@@ -7,10 +7,7 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.persistence.Tuple;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 import static com.montrosesoftware.helpers.TestUtils.addMinutes;
 import static com.montrosesoftware.helpers.TestUtils.saveUsersData;
@@ -24,6 +21,7 @@ public class DbAssistOrderByGroupByTest extends BaseTest {
     @Autowired
     private UserRepo uRepo;
 
+    //TODO finish
     @Test
     public void orderByDateUse() {
         Date date1 = ExampleDate;
@@ -34,11 +32,13 @@ public class DbAssistOrderByGroupByTest extends BaseTest {
             add(new User(3, "A", date1));
         }});
 
-        AbstractRepository.OrderBy<User> userOrderBy = (builder, root) -> Arrays.asList(
-                builder.asc(root.get("name")),
-                builder.desc(root.get("createdAt"))
-        );
-        List<User> results = uRepo.find(userOrderBy);
+        ConditionsBuilder cb = new ConditionsBuilder();
+        OrderBy orderBy = new OrderBy();
+        orderBy
+                .asc(cb, "name")
+                .desc(cb, "createdAt");
+
+        List<User> results = uRepo.find(cb, orderBy);
 
         assertEquals(results.size(), 3);
         assertTrue(results.get(0).getId() == 2);

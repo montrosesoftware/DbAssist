@@ -35,10 +35,10 @@ public abstract class AbstractRepository<T> {
      *
      * @param conditionsBuilder class containing conditions to apply on the query
      * @param fetchesBuilder    class containing fetch callbacks to apply on the query
-     * @param orderBy           list of lambdas specifying order of the returned list
+     * @param orders            list specifying sorting of the result
      * @return list of found entities in the database
      */
-    protected List<T> find(ConditionsBuilder conditionsBuilder, FetchesBuilder fetchesBuilder, OrderBy<T> orderBy) {
+    protected List<T> find(ConditionsBuilder conditionsBuilder, FetchesBuilder fetchesBuilder, OrderBy orders) {
 
         CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
         CriteriaQuery<T> criteriaQuery = criteriaBuilder.createQuery(typeParameterClass);
@@ -52,8 +52,9 @@ public abstract class AbstractRepository<T> {
 
         conditionsBuilder = applyConditions(conditionsBuilder, criteriaBuilder, criteriaQuery, root);
 
-        if (orderBy != null) {
-            criteriaQuery.orderBy(orderBy.apply(criteriaBuilder, root));
+        if(orders != null){
+            List<Order> orderList = orders.getListOfOrders(criteriaBuilder, conditionsBuilder, root);
+            criteriaQuery.orderBy(orderList);
         }
 
         TypedQuery<T> typedQuery = entityManager.createQuery(criteriaQuery);
@@ -74,20 +75,12 @@ public abstract class AbstractRepository<T> {
         return find(null, fetchesBuilder, null);
     }
 
-    protected List<T> find(OrderBy<T> orderBy) {
-        return find(null, null, orderBy);
-    }
-
     protected List<T> find(ConditionsBuilder conditionsBuilder, FetchesBuilder fetchesBuilder) {
         return find(conditionsBuilder, fetchesBuilder, null);
     }
 
-    protected List<T> find(ConditionsBuilder conditionsBuilder, OrderBy<T> orderBy) {
-        return find(conditionsBuilder, null, orderBy);
-    }
-
-    protected List<T> find(FetchesBuilder fetchesBuilder, OrderBy<T> orderBy) {
-        return find(null, fetchesBuilder, orderBy);
+    protected List<T> find(ConditionsBuilder conditionsBuilder, OrderBy orders) {
+        return find(conditionsBuilder, null, orders);
     }
 
     /**
@@ -98,14 +91,14 @@ public abstract class AbstractRepository<T> {
      * @param selectionList     specifies which entity attributes to read or which aggregate methods to use
      * @param conditionsBuilder class containing conditions to apply on the query
      * @param fetchesBuilder    class containing fetch callbacks to apply on the query
-     * @param orderBy           list of lambdas specifying order of the returned list
+     * @param orders            list specifying sorting of the result
      * @param groupBy           list of lambdas specifying grouping
      * @return list of tuples containing values corresponding to columns/aggregates specified in the selection list
      */
     protected List<Tuple> findAttributes(SelectionList<T> selectionList,
                                          ConditionsBuilder conditionsBuilder,
                                          FetchesBuilder fetchesBuilder,
-                                         OrderBy<T> orderBy,
+                                         OrderBy orders,
                                          GroupBy<T> groupBy) {
 
         CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
@@ -120,8 +113,9 @@ public abstract class AbstractRepository<T> {
 
         conditionsBuilder = applyConditions(conditionsBuilder, criteriaBuilder, criteriaQuery, root);
 
-        if (orderBy != null) {
-            criteriaQuery.orderBy(orderBy.apply(criteriaBuilder, root));
+        if(orders != null){
+            List<Order> orderList = orders.getListOfOrders(criteriaBuilder, conditionsBuilder, root);
+            criteriaQuery.orderBy(orderList);
         }
 
         if (groupBy != null) {
@@ -139,8 +133,8 @@ public abstract class AbstractRepository<T> {
         return findAttributes(selectionList, conditionsBuilder, null, null, null);
     }
 
-    protected List<Tuple> findAttributes(SelectionList<T> selectionList, ConditionsBuilder conditionsBuilder, OrderBy<T> orderBy) {
-        return findAttributes(selectionList, conditionsBuilder, null, orderBy, null);
+    protected List<Tuple> findAttributes(SelectionList<T> selectionList, ConditionsBuilder conditionsBuilder, OrderBy orders) {
+        return findAttributes(selectionList, conditionsBuilder, null, orders, null);
     }
 
     protected List<Tuple> findAttributes(SelectionList<T> selectionList, ConditionsBuilder conditionsBuilder, GroupBy<T> groupBy) {
@@ -159,7 +153,7 @@ public abstract class AbstractRepository<T> {
      * @param selectDistinct    specify whether duplicate query results will be eliminated
      * @param conditionsBuilder class containing conditions to apply on the query
      * @param fetchesBuilder    class containing fetch callbacks to apply on the query
-     * @param orderBy           list of lambdas specifying order of the returned list
+     * @param orders            list specifying sorting of the result
      * @param selectCallback
      * @param <A>               the attribute class
      * @return list of the values read from the DB
@@ -168,7 +162,7 @@ public abstract class AbstractRepository<T> {
                                       boolean selectDistinct,
                                       ConditionsBuilder conditionsBuilder,
                                       FetchesBuilder fetchesBuilder,
-                                      OrderBy<T> orderBy,
+                                      OrderBy orders,
                                       SelectFunction<CriteriaBuilder, Path<A>, Selection<A>> selectCallback) {
 
         CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
@@ -195,8 +189,9 @@ public abstract class AbstractRepository<T> {
 
         conditionsBuilder = applyConditions(conditionsBuilder, criteriaBuilder, criteriaQuery, root);
 
-        if (orderBy != null) {
-            criteriaQuery.orderBy(orderBy.apply(criteriaBuilder, root));
+        if(orders != null){
+            List<Order> orderList = orders.getListOfOrders(criteriaBuilder, conditionsBuilder, root);
+            criteriaQuery.orderBy(orderList);
         }
 
         TypedQuery<A> typedQuery = entityManager.createQuery(criteriaQuery);
@@ -209,9 +204,9 @@ public abstract class AbstractRepository<T> {
     protected <A> List<A> findAttribute(String attributeName,
                                         ConditionsBuilder conditionsBuilder,
                                         FetchesBuilder fetchesBuilder,
-                                        OrderBy<T> orderBy,
+                                        OrderBy orders,
                                         SelectFunction<CriteriaBuilder, Path<A>, Selection<A>> selectCallback) {
-        return findAttribute(attributeName, false, conditionsBuilder, fetchesBuilder, orderBy, selectCallback);
+        return findAttribute(attributeName, false, conditionsBuilder, fetchesBuilder, orders, selectCallback);
     }
 
     protected <A> List<A> findAttribute(String attributeName, ConditionsBuilder conditionsBuilder) {
@@ -221,10 +216,10 @@ public abstract class AbstractRepository<T> {
     protected <A> List<A> findAttributeDistinct(String attributeName,
                                                 ConditionsBuilder conditionsBuilder,
                                                 FetchesBuilder fetchesBuilder,
-                                                OrderBy<T> orderBy,
+                                                OrderBy orders,
                                                 SelectFunction<CriteriaBuilder,
                                                         Path<A>, Selection<A>> selectCallback) {
-        return findAttribute(attributeName, true, conditionsBuilder, fetchesBuilder, orderBy, selectCallback);
+        return findAttribute(attributeName, true, conditionsBuilder, fetchesBuilder, orders, selectCallback);
     }
 
     private <X> ConditionsBuilder applyConditions(ConditionsBuilder conditionsBuilder, CriteriaBuilder criteriaBuilder, CriteriaQuery<X> criteriaQuery, Root<T> root) {
@@ -373,10 +368,6 @@ public abstract class AbstractRepository<T> {
     @FunctionalInterface
     interface SelectFunction<CB, P, S> {
         S apply(CB criteriaBuilder, P path);
-    }
-
-    protected interface OrderBy<T> {
-        List<Order> apply(CriteriaBuilder criteriaBuilder, Root<?> root);
     }
 
     protected interface GroupBy<T> {

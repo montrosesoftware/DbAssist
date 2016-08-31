@@ -7,18 +7,18 @@ import com.montrosesoftware.entities.User;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.*;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.function.Function;
 
 import static com.montrosesoftware.helpers.TestUtils.prepareAndSaveExampleDataToDb;
 import static com.montrosesoftware.repositories.ConditionsBuilder.and;
 import static com.montrosesoftware.repositories.ConditionsBuilder.or;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
+
 
 public class DbAssistJoinConditionsTest extends BaseTest {
 
@@ -294,6 +294,59 @@ public class DbAssistJoinConditionsTest extends BaseTest {
         List<User> users = uRepo.find(builderUsers, fetchesBuilder);
         //TODO close transaction try to access
         assertEquals(users.size(), 3);
+    }
+
+    @Test
+    public void orderByJoinedAttribute() {
+        prepareAndSaveExampleDataToDb(uRepo);
+
+        //joins
+        ConditionsBuilder rootBuilder = new ConditionsBuilder();
+        ConditionsBuilder builderCerts = rootBuilder.join("certificates", JoinType.LEFT);
+
+        //sorting
+        OrderBy orderBy = new OrderBy();
+        orderBy
+                .asc(rootBuilder, "name")
+                .desc(rootBuilder, "id")
+                .asc(builderCerts, "id")
+                .desc(rootBuilder, "createdAt");
+
+        List<User> results = uRepo.find(rootBuilder, orderBy);
+
+        assertEquals(results.size(), 3);
+        assertTrue(results.get(0).getId() == 2);
+        assertTrue(results.get(1).getId() == 1);
+        assertTrue(results.get(2).getId() == 3);
+    }
+
+    @Test
+    public void orderByJoinedAttributeUsingPlainJPA() {
+        prepareAndSaveExampleDataToDb(uRepo);
+
+        EntityManager em = uRepo.getEntityManager();
+        CriteriaBuilder cb = em.getCriteriaBuilder();
+
+        CriteriaQuery<User> cq = cb.createQuery(User.class);
+        Root<User> root = cq.from(User.class);
+        Join<User, Certificate> joinCert = root.join("certificates", JoinType.LEFT);
+
+        cq.select(root);
+        List<Order> orderList = new ArrayList<>();
+        orderList.add(cb.asc(root.get("name")));
+        orderList.add(cb.desc(root.get("id")));
+        orderList.add(cb.asc(joinCert.get("id")));
+        orderList.add(cb.desc(root.get("createdAt")));
+
+        cq.orderBy(orderList);
+
+        TypedQuery<User> q = em.createQuery(cq);
+        List<User> results = new ArrayList(new LinkedHashSet(q.getResultList()));
+
+        assertEquals(results.size(), 3);
+        assertTrue(results.get(0).getId() == 2);
+        assertTrue(results.get(1).getId() == 1);
+        assertTrue(results.get(2).getId() == 3);
     }
 }
 
