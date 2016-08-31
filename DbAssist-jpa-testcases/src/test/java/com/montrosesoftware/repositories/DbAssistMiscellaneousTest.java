@@ -75,10 +75,10 @@ public class DbAssistMiscellaneousTest extends BaseTest {
                 root.get("name")
         ));
 
-        ConditionsBuilder c = new ConditionsBuilder();
-        HierarchyCondition hc = c.inRangeCondition("id", 1, 2);
-        c.apply(hc);
-        List<Tuple> tuples = uRepo.findAttributes(selectionList, c);
+        ConditionsBuilder cb = new ConditionsBuilder();
+        HierarchyCondition hc = cb.inRangeCondition("id", 1, 2);
+        cb.apply(hc);
+        List<Tuple> tuples = uRepo.findAttributes(selectionList, cb);
         List<Integer> idsRead = new ArrayList<>();
         List<String> namesRead = new ArrayList<>();
         tuples.forEach((tuple -> {
@@ -156,8 +156,8 @@ public class DbAssistMiscellaneousTest extends BaseTest {
         saveUsersData(uRepo, users);
 
         // WHERE 1 = 1
-        ConditionsBuilder c = new ConditionsBuilder();
-        List<User> results = uRepo.find(c);
+        ConditionsBuilder cb = new ConditionsBuilder();
+        List<User> results = uRepo.find(cb);
         assertEquals(users.size(), results.size());
     }
 

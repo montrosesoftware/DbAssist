@@ -269,7 +269,7 @@ public class DbAssistJoinConditionsTest extends BaseTest {
                 .fetch("provider", JoinType.LEFT)
                 .fetch("country", JoinType.LEFT);
 
-        List<User> usersReadMultipleJoin = uRepo.find(builderUsers, fetchesBuilder, null);
+        List<User> usersReadMultipleJoin = uRepo.find(builderUsers, fetchesBuilder);
         assertEquals(usersReadMultipleJoin.size(), 3);
 
         User userA = usersReadMultipleJoin.get(0);
@@ -291,7 +291,7 @@ public class DbAssistJoinConditionsTest extends BaseTest {
                 .fetch("certificates", JoinType.LEFT)
                 .fetch("provider", JoinType.LEFT);
 
-        List<User> users = uRepo.find(builderUsers, fetchesBuilder, null);
+        List<User> users = uRepo.find(builderUsers, fetchesBuilder);
         //TODO close transaction try to access
         assertEquals(users.size(), 3);
     }
