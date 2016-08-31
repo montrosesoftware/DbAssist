@@ -4,7 +4,6 @@ import com.montrosesoftware.config.BaseTest;
 import com.montrosesoftware.entities.Certificate;
 import com.montrosesoftware.entities.Provider;
 import com.montrosesoftware.entities.User;
-import com.montrosesoftware.repositories.OrderBy.OrderType;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -12,15 +11,13 @@ import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.*;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 
 import static com.montrosesoftware.helpers.TestUtils.prepareAndSaveExampleDataToDb;
 import static com.montrosesoftware.repositories.ConditionsBuilder.and;
 import static com.montrosesoftware.repositories.ConditionsBuilder.or;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 
 
 public class DbAssistJoinConditionsTest extends BaseTest {
@@ -303,26 +300,24 @@ public class DbAssistJoinConditionsTest extends BaseTest {
     public void orderByJoinedAttribute() {
         prepareAndSaveExampleDataToDb(uRepo);
 
+        //joins
         ConditionsBuilder rootBuilder = new ConditionsBuilder();
         ConditionsBuilder builderCerts = rootBuilder.join("certificates", JoinType.LEFT);
 
-        //prepare complex ordering settings
-        OrderBy orderUsersA = new OrderBy(rootBuilder, new LinkedHashMap<String, OrderType>() {{
-            put("name", OrderType.ASC);
-            put("id", OrderType.DESC);
-        }});
+        //sorting
+        OrderBy orderBy = new OrderBy();
+        orderBy
+                .asc(rootBuilder, "name")
+                .desc(rootBuilder, "id")
+                .asc(builderCerts, "id")
+                .desc(rootBuilder, "createdAt");
 
-        //for joined entity
-        OrderBy orderCerts = new OrderBy(builderCerts, new LinkedHashMap<String, OrderType>() {{
-            put("name", OrderType.DESC);
-        }});
+        List<User> results = uRepo.find(rootBuilder, orderBy);
 
-        OrderBy orderUsersB = new OrderBy(rootBuilder, new LinkedHashMap<String, OrderType>() {{
-            put("createdAt", OrderType.DESC);
-        }});
-
-        List<User> results = uRepo.find(rootBuilder, Arrays.asList(orderUsersA, orderCerts, orderUsersB));
-        //TODO finish
+        assertEquals(results.size(), 3);
+        assertTrue(results.get(0).getId() == 2);
+        assertTrue(results.get(1).getId() == 1);
+        assertTrue(results.get(2).getId() == 3);
     }
 
     @Test
@@ -339,12 +334,20 @@ public class DbAssistJoinConditionsTest extends BaseTest {
         cq.select(root);
         List<Order> orderList = new ArrayList<>();
         orderList.add(cb.asc(root.get("name")));
-        orderList.add(cb.asc(joinCert.get("name")));
+        orderList.add(cb.desc(root.get("id")));
+        orderList.add(cb.asc(joinCert.get("id")));
+        orderList.add(cb.desc(root.get("createdAt")));
 
         cq.orderBy(orderList);
-        TypedQuery<User> q = em.createQuery(cq);
-        List<User> result = q.getResultList();
 
+        TypedQuery<User> q = em.createQuery(cq);
+        List<User> results = new ArrayList(new LinkedHashSet( q.getResultList()));
+
+        assertEquals(results.size(), 3);
+        assertTrue(results.get(0).getId() == 2);
+        assertTrue(results.get(1).getId() == 1);
+        assertTrue(results.get(2).getId() == 3);
+        //TODO verify why it fails
     }
 }
 

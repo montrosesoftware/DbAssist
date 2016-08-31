@@ -4,35 +4,33 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.From;
 import javax.persistence.criteria.Order;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 public class OrderBy {
+    private List<SingleOrder> singleOrders = new ArrayList<>();
 
-    private ConditionsBuilder joinBuilder;
-    private OrderByI applicableOrderBy;
-
-    public OrderBy(ConditionsBuilder joinBuilder, LinkedHashMap<String, OrderType> orders) {
-        this.joinBuilder = joinBuilder;
-        this.applicableOrderBy = (builder, root) -> {
-            List<Order> list = new ArrayList<>();
-            for (Map.Entry<String, OrderType> entry : orders.entrySet()) {
-                if (entry.getValue() == OrderType.ASC)
-                    list.add(builder.asc(root.get(entry.getKey())));
-                else
-                    list.add(builder.desc(root.get(entry.getKey())));
-            }
-            return list;
-        };
+    public OrderBy() {
     }
 
-    public OrderByI getApplicableOrderBy() {
-        return applicableOrderBy;
+    public OrderBy asc(ConditionsBuilder join, String attributeName) {
+        singleOrders.add(new SingleOrder(join, attributeName, OrderType.ASC));
+        return this;
     }
 
-    public ConditionsBuilder getJoinBuilder() {
-        return joinBuilder;
+    public OrderBy desc(ConditionsBuilder join, String attributeName) {
+        singleOrders.add(new SingleOrder(join, attributeName, OrderType.DESC));
+        return this;
+    }
+
+    public List<Order> getListOfOrders(CriteriaBuilder criteriaBuilder, ConditionsBuilder rootBuilder, From<?, ?> root) {
+        List<Order> orderList = new ArrayList<>();
+        for (SingleOrder singleOrder : singleOrders) {
+            if (singleOrder.getOrderType() == OrderType.ASC)
+                orderList.add(criteriaBuilder.asc(rootBuilder.getFrom(root, singleOrder.getJoinBuilder()).get(singleOrder.getAttributeName())));
+            else
+                orderList.add(criteriaBuilder.desc(rootBuilder.getFrom(root, singleOrder.getJoinBuilder()).get(singleOrder.getAttributeName())));
+        }
+        return orderList;
     }
 
     public enum OrderType {
@@ -40,11 +38,7 @@ public class OrderBy {
         DESC
     }
 
-    protected interface OrderByI {
-        List<Order> apply(CriteriaBuilder criteriaBuilder, From<?, ?> root);
-    }
-
-    public class SingleOrder {
+    private class SingleOrder {
         private ConditionsBuilder joinBuilder;
         private String attributeName;
         private OrderType orderType;
