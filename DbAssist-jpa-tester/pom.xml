@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.montrosesoftware.test</groupId>
-    <artifactId>DbAssist-jpa-4.3.11-test</artifactId>
+    <artifactId>DbAssist-jpa-tester</artifactId>
     <version>1.0-SNAPSHOT</version>
 
     <properties>
@@ -78,7 +78,7 @@
         <dependency>
             <groupId>com.montrosesoftware</groupId>
             <artifactId>${montrosesoftware.version}</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <version>RELEASE</version>
         </dependency>
 
         <dependency>
