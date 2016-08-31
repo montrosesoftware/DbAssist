@@ -3,11 +3,11 @@ package com.montrosesoftware.repositories;
 import com.montrosesoftware.DateUtils;
 import com.montrosesoftware.config.BaseTest;
 import com.montrosesoftware.entities.User;
+import com.montrosesoftware.repositories.AbstractRepository.SelectionList;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.persistence.Tuple;
-import javax.persistence.criteria.Selection;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -19,14 +19,13 @@ import static org.junit.Assert.*;
 
 public class DbAssistMiscellaneousTest extends BaseTest {
 
+    private static final Date ExampleDate = DateUtils.getUtc("2012-06-12 08:10:15");
     @Autowired
     private UserRepo uRepo;
 
-    private static final Date ExampleDate = DateUtils.getUtc("2012-06-12 08:10:15");
-
     @Test(expected = RuntimeException.class)
-    public void conditionsAreNotReusableAfterCallingFind(){
-        saveUsersData(uRepo, new ArrayList<User>(){{
+    public void conditionsAreNotReusableAfterCallingFind() {
+        saveUsersData(uRepo, new ArrayList<User>() {{
             add(new User(1, "User 1", ExampleDate));
             add(new User(2, "User 2", ExampleDate));
         }});
@@ -44,10 +43,10 @@ public class DbAssistMiscellaneousTest extends BaseTest {
     }
 
     @Test
-    public void findAttributeUse(){
+    public void findAttributeUse() {
         Date date = DateUtils.getUtc("2012-06-12 08:10:15");
         Date dateAnother = DateUtils.getUtc("2000-03-03 11:10:15");
-        saveUsersData(uRepo, new ArrayList<User>(){{
+        saveUsersData(uRepo, new ArrayList<User>() {{
             add(new User(1, "A", date));
             add(new User(2, "B", dateAnother));
             add(new User(3, "C", date));
@@ -58,30 +57,28 @@ public class DbAssistMiscellaneousTest extends BaseTest {
         c.apply(hc);
         List<String> namesRead = uRepo.findAttribute("name", c);
 
-        assertEquals(namesRead.size(),2);
+        assertEquals(namesRead.size(), 2);
         List<String> namesExpected = new ArrayList<>(Arrays.asList("A", "C"));
         assertTrue(collectionsAreEqual(namesRead, namesExpected));
     }
 
     @Test
-    public void findAttributesUse(){
-        saveUsersData(uRepo, new ArrayList<User>(){{
+    public void findAttributesUse() {
+        saveUsersData(uRepo, new ArrayList<User>() {{
             add(new User(1, "Mont", ExampleDate));
             add(new User(2, "Rose", ExampleDate));
             add(new User(3, "Montrose", ExampleDate));
         }});
 
-        AbstractRepository.SelectionList<User> selectionList = (criteriaBuilder, root) -> {
-            List<Selection<?>> list = new ArrayList<>();
-            list.add(root.get("id"));
-            list.add(root.get("name"));
-            return  list;
-        };
+        SelectionList<User> selectionList = (criteriaBuilder, root) -> new ArrayList<>(Arrays.asList(
+                root.get("id"),
+                root.get("name")
+        ));
 
-        ConditionsBuilder c = new ConditionsBuilder();
-        HierarchyCondition hc = c.inRangeCondition("id",1,2);
-        c.apply(hc);
-        List<Tuple> tuples = uRepo.findAttributes(selectionList, c);
+        ConditionsBuilder cb = new ConditionsBuilder();
+        HierarchyCondition hc = cb.inRangeCondition("id", 1, 2);
+        cb.apply(hc);
+        List<Tuple> tuples = uRepo.findAttributes(selectionList, cb);
         List<Integer> idsRead = new ArrayList<>();
         List<String> namesRead = new ArrayList<>();
         tuples.forEach((tuple -> {
@@ -125,7 +122,7 @@ public class DbAssistMiscellaneousTest extends BaseTest {
 
     @Test
     public void conditionsLikeAndNotLike() {
-        saveUsersData(uRepo, new ArrayList<User>(){{
+        saveUsersData(uRepo, new ArrayList<User>() {{
             add(new User(1, "Mont", ExampleDate));
             add(new User(2, "Rose", ExampleDate));
             add(new User(3, "Montrose", ExampleDate));
@@ -151,7 +148,7 @@ public class DbAssistMiscellaneousTest extends BaseTest {
 
     @Test
     public void emptyConditionsReturnAllRecords() {
-        List<User> users = new ArrayList<User>(){{
+        List<User> users = new ArrayList<User>() {{
             add(new User(1, "Mont", ExampleDate));
             add(new User(2, "Rose", ExampleDate));
             add(new User(3, "Montrose", ExampleDate));
@@ -159,14 +156,14 @@ public class DbAssistMiscellaneousTest extends BaseTest {
         saveUsersData(uRepo, users);
 
         // WHERE 1 = 1
-        ConditionsBuilder c = new ConditionsBuilder();
-        List<User> results = uRepo.find(c);
+        ConditionsBuilder cb = new ConditionsBuilder();
+        List<User> results = uRepo.find(cb);
         assertEquals(users.size(), results.size());
     }
 
     @Test
-    public void conditionsInAndNotIn(){
-        saveUsersData(uRepo, new ArrayList<User>(){{
+    public void conditionsInAndNotIn() {
+        saveUsersData(uRepo, new ArrayList<User>() {{
             add(new User(1, "A", ExampleDate));
             add(new User(2, "B", ExampleDate));
             add(new User(3, "C", ExampleDate));

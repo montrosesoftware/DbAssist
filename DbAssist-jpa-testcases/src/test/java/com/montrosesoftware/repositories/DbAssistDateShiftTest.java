@@ -32,8 +32,7 @@ public class DbAssistDateShiftTest extends BaseTest {
     private User getExampleUserData() {
         //prepare example user data
         Date expectedDatetime = DateUtils.getUtc("2016-06-12 14:54:15");
-       // Date expectedDate = DateUtils.getUtc("2016-03-02 00:00:00");
-        Date expectedDateOnly = DateUtils.getUtc("2016-03-02", true);   //TODO rethink
+        Date expectedDateOnly = DateUtils.getUtc("2016-03-02", true);
         Timestamp expectedTimestamp = new Timestamp(expectedDatetime.getTime());
         User user = new User(1, "Adam Spring", expectedDatetime, expectedTimestamp, expectedDateOnly);
         return user;

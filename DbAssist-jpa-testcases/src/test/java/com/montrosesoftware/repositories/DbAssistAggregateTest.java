@@ -164,7 +164,7 @@ public class DbAssistAggregateTest extends BaseTest {
     }
 
     @Test
-    public void leastAggregateDate(){
+    public void leastAndGreatestAggregateDate(){
         Date date1 = DateUtils.getUtc("2015-06-12 08:10:15");
         Date date2 = DateUtils.getUtc("2011-06-12 09:10:15");
         Date date3 = DateUtils.getUtc("2025-06-12 10:10:15");

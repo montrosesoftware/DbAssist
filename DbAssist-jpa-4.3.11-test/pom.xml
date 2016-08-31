@@ -56,7 +56,7 @@
                 <version>2.15</version>
                 <configuration>
                     <dependenciesToScan>
-                        <dependency>com.montrosesoftware:DbAssist-jpa-tester</dependency>
+                        <dependency>com.montrosesoftware:DbAssist-jpa-testcases</dependency>
                     </dependenciesToScan>
                 </configuration>
             </plugin>
@@ -69,7 +69,7 @@
 
         <dependency>
             <groupId>com.montrosesoftware</groupId>
-            <artifactId>DbAssist-jpa-tester</artifactId>
+            <artifactId>DbAssist-jpa-testcases</artifactId>
             <version>1.0-SNAPSHOT</version>
             <scope>test</scope>
             <type>test-jar</type>

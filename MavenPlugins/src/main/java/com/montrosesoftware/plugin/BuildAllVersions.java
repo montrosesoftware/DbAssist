@@ -19,7 +19,7 @@ public class BuildAllVersions extends AbstractMojo
         request.setGoals( Arrays.asList( "clean", "test" ) );
 
         Properties properties = new Properties();
-        properties.setProperty("montrosesoftware.version", "DbAssist-jpa-fix");
+        properties.setProperty("montrosesoftware.version", "DbAssist-jpa-4.3.11");
         request.setProperties(properties);
 
         Invoker invoker = new DefaultInvoker();
