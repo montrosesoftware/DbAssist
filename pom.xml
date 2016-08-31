@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.montrosesoftware</groupId>
-    <artifactId>DbAssistRoot</artifactId>
+    <artifactId>DbAssistTestingRoot</artifactId>
     <packaging>pom</packaging>
     <version>1.0-SNAPSHOT</version>
 
@@ -45,6 +45,10 @@
 
     <modules>
         <module>DbAssist-commons</module>
+        <module>MavenBuildAllPlugin</module>
+        <module>DbAssist-hbm-tester</module>
+        <module>DbAssist-jpa-testcases</module>
+        <module>DbAssist-jpa-tester</module>
     </modules>
 
 </project>

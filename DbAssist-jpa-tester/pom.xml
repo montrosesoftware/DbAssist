@@ -3,13 +3,19 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <artifactId>DbAssistTestingRoot</artifactId>
+        <groupId>com.montrosesoftware</groupId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
 
     <groupId>com.montrosesoftware.test</groupId>
     <artifactId>DbAssist-jpa-tester</artifactId>
     <version>1.0-SNAPSHOT</version>
 
     <properties>
-        <montrosesoftware.version>empty</montrosesoftware.version>
+        <!--This property will be overwritten by MavenBuildAll plugin-->
+        <montrosesoftware.version>DbAssist-jpa-4.3.11</montrosesoftware.version>
     </properties>
 
     <dependencyManagement>
@@ -25,14 +31,15 @@
     </dependencyManagement>
 
     <build>
+
         <plugins>
             <plugin>
                 <groupId>com.montrosesoftware</groupId>
-                <artifactId>plugins</artifactId>
+                <artifactId>MavenBuildAllPlugin</artifactId>
                 <version>1.0-SNAPSHOT</version>
                 <executions>
                     <execution>
-                        <!--<phase>install</phase>-->
+                        <phase>install</phase>
                         <goals>
                             <goal>buildAll</goal>
                         </goals>
