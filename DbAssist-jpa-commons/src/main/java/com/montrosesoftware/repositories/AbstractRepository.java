@@ -379,6 +379,16 @@ public abstract class AbstractRepository<T> {
         List<Order> apply(CriteriaBuilder criteriaBuilder, Root<?> root);
     }
 
+    protected class OrderByContainer<T> {
+        OrderBy<T> applicableOrderBy;
+        ConditionsBuilder joinBuilder;
+
+        public OrderByContainer(ConditionsBuilder joinBuilder, OrderBy<T> applicableOrderBy) {
+            this.applicableOrderBy = applicableOrderBy;
+            this.joinBuilder = joinBuilder;
+        }
+    }
+
     protected interface GroupBy<T> {
         List<Expression<?>> apply(Root<?> root);
     }

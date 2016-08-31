@@ -18,7 +18,7 @@ import static com.montrosesoftware.repositories.ConditionsBuilder.and;
 import static com.montrosesoftware.repositories.ConditionsBuilder.or;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-
+import com.montrosesoftware.repositories.AbstractRepository.OrderByContainer;
 public class DbAssistJoinConditionsTest extends BaseTest {
 
     @Autowired
@@ -302,11 +302,15 @@ public class DbAssistJoinConditionsTest extends BaseTest {
         ConditionsBuilder builderUsers = new ConditionsBuilder();
         ConditionsBuilder builderCertificates = builderUsers.join("certificates", JoinType.LEFT);
 
+
         AbstractRepository.OrderBy<User> userOrderBy = (builder, root) -> Arrays.asList(
                 builder.asc(root.get("name"))
         );
+        AbstractRepository.OrderByContainer<User> = new AbstractRepository.OrderByContainer<User>(builderUsers, userOrderBy)
 
-        AbstractRepository.OrderBy<Certificate> certificateOrderBy = (builder, root) -> Arrays.asList(
+
+
+        AbstractRepository.OrderBy<Certificate> certOrderBy = (builder, root) -> Arrays.asList(
                 builder.asc(root.get("name"))
         );
 
