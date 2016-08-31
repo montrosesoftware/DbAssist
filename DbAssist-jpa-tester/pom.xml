@@ -45,6 +45,11 @@
                         </goals>
                     </execution>
                 </executions>
+                <configuration>
+                    <projectNames>
+                        <param>DbAssist-jpa-4.3.11</param>
+                    </projectNames>
+                </configuration>
             </plugin>
 
             <plugin>
