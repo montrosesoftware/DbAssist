@@ -1,11 +1,11 @@
 # Project Name
 
-DbAssist offers fix for unexpected date time shift, occuring in case of JVM and DB set up in different time zones.
+DbAssist provides fix for the unexpected date time shift, occuring in case of JVM and DB set up in different time zones.
 Project also introduces ConditionsBuilder class which enables the user to easily create complex logical combinations of conditions in the SQL query.
 
 ## Installation
 
-* Install Microsoft JDBC Driver 4.0 from link https://www.microsoft.com/en-us/download/details.aspx?id=11774 (tested on versions: TODO)
+* Install Microsoft JDBC Driver 4.0 from link https://www.microsoft.com/en-us/download/details.aspx?id=11774
 
 Installation can be done by changing the .jar name to sqljdbc4-4.0.jar and copying that file into Maven local repository \.m2\repository\com\microsoft\sqlserver\sqljdbc4\4.0\ 
 
@@ -31,11 +31,18 @@ Installation can be done by changing the .jar name to sqljdbc4-4.0.jar and copyi
 
 ## Compatibility
 
-### For JPA Annotations: 
-From Hibernate 4.3.11.Final to 5.2.2.Final
-
-### For .hbm files:
-TODO
+### Spring Boot: 
+1.2.2.RELEASE
+1.4.0.RELEASE
+### Hibernate
+#### For JPA Annotations: 
+Hibernate 4.3.11.RELEASE
+#### For .hbm files: 
+Hibernate 3.3.2.GA
+### JDBC SQL Driver
+4.0
+4.1
+4.2
 
 ## Usage
 

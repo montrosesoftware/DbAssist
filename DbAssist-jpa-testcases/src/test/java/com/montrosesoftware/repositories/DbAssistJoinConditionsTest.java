@@ -341,7 +341,7 @@ public class DbAssistJoinConditionsTest extends BaseTest {
         cq.orderBy(orderList);
 
         TypedQuery<User> q = em.createQuery(cq);
-        List<User> results = new ArrayList(new LinkedHashSet( q.getResultList()));
+        List<User> results = new ArrayList(new LinkedHashSet(q.getResultList()));
 
         assertEquals(results.size(), 3);
         assertTrue(results.get(0).getId() == 2);
