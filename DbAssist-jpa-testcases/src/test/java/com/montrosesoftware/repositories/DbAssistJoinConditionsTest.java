@@ -321,7 +321,7 @@ public class DbAssistJoinConditionsTest extends BaseTest {
     }
 
     @Test
-    public void orderByJoinedAttributeUsingJPA() {
+    public void orderByJoinedAttributeUsingPlainJPA() {
         prepareAndSaveExampleDataToDb(uRepo);
 
         EntityManager em = uRepo.getEntityManager();
@@ -329,7 +329,7 @@ public class DbAssistJoinConditionsTest extends BaseTest {
 
         CriteriaQuery<User> cq = cb.createQuery(User.class);
         Root<User> root = cq.from(User.class);
-        Join<User, Certificate> joinCert = root.join("certificates");
+        Join<User, Certificate> joinCert = root.join("certificates", JoinType.LEFT);
 
         cq.select(root);
         List<Order> orderList = new ArrayList<>();
@@ -347,7 +347,6 @@ public class DbAssistJoinConditionsTest extends BaseTest {
         assertTrue(results.get(0).getId() == 2);
         assertTrue(results.get(1).getId() == 1);
         assertTrue(results.get(2).getId() == 3);
-        //TODO verify why it fails
     }
 }
 

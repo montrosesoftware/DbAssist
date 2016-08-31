@@ -35,7 +35,7 @@ public abstract class AbstractRepository<T> {
      *
      * @param conditionsBuilder class containing conditions to apply on the query
      * @param fetchesBuilder    class containing fetch callbacks to apply on the query
-     * @param orders           list of lambdas specifying order of the returned list
+     * @param orders            list specifying sorting of the result
      * @return list of found entities in the database
      */
     protected List<T> find(ConditionsBuilder conditionsBuilder, FetchesBuilder fetchesBuilder, OrderBy orders) {
@@ -52,8 +52,7 @@ public abstract class AbstractRepository<T> {
 
         conditionsBuilder = applyConditions(conditionsBuilder, criteriaBuilder, criteriaQuery, root);
 
-        //TODO REFACTOR
-        if(!(orders == null)){
+        if(orders != null){
             List<Order> orderList = orders.getListOfOrders(criteriaBuilder, conditionsBuilder, root);
             criteriaQuery.orderBy(orderList);
         }
@@ -76,21 +75,12 @@ public abstract class AbstractRepository<T> {
         return find(null, fetchesBuilder, null);
     }
 
-    //TODO probably remove?
-    protected List<T> find(OrderBy orders) {
-        return find(null, null, orders);
-    }
-
     protected List<T> find(ConditionsBuilder conditionsBuilder, FetchesBuilder fetchesBuilder) {
         return find(conditionsBuilder, fetchesBuilder, null);
     }
 
     protected List<T> find(ConditionsBuilder conditionsBuilder, OrderBy orders) {
         return find(conditionsBuilder, null, orders);
-    }
-
-    protected List<T> find(FetchesBuilder fetchesBuilder, OrderBy orders) {
-        return find(null, fetchesBuilder, orders);
     }
 
     /**
@@ -101,7 +91,7 @@ public abstract class AbstractRepository<T> {
      * @param selectionList     specifies which entity attributes to read or which aggregate methods to use
      * @param conditionsBuilder class containing conditions to apply on the query
      * @param fetchesBuilder    class containing fetch callbacks to apply on the query
-     * @param orderByI           list of lambdas specifying order of the returned list
+     * @param orders            list specifying sorting of the result
      * @param groupBy           list of lambdas specifying grouping
      * @return list of tuples containing values corresponding to columns/aggregates specified in the selection list
      */
@@ -123,10 +113,10 @@ public abstract class AbstractRepository<T> {
 
         conditionsBuilder = applyConditions(conditionsBuilder, criteriaBuilder, criteriaQuery, root);
 
-        //TODO finish
-//        if (orderByI != null) {
-//            criteriaQuery.orderBy(orderByI.apply(criteriaBuilder, root));
-//        }
+        if(orders != null){
+            List<Order> orderList = orders.getListOfOrders(criteriaBuilder, conditionsBuilder, root);
+            criteriaQuery.orderBy(orderList);
+        }
 
         if (groupBy != null) {
             criteriaQuery.groupBy(groupBy.apply(root));
@@ -163,7 +153,7 @@ public abstract class AbstractRepository<T> {
      * @param selectDistinct    specify whether duplicate query results will be eliminated
      * @param conditionsBuilder class containing conditions to apply on the query
      * @param fetchesBuilder    class containing fetch callbacks to apply on the query
-     * @param orderByI           list of lambdas specifying order of the returned list
+     * @param orders            list specifying sorting of the result
      * @param selectCallback
      * @param <A>               the attribute class
      * @return list of the values read from the DB
@@ -199,10 +189,10 @@ public abstract class AbstractRepository<T> {
 
         conditionsBuilder = applyConditions(conditionsBuilder, criteriaBuilder, criteriaQuery, root);
 
-//        TODO finish!
-//        if (orderByI != null) {
-//            criteriaQuery.orderBy(orderByI.apply(criteriaBuilder, root));
-//        }
+        if(orders != null){
+            List<Order> orderList = orders.getListOfOrders(criteriaBuilder, conditionsBuilder, root);
+            criteriaQuery.orderBy(orderList);
+        }
 
         TypedQuery<A> typedQuery = entityManager.createQuery(criteriaQuery);
 

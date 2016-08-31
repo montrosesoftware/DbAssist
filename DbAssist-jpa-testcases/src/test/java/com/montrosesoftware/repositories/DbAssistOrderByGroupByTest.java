@@ -3,7 +3,6 @@ package com.montrosesoftware.repositories;
 import com.montrosesoftware.DateUtils;
 import com.montrosesoftware.config.BaseTest;
 import com.montrosesoftware.entities.User;
-import com.montrosesoftware.repositories.OrderBy.OrderByI;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -23,34 +22,29 @@ public class DbAssistOrderByGroupByTest extends BaseTest {
     private UserRepo uRepo;
 
     //TODO finish
-//    @Test
-//    public void orderByDateUse() {
-//        Date date1 = ExampleDate;
-//        Date date2 = addMinutes(ExampleDate, 10);
-//        saveUsersData(uRepo, new ArrayList<User>() {{
-//            add(new User(1, "B", date2));
-//            add(new User(2, "A", date2));
-//            add(new User(3, "A", date1));
-//        }});
-//
-//        OrderByI<User> userOrderBy = (builder, root) -> Arrays.asList(
-//                builder.asc(root.get("name")),
-//                builder.desc(root.get("createdAt"))
-//        );
-//
-//        ConditionsBuilder cb = new ConditionsBuilder();
-//        OrderBy orderUsers = new OrderBy(cb, new LinkedHashMap<String, OrderBy.OrderType>() {{
-//            put("name", OrderBy.OrderType.ASC);
-//            put("createdAt", OrderBy.OrderType.DESC);
-//        }});
-//
-//        List<User> results = uRepo.find(orderUsers);
-//
-//        assertEquals(results.size(), 3);
-//        assertTrue(results.get(0).getId() == 2);
-//        assertTrue(results.get(1).getId() == 3);
-//        assertTrue(results.get(2).getId() == 1);
-//    }
+    @Test
+    public void orderByDateUse() {
+        Date date1 = ExampleDate;
+        Date date2 = addMinutes(ExampleDate, 10);
+        saveUsersData(uRepo, new ArrayList<User>() {{
+            add(new User(1, "B", date2));
+            add(new User(2, "A", date2));
+            add(new User(3, "A", date1));
+        }});
+
+        ConditionsBuilder cb = new ConditionsBuilder();
+        OrderBy orderBy = new OrderBy();
+        orderBy
+                .asc(cb, "name")
+                .desc(cb, "createdAt");
+
+        List<User> results = uRepo.find(cb, orderBy);
+
+        assertEquals(results.size(), 3);
+        assertTrue(results.get(0).getId() == 2);
+        assertTrue(results.get(1).getId() == 3);
+        assertTrue(results.get(2).getId() == 1);
+    }
 
     @Test
     public void groupByWithAggregates() {
