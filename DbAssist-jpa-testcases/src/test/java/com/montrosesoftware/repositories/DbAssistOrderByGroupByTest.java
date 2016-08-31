@@ -4,6 +4,7 @@ import com.montrosesoftware.DateUtils;
 import com.montrosesoftware.config.BaseTest;
 import com.montrosesoftware.entities.User;
 import org.junit.Test;
+import org.junit.internal.runners.statements.FailOnTimeout;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.persistence.Tuple;
@@ -55,21 +56,24 @@ public class DbAssistOrderByGroupByTest extends BaseTest {
             add(new User(4, "Rose", ExampleDate, 111.5, "boss"));
         }});
 
-        AbstractRepository.SelectionList<User> selectionList = (builder, root) -> Arrays.asList(
-                builder.sum(root.get("salary")),
-                builder.avg(root.get("salary")),
-                builder.count(root.get("id"))
-        );
+        ConditionsBuilder cb = new ConditionsBuilder();
+        HierarchyCondition hc = cb.equal("category", "worker");
+        cb.apply(hc);
 
-        ConditionsBuilder conditions = new ConditionsBuilder();
-        HierarchyCondition hc = conditions.equal("category", "worker");
-        conditions.apply(hc);
+        //select
+        SelectionList selectionList = new SelectionList();
+        selectionList
+                .sum(cb, "salary")
+                .avg(cb, "salary")
+                .count(cb, "id");
+
+        //TODO add more aggregates
 
         AbstractRepository.GroupBy<User> groupBy = (root) -> Arrays.asList(
                 root.get("category")
         );
 
-        List<Tuple> results = uRepo.findAttributes(selectionList, conditions, null, null, groupBy);
+        List<Tuple> results = uRepo.findAttributes(selectionList, cb, null, null, groupBy);
         Tuple groupWorkersResults = results.get(0);
 
         Double sumSalaryWorkers = (Double) groupWorkersResults.get(0);
@@ -107,21 +111,22 @@ public class DbAssistOrderByGroupByTest extends BaseTest {
     }
 
     @Test
-    public void findAttributesUse() {
+    public void findAttributesWithOrderByUse() {
         saveUsersData(uRepo, new ArrayList<User>() {{
             add(new User(1, "Rose", ExampleDate));
             add(new User(2, "Mont", ExampleDate));
             add(new User(3, "Montrose", ExampleDate));
         }});
 
-        AbstractRepository.SelectionList<User> selectionList = (criteriaBuilder, root) -> new ArrayList<>(Arrays.asList(
-                root.get("id"),
-                root.get("name")
-        ));
-
         ConditionsBuilder cb = new ConditionsBuilder();
         HierarchyCondition hc = cb.inRangeCondition("id", 1, 2);
         cb.apply(hc);
+
+        //selects
+        SelectionList selectionList = new SelectionList();
+        selectionList
+                .select(cb, "id")
+                .select(cb, "name");
 
         //sort
         OrderBy orderBy = new OrderBy();

@@ -8,13 +8,16 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.persistence.EntityManager;
+import javax.persistence.Tuple;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.List;
 
 import static com.montrosesoftware.helpers.TestUtils.prepareAndSaveExampleDataToDb;
+import static com.montrosesoftware.helpers.TestUtils.saveUsersData;
 import static com.montrosesoftware.repositories.ConditionsBuilder.and;
 import static com.montrosesoftware.repositories.ConditionsBuilder.or;
 import static org.junit.Assert.*;
@@ -347,6 +350,43 @@ public class DbAssistJoinConditionsTest extends BaseTest {
         assertTrue(results.get(0).getId() == 2);
         assertTrue(results.get(1).getId() == 1);
         assertTrue(results.get(2).getId() == 3);
+    }
+
+    @Test
+    public void findAttributesWithOrderByAndJoinConditions() {
+        prepareAndSaveExampleDataToDb(uRepo);
+        //joins
+        ConditionsBuilder cb = new ConditionsBuilder();
+        ConditionsBuilder builderCerts = cb.join("certificates", JoinType.LEFT);
+
+        //selects
+        SelectionList selectionList = new SelectionList();
+        selectionList
+                .select(cb, "id")
+                .select(builderCerts, "name");
+
+        //sort
+        OrderBy orderBy = new OrderBy();
+        orderBy.asc(cb, "name");
+
+        HierarchyCondition hc = cb.inRangeCondition("id", 1, 2);
+        cb.apply(hc);
+
+        List<Tuple> tuples = uRepo.findAttributes(selectionList, cb, orderBy);
+        List<Integer> idsRead = new ArrayList<>();
+        List<String> namesRead = new ArrayList<>();
+        tuples.forEach((tuple -> {
+            idsRead.add((Integer) tuple.get(0));
+            namesRead.add((String) tuple.get(1));
+        }));
+
+        assertEquals(tuples.size(), 3);
+        assertEquals(idsRead.get(0).intValue(), 2);
+        assertEquals(idsRead.get(1).intValue(), 1);
+        assertEquals(idsRead.get(2).intValue(), 1);
+        assertEquals(namesRead.get(0), "Java Cert");
+        assertEquals(namesRead.get(1), "Java Cert");
+        assertEquals(namesRead.get(2), "BHP");
     }
 }
 

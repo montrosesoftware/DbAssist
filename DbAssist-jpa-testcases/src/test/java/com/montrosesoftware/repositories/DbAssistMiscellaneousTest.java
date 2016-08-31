@@ -3,7 +3,6 @@ package com.montrosesoftware.repositories;
 import com.montrosesoftware.DateUtils;
 import com.montrosesoftware.config.BaseTest;
 import com.montrosesoftware.entities.User;
-import com.montrosesoftware.repositories.AbstractRepository.SelectionList;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 

@@ -95,7 +95,7 @@ public abstract class AbstractRepository<T> {
      * @param groupBy           list of lambdas specifying grouping
      * @return list of tuples containing values corresponding to columns/aggregates specified in the selection list
      */
-    protected List<Tuple> findAttributes(SelectionList<T> selectionList,
+    protected List<Tuple> findAttributes(SelectionList selectionList,
                                          ConditionsBuilder conditionsBuilder,
                                          FetchesBuilder fetchesBuilder,
                                          OrderBy orders,
@@ -109,8 +109,9 @@ public abstract class AbstractRepository<T> {
             fetchesBuilder.applyFetches(root);
         }
 
-        criteriaQuery.multiselect(selectionList.apply(criteriaBuilder, root));
+        criteriaQuery.multiselect(selectionList.getSelectionList(criteriaBuilder, conditionsBuilder, root));
 
+        //TODO verify if conditionsBuilder is not empty (it is needed for selection list)
         conditionsBuilder = applyConditions(conditionsBuilder, criteriaBuilder, criteriaQuery, root);
 
         if(orders != null){
@@ -129,20 +130,16 @@ public abstract class AbstractRepository<T> {
         return typedQuery.getResultList();
     }
 
-    protected List<Tuple> findAttributes(SelectionList<T> selectionList, ConditionsBuilder conditionsBuilder) {
+    protected List<Tuple> findAttributes(SelectionList selectionList, ConditionsBuilder conditionsBuilder) {
         return findAttributes(selectionList, conditionsBuilder, null, null, null);
     }
 
-    protected List<Tuple> findAttributes(SelectionList<T> selectionList, ConditionsBuilder conditionsBuilder, OrderBy orders) {
+    protected List<Tuple> findAttributes(SelectionList selectionList, ConditionsBuilder conditionsBuilder, OrderBy orders) {
         return findAttributes(selectionList, conditionsBuilder, null, orders, null);
     }
 
-    protected List<Tuple> findAttributes(SelectionList<T> selectionList, ConditionsBuilder conditionsBuilder, GroupBy<T> groupBy) {
+    protected List<Tuple> findAttributes(SelectionList selectionList, ConditionsBuilder conditionsBuilder, GroupBy<T> groupBy) {
         return findAttributes(selectionList, conditionsBuilder, null, null, groupBy);
-    }
-
-    protected List<Tuple> findAttributes(SelectionList<T> selectionList, GroupBy<T> groupBy) {
-        return findAttributes(selectionList, null, null, null, groupBy);
     }
 
     /**
@@ -374,9 +371,9 @@ public abstract class AbstractRepository<T> {
         List<Expression<?>> apply(Root<?> root);
     }
 
-    protected interface SelectionList<T> {
-        List<Selection<?>> apply(CriteriaBuilder criteriaBuilder, Root<?> root);
-    }
+//    protected interface SelectionList {
+//        List<Selection<?>> apply(CriteriaBuilder criteriaBuilder, Root<?> root);
+//    }
 
     private abstract class Aggregate {
         protected CriteriaBuilder cb;
