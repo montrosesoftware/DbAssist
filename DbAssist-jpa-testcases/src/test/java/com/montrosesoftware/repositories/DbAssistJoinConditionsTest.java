@@ -12,7 +12,6 @@ import javax.persistence.criteria.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.function.Function;
 
 import static com.montrosesoftware.helpers.TestUtils.prepareAndSaveExampleDataToDb;
 import static com.montrosesoftware.repositories.ConditionsBuilder.and;
@@ -294,6 +293,25 @@ public class DbAssistJoinConditionsTest extends BaseTest {
         List<User> users = uRepo.find(builderUsers, fetchesBuilder);
         //TODO close transaction try to access
         assertEquals(users.size(), 3);
+    }
+
+    @Test
+    public void orderByJoinedAttribute() {
+        prepareAndSaveExampleDataToDb(uRepo);
+
+        ConditionsBuilder builderUsers = new ConditionsBuilder();
+        ConditionsBuilder builderCertificates = builderUsers.join("certificates", JoinType.LEFT);
+
+        AbstractRepository.OrderBy<User> userOrderBy = (builder, root) -> Arrays.asList(
+                builder.asc(root.get("name"))
+        );
+
+        AbstractRepository.OrderBy<Certificate> certificateOrderBy = (builder, root) -> Arrays.asList(
+                builder.asc(root.get("name"))
+        );
+
+        List<User> results = uRepo.find(userOrderBy);
+
     }
 }
 
