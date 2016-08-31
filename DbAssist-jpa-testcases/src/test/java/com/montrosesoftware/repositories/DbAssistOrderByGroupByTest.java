@@ -10,6 +10,7 @@ import javax.persistence.Tuple;
 import java.util.*;
 
 import static com.montrosesoftware.helpers.TestUtils.addMinutes;
+import static com.montrosesoftware.helpers.TestUtils.collectionsAreEqual;
 import static com.montrosesoftware.helpers.TestUtils.saveUsersData;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -21,7 +22,6 @@ public class DbAssistOrderByGroupByTest extends BaseTest {
     @Autowired
     private UserRepo uRepo;
 
-    //TODO finish
     @Test
     public void orderByDateUse() {
         Date date1 = ExampleDate;
@@ -79,5 +79,65 @@ public class DbAssistOrderByGroupByTest extends BaseTest {
         assertEquals(numWorkers.longValue(), 3);
         assertEquals(sumSalaryWorkers, 14.5 + 10.1 + 1.5, Delta);
         assertEquals(avgSalaryWorkers, sumSalaryWorkers / numWorkers, Delta);
+    }
+
+    @Test
+    public void findAttributeWithOrderByUse() {
+        Date date = DateUtils.getUtc("2012-06-12 08:10:15");
+        Date dateAnother = DateUtils.getUtc("2000-03-03 11:10:15");
+        saveUsersData(uRepo, new ArrayList<User>() {{
+            add(new User(1, "A", date));
+            add(new User(2, "B", dateAnother));
+            add(new User(3, "C", date));
+        }});
+
+        ConditionsBuilder cb = new ConditionsBuilder();
+        HierarchyCondition hc = cb.equal("createdAt", date);
+        cb.apply(hc);
+
+        //sort
+        OrderBy orderBy = new OrderBy();
+        orderBy.desc(cb, "name");
+
+        List<String> namesRead = uRepo.findAttribute("name", cb, null, orderBy, null);
+
+        assertEquals(namesRead.size(), 2);
+        assertEquals(namesRead.get(0), "C");
+        assertEquals(namesRead.get(1), "A");
+    }
+
+    @Test
+    public void findAttributesUse() {
+        saveUsersData(uRepo, new ArrayList<User>() {{
+            add(new User(1, "Rose", ExampleDate));
+            add(new User(2, "Mont", ExampleDate));
+            add(new User(3, "Montrose", ExampleDate));
+        }});
+
+        AbstractRepository.SelectionList<User> selectionList = (criteriaBuilder, root) -> new ArrayList<>(Arrays.asList(
+                root.get("id"),
+                root.get("name")
+        ));
+
+        ConditionsBuilder cb = new ConditionsBuilder();
+        HierarchyCondition hc = cb.inRangeCondition("id", 1, 2);
+        cb.apply(hc);
+
+        //sort
+        OrderBy orderBy = new OrderBy();
+        orderBy.asc(cb, "name");
+
+        List<Tuple> tuples = uRepo.findAttributes(selectionList, cb, orderBy);
+        List<Integer> idsRead = new ArrayList<>();
+        List<String> namesRead = new ArrayList<>();
+        tuples.forEach((tuple -> {
+            idsRead.add((Integer) tuple.get(0));
+            namesRead.add((String) tuple.get(1));
+        }));
+
+        assertEquals(idsRead.get(0).intValue(), 2);
+        assertEquals(idsRead.get(1).intValue(), 1);
+        assertEquals(namesRead.get(0), "Mont");
+        assertEquals(namesRead.get(1), "Rose");
     }
 }

@@ -32,17 +32,17 @@ Installation can be done by changing the .jar name to sqljdbc4-4.0.jar and copyi
 ## Compatibility
 
 ### Spring Boot: 
-1.2.2.RELEASE
-1.4.0.RELEASE
+* 1.2.2.RELEASE
+* 1.4.0.RELEASE
 ### Hibernate
 #### For JPA Annotations: 
 Hibernate 4.3.11.RELEASE
 #### For .hbm files: 
 Hibernate 3.3.2.GA
 ### JDBC SQL Driver
-4.0
-4.1
-4.2
+* 4.0
+* 4.1
+* 4.2
 
 ## Usage
 
