@@ -49,6 +49,8 @@
                     <projectNames>
                         <param>DbAssist-jpa-4.2.21</param>
                         <param>DbAssist-jpa-4.3.11</param>
+                        <param>DbAssist-jpa-5.0.10</param>
+
                     </projectNames>
                 </configuration>
             </plugin>

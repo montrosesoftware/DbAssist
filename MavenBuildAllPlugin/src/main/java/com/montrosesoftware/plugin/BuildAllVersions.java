@@ -38,7 +38,10 @@ public class BuildAllVersions extends AbstractMojo {
 
             Invoker invoker = new DefaultInvoker();
             try {
-                invoker.execute(request);
+                InvocationResult result = invoker.execute(request);
+                if(result.getExitCode() != 0){
+                    throw new RuntimeException("Tests failed for " + name);
+                }
             } catch (MavenInvocationException e) {
                 throw new RuntimeException(e);
             }
