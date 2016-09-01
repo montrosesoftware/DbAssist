@@ -48,7 +48,7 @@
         <module>MavenBuildAllPlugin</module>
         <module>DbAssist-hbm-tester</module>
         <module>DbAssist-jpa-testcases</module>
-        <module>DbAssist-jpa-tester</module>
+        <!--<module>DbAssist-jpa-tester</module>-->
     </modules>
 
 </project>
