@@ -38,23 +38,12 @@ public class OrderBy {
         DESC
     }
 
-    private class SingleOrder {
-        private ConditionsBuilder joinBuilder;
-        private String attributeName;
+    private class SingleOrder extends BaseJoinPair{
         private OrderType orderType;
 
         public SingleOrder(ConditionsBuilder joinBuilder, String attributeName, OrderType orderType) {
-            this.joinBuilder = joinBuilder;
-            this.attributeName = attributeName;
+            super(joinBuilder, attributeName);
             this.orderType = orderType;
-        }
-
-        public ConditionsBuilder getJoinBuilder() {
-            return joinBuilder;
-        }
-
-        public String getAttributeName() {
-            return attributeName;
         }
 
         public OrderType getOrderType() {

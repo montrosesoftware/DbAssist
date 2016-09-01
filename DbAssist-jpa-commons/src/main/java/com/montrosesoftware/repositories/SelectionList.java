@@ -48,7 +48,45 @@ public class SelectionList {
         return this;
     }
 
-    //TODO add more methods for other aggregates
+    public SelectionList sumAsLong(ConditionsBuilder joinBuilder, String attributeName) {
+        selects.add(new SingleSelect(joinBuilder, attributeName) {
+            @Override
+            public void addToSelections(List<Selection<?>> selections, CriteriaBuilder criteriaBuilder, ConditionsBuilder rootBuilder, From<?, ?> root) {
+                selections.add(criteriaBuilder.sumAsLong(rootBuilder.getFrom(root, this.getJoinBuilder()).get(this.getAttributeName())));
+            }
+        });
+        return this;
+    }
+
+    public SelectionList sumAsDouble(ConditionsBuilder joinBuilder, String attributeName) {
+        selects.add(new SingleSelect(joinBuilder, attributeName) {
+            @Override
+            public void addToSelections(List<Selection<?>> selections, CriteriaBuilder criteriaBuilder, ConditionsBuilder rootBuilder, From<?, ?> root) {
+                selections.add(criteriaBuilder.sumAsDouble(rootBuilder.getFrom(root, this.getJoinBuilder()).get(this.getAttributeName())));
+            }
+        });
+        return this;
+    }
+
+    public SelectionList min(ConditionsBuilder joinBuilder, String attributeName) {
+        selects.add(new SingleSelect(joinBuilder, attributeName) {
+            @Override
+            public void addToSelections(List<Selection<?>> selections, CriteriaBuilder criteriaBuilder, ConditionsBuilder rootBuilder, From<?, ?> root) {
+                selections.add(criteriaBuilder.min(rootBuilder.getFrom(root, this.getJoinBuilder()).get(this.getAttributeName())));
+            }
+        });
+        return this;
+    }
+
+    public SelectionList max(ConditionsBuilder joinBuilder, String attributeName) {
+        selects.add(new SingleSelect(joinBuilder, attributeName) {
+            @Override
+            public void addToSelections(List<Selection<?>> selections, CriteriaBuilder criteriaBuilder, ConditionsBuilder rootBuilder, From<?, ?> root) {
+                selections.add(criteriaBuilder.max(rootBuilder.getFrom(root, this.getJoinBuilder()).get(this.getAttributeName())));
+            }
+        });
+        return this;
+    }
 
     List<Selection<?>> getSelectionList(CriteriaBuilder criteriaBuilder, ConditionsBuilder rootBuilder, From<?, ?> root) {
         List<Selection<?>> selections = new ArrayList<>();
@@ -57,25 +95,13 @@ public class SelectionList {
         return selections;
     }
 
-    private class SingleSelect {
-        protected ConditionsBuilder joinBuilder;
-        protected String attributeName;
-
+    private class SingleSelect extends BaseJoinPair {
         public SingleSelect(ConditionsBuilder joinBuilder, String attributeName) {
-            this.joinBuilder = joinBuilder;
-            this.attributeName = attributeName;
+            super(joinBuilder, attributeName);
         }
 
         public void addToSelections(List<Selection<?>> selections, CriteriaBuilder criteriaBuilder, ConditionsBuilder rootBuilder, From<?, ?> root) {
             selections.add(rootBuilder.getFrom(root, this.getJoinBuilder()).get(this.getAttributeName()));
-        }
-
-        public ConditionsBuilder getJoinBuilder() {
-            return joinBuilder;
-        }
-
-        public String getAttributeName() {
-            return attributeName;
         }
     }
 }

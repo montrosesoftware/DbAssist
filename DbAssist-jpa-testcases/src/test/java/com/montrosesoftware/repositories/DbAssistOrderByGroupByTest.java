@@ -4,14 +4,15 @@ import com.montrosesoftware.DateUtils;
 import com.montrosesoftware.config.BaseTest;
 import com.montrosesoftware.entities.User;
 import org.junit.Test;
-import org.junit.internal.runners.statements.FailOnTimeout;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.persistence.Tuple;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
 
 import static com.montrosesoftware.helpers.TestUtils.addMinutes;
-import static com.montrosesoftware.helpers.TestUtils.collectionsAreEqual;
 import static com.montrosesoftware.helpers.TestUtils.saveUsersData;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -65,9 +66,13 @@ public class DbAssistOrderByGroupByTest extends BaseTest {
         selectionList
                 .sum(cb, "salary")
                 .avg(cb, "salary")
-                .count(cb, "id");
+                .count(cb, "id")
+                .sumAsLong(cb, "id")
+                .sumAsDouble(cb, "salary")
+                .min(cb, "salary")
+                .max(cb, "salary");
 
-        //TODO add more aggregates
+        //TODO add more aggregates (least and greatest)
 
         AbstractRepository.GroupBy<User> groupBy = (root) -> Arrays.asList(
                 root.get("category")
@@ -79,10 +84,18 @@ public class DbAssistOrderByGroupByTest extends BaseTest {
         Double sumSalaryWorkers = (Double) groupWorkersResults.get(0);
         Double avgSalaryWorkers = (Double) groupWorkersResults.get(1);
         Long numWorkers = (Long) groupWorkersResults.get(2);
+        Long sumAsLongIdsWorkers = (Long) groupWorkersResults.get(3);
+        Double sumAsDoubleSalariesWorkers = (Double) groupWorkersResults.get(4);
+        Double minSalaryWorkers = (Double) groupWorkersResults.get(5);
+        Double maxSalaryWorkers = (Double) groupWorkersResults.get(6);
 
         assertEquals(numWorkers.longValue(), 3);
         assertEquals(sumSalaryWorkers, 14.5 + 10.1 + 1.5, Delta);
         assertEquals(avgSalaryWorkers, sumSalaryWorkers / numWorkers, Delta);
+        assertEquals(sumAsLongIdsWorkers.longValue(), 6);
+        assertEquals(sumAsDoubleSalariesWorkers, 14.5 + 10.1 + 1.5, Delta);
+        assertEquals(minSalaryWorkers, 1.5, Delta);
+        assertEquals(maxSalaryWorkers, 14.5, Delta);
     }
 
     @Test

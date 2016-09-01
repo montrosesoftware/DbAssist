@@ -371,10 +371,6 @@ public abstract class AbstractRepository<T> {
         List<Expression<?>> apply(Root<?> root);
     }
 
-//    protected interface SelectionList {
-//        List<Selection<?>> apply(CriteriaBuilder criteriaBuilder, Root<?> root);
-//    }
-
     private abstract class Aggregate {
         protected CriteriaBuilder cb;
         protected Root<T> root;
