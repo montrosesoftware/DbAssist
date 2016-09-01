@@ -10,31 +10,35 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
+import java.util.logging.Logger;
 
-@Mojo( name = "buildAll")
-public class BuildAllVersions extends AbstractMojo
-{
+@Mojo(name = "buildAll")
+public class BuildAllVersions extends AbstractMojo {
+
+    final static Logger logger = Logger.getLogger(BuildAllVersions.class.getName());
+
     @Parameter(property = "buildAll.projectNames")
     private List<String> projectNames;
 
-    public void execute() throws MojoExecutionException
-    {
-        if(projectNames == null || projectNames.isEmpty()){
+    public void execute() throws MojoExecutionException {
+        if (projectNames == null || projectNames.isEmpty()) {
             return;
         }
 
         InvocationRequest request = new DefaultInvocationRequest();
-        request.setPomFile( new File( "pom.xml" ) );
-        request.setGoals( Arrays.asList( "clean", "test" ) );
+        request.setPomFile(new File("pom.xml"));
+        request.setGoals(Arrays.asList("clean", "test"));
 
-        for (String name : projectNames){
+        for (String name : projectNames) {
+            getLog().info("---------------- Building for " + name + " ----------------");
+
             Properties properties = new Properties();
             properties.setProperty("montrosesoftware.version", name);
             request.setProperties(properties);
 
             Invoker invoker = new DefaultInvoker();
             try {
-                invoker.execute( request );
+                invoker.execute(request);
             } catch (MavenInvocationException e) {
                 throw new RuntimeException(e);
             }

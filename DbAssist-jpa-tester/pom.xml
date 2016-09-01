@@ -47,6 +47,7 @@
                 </executions>
                 <configuration>
                     <projectNames>
+                        <param>DbAssist-jpa-4.2.21</param>
                         <param>DbAssist-jpa-4.3.11</param>
                     </projectNames>
                 </configuration>
