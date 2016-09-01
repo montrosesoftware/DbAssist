@@ -15,7 +15,7 @@
 
     <properties>
         <!--This property will be overwritten by MavenBuildAll plugin-->
-        <montrosesoftware.version>DbAssist-jpa-4.3.11</montrosesoftware.version>
+        <montrosesoftware.version>empty</montrosesoftware.version>
     </properties>
 
     <dependencyManagement>
