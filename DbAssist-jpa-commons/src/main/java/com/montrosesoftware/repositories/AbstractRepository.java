@@ -95,11 +95,11 @@ public abstract class AbstractRepository<T> {
      * @param groupBy           list of lambdas specifying grouping
      * @return list of tuples containing values corresponding to columns/aggregates specified in the selection list
      */
-    protected List<Tuple> findAttributes(SelectionList<T> selectionList,
+    protected List<Tuple> findAttributes(SelectionList selectionList,
                                          ConditionsBuilder conditionsBuilder,
                                          FetchesBuilder fetchesBuilder,
                                          OrderBy orders,
-                                         GroupBy<T> groupBy) {
+                                         GroupBy groupBy) {
 
         CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
         CriteriaQuery<Tuple> criteriaQuery = criteriaBuilder.createTupleQuery();
@@ -109,8 +109,9 @@ public abstract class AbstractRepository<T> {
             fetchesBuilder.applyFetches(root);
         }
 
-        criteriaQuery.multiselect(selectionList.apply(criteriaBuilder, root));
+        criteriaQuery.multiselect(selectionList.getSelectionList(criteriaBuilder, conditionsBuilder, root));
 
+        //TODO verify if conditionsBuilder is not empty (it is needed for selection list)
         conditionsBuilder = applyConditions(conditionsBuilder, criteriaBuilder, criteriaQuery, root);
 
         if(orders != null){
@@ -119,7 +120,7 @@ public abstract class AbstractRepository<T> {
         }
 
         if (groupBy != null) {
-            criteriaQuery.groupBy(groupBy.apply(root));
+            criteriaQuery.groupBy(groupBy.getAll(conditionsBuilder, root));
         }
 
         TypedQuery<Tuple> typedQuery = entityManager.createQuery(criteriaQuery);
@@ -129,20 +130,20 @@ public abstract class AbstractRepository<T> {
         return typedQuery.getResultList();
     }
 
-    protected List<Tuple> findAttributes(SelectionList<T> selectionList, ConditionsBuilder conditionsBuilder) {
+    protected List<Tuple> findAttributes(SelectionList selectionList, ConditionsBuilder conditionsBuilder) {
         return findAttributes(selectionList, conditionsBuilder, null, null, null);
     }
 
-    protected List<Tuple> findAttributes(SelectionList<T> selectionList, ConditionsBuilder conditionsBuilder, OrderBy orders) {
+    protected List<Tuple> findAttributes(SelectionList selectionList, ConditionsBuilder conditionsBuilder, OrderBy orders) {
         return findAttributes(selectionList, conditionsBuilder, null, orders, null);
     }
 
-    protected List<Tuple> findAttributes(SelectionList<T> selectionList, ConditionsBuilder conditionsBuilder, GroupBy<T> groupBy) {
+    protected List<Tuple> findAttributes(SelectionList selectionList, ConditionsBuilder conditionsBuilder, GroupBy groupBy) {
         return findAttributes(selectionList, conditionsBuilder, null, null, groupBy);
     }
 
-    protected List<Tuple> findAttributes(SelectionList<T> selectionList, GroupBy<T> groupBy) {
-        return findAttributes(selectionList, null, null, null, groupBy);
+    protected List<Tuple> findAttributes(SelectionList selectionList, ConditionsBuilder conditionsBuilder, OrderBy orders, GroupBy groupBy) {
+        return findAttributes(selectionList, conditionsBuilder, null, orders, groupBy);
     }
 
     /**
@@ -368,14 +369,6 @@ public abstract class AbstractRepository<T> {
     @FunctionalInterface
     interface SelectFunction<CB, P, S> {
         S apply(CB criteriaBuilder, P path);
-    }
-
-    protected interface GroupBy<T> {
-        List<Expression<?>> apply(Root<?> root);
-    }
-
-    protected interface SelectionList<T> {
-        List<Selection<?>> apply(CriteriaBuilder criteriaBuilder, Root<?> root);
     }
 
     private abstract class Aggregate {

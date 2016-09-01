@@ -53,9 +53,9 @@ public class TestUtils {
         //Users
         Date dateA = DateUtils.getUtc("2016-06-12 07:10:15");
         Date dateB = DateUtils.getUtc("2010-06-12 08:10:15");
-        User userA = new User(1, "Rose", dateA);
-        User userB = new User(2, "Mont", dateB);
-        User userC = new User(3, "Tom", dateB);
+        User userA = new User(1, "Rose", dateA, 15.1, "worker");
+        User userB = new User(2, "Mont", dateB, 10.5, "worker");
+        User userC = new User(3, "Tom", dateB, 25.0, "boss");
 
         userA.setMainCertificate(certA);
         userB.setMainCertificate(certB);

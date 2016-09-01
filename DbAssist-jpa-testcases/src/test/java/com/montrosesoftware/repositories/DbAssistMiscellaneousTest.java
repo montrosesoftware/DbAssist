@@ -3,7 +3,6 @@ package com.montrosesoftware.repositories;
 import com.montrosesoftware.DateUtils;
 import com.montrosesoftware.config.BaseTest;
 import com.montrosesoftware.entities.User;
-import com.montrosesoftware.repositories.AbstractRepository.SelectionList;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -40,56 +39,6 @@ public class DbAssistMiscellaneousTest extends BaseTest {
         List<User> results = uRepo.find(conditions);
         assertNotNull(results);
         List<User> resultsAgain = uRepo.find(conditions);   //should fail (throw RuntimeException)
-    }
-
-    @Test
-    public void findAttributeUse() {
-        Date date = DateUtils.getUtc("2012-06-12 08:10:15");
-        Date dateAnother = DateUtils.getUtc("2000-03-03 11:10:15");
-        saveUsersData(uRepo, new ArrayList<User>() {{
-            add(new User(1, "A", date));
-            add(new User(2, "B", dateAnother));
-            add(new User(3, "C", date));
-        }});
-
-        ConditionsBuilder c = new ConditionsBuilder();
-        HierarchyCondition hc = c.equal("createdAt", date);
-        c.apply(hc);
-        List<String> namesRead = uRepo.findAttribute("name", c);
-
-        assertEquals(namesRead.size(), 2);
-        List<String> namesExpected = new ArrayList<>(Arrays.asList("A", "C"));
-        assertTrue(collectionsAreEqual(namesRead, namesExpected));
-    }
-
-    @Test
-    public void findAttributesUse() {
-        saveUsersData(uRepo, new ArrayList<User>() {{
-            add(new User(1, "Mont", ExampleDate));
-            add(new User(2, "Rose", ExampleDate));
-            add(new User(3, "Montrose", ExampleDate));
-        }});
-
-        SelectionList<User> selectionList = (criteriaBuilder, root) -> new ArrayList<>(Arrays.asList(
-                root.get("id"),
-                root.get("name")
-        ));
-
-        ConditionsBuilder cb = new ConditionsBuilder();
-        HierarchyCondition hc = cb.inRangeCondition("id", 1, 2);
-        cb.apply(hc);
-        List<Tuple> tuples = uRepo.findAttributes(selectionList, cb);
-        List<Integer> idsRead = new ArrayList<>();
-        List<String> namesRead = new ArrayList<>();
-        tuples.forEach((tuple -> {
-            idsRead.add((Integer) tuple.get(0));
-            namesRead.add((String) tuple.get(1));
-        }));
-
-        List<String> namesExpected = new ArrayList<>(Arrays.asList("Mont", "Rose"));
-        List<Integer> idsExpected = new ArrayList<>(Arrays.asList(1, 2));
-        assertTrue(collectionsAreEqual(namesRead, namesExpected));
-        assertTrue(collectionsAreEqual(idsRead, idsExpected));
     }
 
     @Test
