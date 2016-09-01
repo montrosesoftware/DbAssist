@@ -61,7 +61,7 @@ public class DbAssistOrderByGroupByTest extends BaseTest {
         HierarchyCondition hc = cb.equal("category", "worker");
         cb.apply(hc);
 
-        //select
+        //select TODO add more aggregates (least and greatest)
         SelectionList selectionList = new SelectionList();
         selectionList
                 .sum(cb, "salary")
@@ -72,13 +72,10 @@ public class DbAssistOrderByGroupByTest extends BaseTest {
                 .min(cb, "salary")
                 .max(cb, "salary");
 
-        //TODO add more aggregates (least and greatest)
+        GroupBy groupBy = new GroupBy();
+        groupBy.groupBy(cb, "category");
 
-        AbstractRepository.GroupBy<User> groupBy = (root) -> Arrays.asList(
-                root.get("category")
-        );
-
-        List<Tuple> results = uRepo.findAttributes(selectionList, cb, null, null, groupBy);
+        List<Tuple> results = uRepo.findAttributes(selectionList, cb, groupBy);
         Tuple groupWorkersResults = results.get(0);
 
         Double sumSalaryWorkers = (Double) groupWorkersResults.get(0);
@@ -96,6 +93,44 @@ public class DbAssistOrderByGroupByTest extends BaseTest {
         assertEquals(sumAsDoubleSalariesWorkers, 14.5 + 10.1 + 1.5, Delta);
         assertEquals(minSalaryWorkers, 1.5, Delta);
         assertEquals(maxSalaryWorkers, 14.5, Delta);
+    }
+
+    @Test
+    public void groupByMultipleColumns(){
+        saveUsersData(uRepo, new ArrayList<User>() {{
+            add(new User(1, "Mont", ExampleDate, 14.5, "worker"));
+            add(new User(2, "Mont", ExampleDate, 10.1, "worker"));
+            add(new User(3, "Rose", ExampleDate, 1.5, "worker"));
+            add(new User(4, "Rose", ExampleDate, 111.5, "boss"));
+        }});
+
+        //conditions
+        ConditionsBuilder cb = new ConditionsBuilder();
+        HierarchyCondition hc = cb.equal("category", "worker");
+        cb.apply(hc);
+
+        //select
+        SelectionList selectionList = new SelectionList();
+        selectionList.avg(cb, "salary");
+
+        //group by
+        GroupBy groupBy = new GroupBy();
+        groupBy
+                .groupBy(cb, "category")
+                .groupBy(cb, "name");
+
+        //order by
+        OrderBy orderBy = new OrderBy();
+        orderBy.desc(cb, "name");
+
+        List<Tuple> results = uRepo.findAttributes(selectionList, cb, orderBy, groupBy);
+
+        assertEquals(results.size(), 2);
+        Double avgGroupA = (Double) results.get(0).get(0);
+        Double avgGroupB = (Double) results.get(1).get(0);
+
+        assertEquals(avgGroupA, 1.5, Delta);
+        assertEquals(avgGroupB, (14.5 + 10.1) / 2, Delta);
     }
 
     @Test

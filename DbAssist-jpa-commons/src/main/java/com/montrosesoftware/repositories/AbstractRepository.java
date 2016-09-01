@@ -99,7 +99,7 @@ public abstract class AbstractRepository<T> {
                                          ConditionsBuilder conditionsBuilder,
                                          FetchesBuilder fetchesBuilder,
                                          OrderBy orders,
-                                         GroupBy<T> groupBy) {
+                                         GroupBy groupBy) {
 
         CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
         CriteriaQuery<Tuple> criteriaQuery = criteriaBuilder.createTupleQuery();
@@ -120,7 +120,7 @@ public abstract class AbstractRepository<T> {
         }
 
         if (groupBy != null) {
-            criteriaQuery.groupBy(groupBy.apply(root));
+            criteriaQuery.groupBy(groupBy.getAll(conditionsBuilder, root));
         }
 
         TypedQuery<Tuple> typedQuery = entityManager.createQuery(criteriaQuery);
@@ -138,8 +138,12 @@ public abstract class AbstractRepository<T> {
         return findAttributes(selectionList, conditionsBuilder, null, orders, null);
     }
 
-    protected List<Tuple> findAttributes(SelectionList selectionList, ConditionsBuilder conditionsBuilder, GroupBy<T> groupBy) {
+    protected List<Tuple> findAttributes(SelectionList selectionList, ConditionsBuilder conditionsBuilder, GroupBy groupBy) {
         return findAttributes(selectionList, conditionsBuilder, null, null, groupBy);
+    }
+
+    protected List<Tuple> findAttributes(SelectionList selectionList, ConditionsBuilder conditionsBuilder, OrderBy orders, GroupBy groupBy) {
+        return findAttributes(selectionList, conditionsBuilder, null, orders, groupBy);
     }
 
     /**
@@ -365,10 +369,6 @@ public abstract class AbstractRepository<T> {
     @FunctionalInterface
     interface SelectFunction<CB, P, S> {
         S apply(CB criteriaBuilder, P path);
-    }
-
-    protected interface GroupBy<T> {
-        List<Expression<?>> apply(Root<?> root);
     }
 
     private abstract class Aggregate {

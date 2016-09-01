@@ -6,18 +6,17 @@ import com.montrosesoftware.entities.Provider;
 import com.montrosesoftware.entities.User;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.xml.DocumentDefaultsDefinition;
 
 import javax.persistence.EntityManager;
 import javax.persistence.Tuple;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.*;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.List;
 
 import static com.montrosesoftware.helpers.TestUtils.prepareAndSaveExampleDataToDb;
-import static com.montrosesoftware.helpers.TestUtils.saveUsersData;
 import static com.montrosesoftware.repositories.ConditionsBuilder.and;
 import static com.montrosesoftware.repositories.ConditionsBuilder.or;
 import static org.junit.Assert.*;
@@ -353,7 +352,7 @@ public class DbAssistJoinConditionsTest extends BaseTest {
     }
 
     @Test
-    public void findAttributesWithOrderByAndJoinConditions() {
+    public void findAttributesWithOrderByAndJoinedEntities() {
         prepareAndSaveExampleDataToDb(uRepo);
         //joins
         ConditionsBuilder cb = new ConditionsBuilder();
@@ -387,6 +386,42 @@ public class DbAssistJoinConditionsTest extends BaseTest {
         assertEquals(namesRead.get(0), "Java Cert");
         assertEquals(namesRead.get(1), "Java Cert");
         assertEquals(namesRead.get(2), "BHP");
+    }
+
+    private static final double Delta = 1e-15;
+
+    @Test
+    public void findAttributesWithGroupByAndJoinedEntities() {
+        prepareAndSaveExampleDataToDb(uRepo);
+
+        //joins
+        ConditionsBuilder cb = new ConditionsBuilder();
+        ConditionsBuilder builderCerts = cb.join("certificates", JoinType.LEFT);
+
+        //select
+        SelectionList selectionList = new SelectionList();
+        selectionList.avg(cb, "salary");
+
+        //group by
+        GroupBy groupBy = new GroupBy();
+        groupBy
+                .groupBy(cb, "category")
+                .groupBy(builderCerts, "name");
+
+        //order by
+        OrderBy orderBy = new OrderBy();
+        orderBy
+                .asc(cb, "category")
+                .asc(builderCerts, "name");
+
+        List<Tuple> result = uRepo.findAttributes(selectionList, cb, orderBy, groupBy);
+        assertEquals(result.size(), 3);
+        Double avgGroupA = (Double) result.get(0).get(0);
+        Double avgGroupB = (Double) result.get(1).get(0);
+        Double avgGroupC = (Double) result.get(2).get(0);
+        assertEquals(avgGroupA, 25.0, Delta);
+        assertEquals(avgGroupB, 15.1, Delta);
+        assertEquals(avgGroupC, 12.8, Delta);
     }
 }
 
