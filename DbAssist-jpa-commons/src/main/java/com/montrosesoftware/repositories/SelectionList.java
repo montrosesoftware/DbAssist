@@ -6,20 +6,15 @@ import javax.persistence.criteria.Selection;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SelectionList {
-
-    private List<SingleSelect> selects = new ArrayList<>();
-
-    public SelectionList() {
-    }
+public class SelectionList extends BaseSinglesList<SelectionList.SingleSelect, Selection<?>> {
 
     public SelectionList select(ConditionsBuilder joinBuilder, String attributeName) {
-        selects.add(new SingleSelect(joinBuilder, attributeName));
+        list.add(new SingleSelect(joinBuilder, attributeName));
         return this;
     }
 
     public SelectionList count(ConditionsBuilder joinBuilder, String attributeName) {
-        selects.add(new SingleSelect(joinBuilder, attributeName) {
+        list.add(new SingleSelect(joinBuilder, attributeName) {
             @Override
             public void addToSelections(List<Selection<?>> selections, CriteriaBuilder criteriaBuilder, ConditionsBuilder rootBuilder, From<?, ?> root) {
                 selections.add(criteriaBuilder.count(rootBuilder.getFrom(root, this.getJoinBuilder()).get(this.getAttributeName())));
@@ -29,7 +24,7 @@ public class SelectionList {
     }
 
     public SelectionList avg(ConditionsBuilder joinBuilder, String attributeName) {
-        selects.add(new SingleSelect(joinBuilder, attributeName) {
+        list.add(new SingleSelect(joinBuilder, attributeName) {
             @Override
             public void addToSelections(List<Selection<?>> selections, CriteriaBuilder criteriaBuilder, ConditionsBuilder rootBuilder, From<?, ?> root) {
                 selections.add(criteriaBuilder.avg(rootBuilder.getFrom(root, this.getJoinBuilder()).get(this.getAttributeName())));
@@ -39,7 +34,7 @@ public class SelectionList {
     }
 
     public SelectionList sum(ConditionsBuilder joinBuilder, String attributeName) {
-        selects.add(new SingleSelect(joinBuilder, attributeName) {
+        list.add(new SingleSelect(joinBuilder, attributeName) {
             @Override
             public void addToSelections(List<Selection<?>> selections, CriteriaBuilder criteriaBuilder, ConditionsBuilder rootBuilder, From<?, ?> root) {
                 selections.add(criteriaBuilder.sum(rootBuilder.getFrom(root, this.getJoinBuilder()).get(this.getAttributeName())));
@@ -49,7 +44,7 @@ public class SelectionList {
     }
 
     public SelectionList sumAsLong(ConditionsBuilder joinBuilder, String attributeName) {
-        selects.add(new SingleSelect(joinBuilder, attributeName) {
+        list.add(new SingleSelect(joinBuilder, attributeName) {
             @Override
             public void addToSelections(List<Selection<?>> selections, CriteriaBuilder criteriaBuilder, ConditionsBuilder rootBuilder, From<?, ?> root) {
                 selections.add(criteriaBuilder.sumAsLong(rootBuilder.getFrom(root, this.getJoinBuilder()).get(this.getAttributeName())));
@@ -59,7 +54,7 @@ public class SelectionList {
     }
 
     public SelectionList sumAsDouble(ConditionsBuilder joinBuilder, String attributeName) {
-        selects.add(new SingleSelect(joinBuilder, attributeName) {
+        list.add(new SingleSelect(joinBuilder, attributeName) {
             @Override
             public void addToSelections(List<Selection<?>> selections, CriteriaBuilder criteriaBuilder, ConditionsBuilder rootBuilder, From<?, ?> root) {
                 selections.add(criteriaBuilder.sumAsDouble(rootBuilder.getFrom(root, this.getJoinBuilder()).get(this.getAttributeName())));
@@ -69,7 +64,7 @@ public class SelectionList {
     }
 
     public SelectionList min(ConditionsBuilder joinBuilder, String attributeName) {
-        selects.add(new SingleSelect(joinBuilder, attributeName) {
+        list.add(new SingleSelect(joinBuilder, attributeName) {
             @Override
             public void addToSelections(List<Selection<?>> selections, CriteriaBuilder criteriaBuilder, ConditionsBuilder rootBuilder, From<?, ?> root) {
                 selections.add(criteriaBuilder.min(rootBuilder.getFrom(root, this.getJoinBuilder()).get(this.getAttributeName())));
@@ -79,7 +74,7 @@ public class SelectionList {
     }
 
     public SelectionList max(ConditionsBuilder joinBuilder, String attributeName) {
-        selects.add(new SingleSelect(joinBuilder, attributeName) {
+        list.add(new SingleSelect(joinBuilder, attributeName) {
             @Override
             public void addToSelections(List<Selection<?>> selections, CriteriaBuilder criteriaBuilder, ConditionsBuilder rootBuilder, From<?, ?> root) {
                 selections.add(criteriaBuilder.max(rootBuilder.getFrom(root, this.getJoinBuilder()).get(this.getAttributeName())));
@@ -88,14 +83,15 @@ public class SelectionList {
         return this;
     }
 
-    List<Selection<?>> getSelectionList(CriteriaBuilder criteriaBuilder, ConditionsBuilder rootBuilder, From<?, ?> root) {
+    @Override
+    public List<Selection<?>> getAll(CriteriaBuilder criteriaBuilder, ConditionsBuilder rootBuilder, From<?, ?> root) {
         List<Selection<?>> selections = new ArrayList<>();
-        for (SingleSelect singleSelect : selects)
+        for (SingleSelect singleSelect : list)
             singleSelect.addToSelections(selections, criteriaBuilder, rootBuilder, root);
         return selections;
     }
 
-    private class SingleSelect extends BaseJoinPair {
+    protected class SingleSelect extends BaseJoinPair {
         public SingleSelect(ConditionsBuilder joinBuilder, String attributeName) {
             super(joinBuilder, attributeName);
         }

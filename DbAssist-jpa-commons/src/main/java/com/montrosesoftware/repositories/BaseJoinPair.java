@@ -1,6 +1,6 @@
 package com.montrosesoftware.repositories;
 
-public class BaseJoinPair {
+public abstract class BaseJoinPair {
     protected ConditionsBuilder joinBuilder;
     protected String attributeName;
 

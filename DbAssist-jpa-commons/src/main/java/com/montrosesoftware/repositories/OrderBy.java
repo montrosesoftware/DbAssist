@@ -6,25 +6,22 @@ import javax.persistence.criteria.Order;
 import java.util.ArrayList;
 import java.util.List;
 
-public class OrderBy {
-    private List<SingleOrder> singleOrders = new ArrayList<>();
-
-    public OrderBy() {
-    }
+public class OrderBy extends BaseSinglesList<OrderBy.SingleOrder, Order> {
 
     public OrderBy asc(ConditionsBuilder join, String attributeName) {
-        singleOrders.add(new SingleOrder(join, attributeName, OrderType.ASC));
+        list.add(new SingleOrder(join, attributeName, OrderType.ASC));
         return this;
     }
 
     public OrderBy desc(ConditionsBuilder join, String attributeName) {
-        singleOrders.add(new SingleOrder(join, attributeName, OrderType.DESC));
+        list.add(new SingleOrder(join, attributeName, OrderType.DESC));
         return this;
     }
 
-    public List<Order> getListOfOrders(CriteriaBuilder criteriaBuilder, ConditionsBuilder rootBuilder, From<?, ?> root) {
+    @Override
+    public List<Order> getAll(CriteriaBuilder criteriaBuilder, ConditionsBuilder rootBuilder, From<?, ?> root) {
         List<Order> orderList = new ArrayList<>();
-        for (SingleOrder singleOrder : singleOrders) {
+        for (SingleOrder singleOrder : list) {
             if (singleOrder.getOrderType() == OrderType.ASC)
                 orderList.add(criteriaBuilder.asc(rootBuilder.getFrom(root, singleOrder.getJoinBuilder()).get(singleOrder.getAttributeName())));
             else
@@ -38,7 +35,7 @@ public class OrderBy {
         DESC
     }
 
-    private class SingleOrder extends BaseJoinPair{
+    protected class SingleOrder extends BaseJoinPair{
         private OrderType orderType;
 
         public SingleOrder(ConditionsBuilder joinBuilder, String attributeName, OrderType orderType) {

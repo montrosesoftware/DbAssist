@@ -1,6 +1,6 @@
 # Project Name
 
-DbAssist provides fix for the unexpected date time shift, occuring in case of JVM and DB set up in different time zones.
+DbAssist provides the fix for the unexpected date time shift, occuring in case of JVM and DB set up in different time zones.
 Project also introduces ConditionsBuilder class which enables the user to easily create complex logical combinations of conditions in the SQL query.
 
 ## Installation
