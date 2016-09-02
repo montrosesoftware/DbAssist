@@ -3,34 +3,47 @@ import com.montrosesoftware.HibernateManager;
 import com.montrosesoftware.User;
 import org.junit.Test;
 
+import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
-public class DBDataTest {
+public class DateShiftTest {
 
-    public DBDataTest(){}
+    public DateShiftTest(){}
+
+    private User getExampleUserData() {
+        //prepare example user data
+        Date expectedDatetime = DateUtils.getUtc("2016-06-12 14:54:15");
+        Date expectedDateOnly = DateUtils.getUtc("2016-03-02", true);
+        Timestamp expectedTimestamp = new Timestamp(expectedDatetime.getTime());
+        User user = new User(1, "Adam Spring", expectedDatetime, expectedTimestamp, expectedDateOnly);
+        return user;
+    }
+
+    private void assertTimeInDatesNotShifted(User userExpected, User userActual) {
+        assertNotNull(userActual);
+        assertEquals("Names are not the same", userExpected.getName(), userActual.getName());
+        assertEquals("Datetimes are not the same", userExpected.getCreatedAt(), userActual.getCreatedAt());
+        assertEquals("Timestamps are not the same", userExpected.getUpdatedAt(), userActual.getUpdatedAt());
+        assertEquals("Dates are not the same", userExpected.getLastLoggedAt(), userActual.getLastLoggedAt());
+    }
 
     @Test
     public void dataReadInHibernateAndJDBCReadModeIsEqual(){
         try ( HibernateManager hibernateManager = new HibernateManager()) {
-
-            //insert one user
-            String expDateString = "2016-06-12 14:54:15";
-            Date expectedDate = DateUtils.getUtc(expDateString);
-            int id = 1;
-            User user = new User(id, "Adam Z", expectedDate);
+            User user = getExampleUserData();
 
             hibernateManager.writeUserDataByPlainSQL(user);
             List<User> usersFromHibernate = hibernateManager.getData();
             hibernateManager.rollbackTransaction();
 
             assertEquals(1, usersFromHibernate.size());
-            User hibernateReadUser = usersFromHibernate.get(0);
+            User userRead = usersFromHibernate.get(0);
 
-            assertEquals("Names are not the same", user.getName(), hibernateReadUser.getName());
-            assertEquals("Dates are not the same", user.getCreatedAt(), hibernateReadUser.getCreatedAt());
+            assertTimeInDatesNotShifted(user, userRead);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -44,15 +57,13 @@ public class DBDataTest {
         try ( HibernateManager hibernateManager = new HibernateManager()) {
 
             //Prepare test user
-            Date expectedDate = DateUtils.getUtc("2016-06-12 14:54:15");
-            int id = 1;
-            User user = new User(id, "Adam Z", expectedDate);
+            User user = getExampleUserData();
 
             //Plain SQL
             hibernateManager.writeUserDataByPlainSQL(user);
 
             //Hibernate
-            user.setId(id + 1);
+            user.setId(user.getId() + 1);
             hibernateManager.writeUserData(user);
 
             List<Object[]> userObjects = hibernateManager.getDataByPlainSQL();

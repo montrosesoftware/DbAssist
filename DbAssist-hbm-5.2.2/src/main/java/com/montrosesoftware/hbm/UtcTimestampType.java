@@ -2,7 +2,7 @@ package com.montrosesoftware.hbm;
 
 import org.hibernate.HibernateException;
 import org.hibernate.dialect.Dialect;
-import org.hibernate.engine.spi.SessionImplementor;
+import org.hibernate.engine.spi.SharedSessionContractImplementor;
 import org.hibernate.type.AbstractSingleColumnStandardBasicType;
 import org.hibernate.type.LiteralType;
 import org.hibernate.type.TimestampType;
@@ -22,16 +22,54 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.TimeZone;
 
+
 public class UtcTimestampType extends AbstractSingleColumnStandardBasicType<Date> implements VersionType<Date>, LiteralType<Date> {
 
     private static final long serialVersionUID = 1L;
 
+    public UtcTimestampType() {
+        super(UtcTimestampTypeDescriptor.INSTANCE, JdbcTimestampTypeDescriptor.INSTANCE);
+    }
+
+    @Override
+    public String getName() {
+        return TimestampType.INSTANCE.getName();
+    }
+
+    @Override
+    public String[] getRegistrationKeys() {
+        return TimestampType.INSTANCE.getRegistrationKeys();
+    }
+
+    @Override
+    public Date seed(SharedSessionContractImplementor sharedSessionContractImplementor) {
+        return TimestampType.INSTANCE.seed(sharedSessionContractImplementor);
+    }
+
+    @Override
+    public Date next(Date date, SharedSessionContractImplementor sharedSessionContractImplementor) {
+        return TimestampType.INSTANCE.next(date, sharedSessionContractImplementor);
+    }
+
+    @Override
+    public Comparator<Date> getComparator() {
+        return TimestampType.INSTANCE.getComparator();
+    }
+
+    @Override
+    public String objectToSQLString(Date value, Dialect dialect) throws Exception {
+        return TimestampType.INSTANCE.objectToSQLString(value, dialect);
+    }
+
+    @Override
+    public Date fromStringValue(String xml) throws HibernateException {
+        return TimestampType.INSTANCE.fromStringValue(xml);
+    }
+
     public static class UtcTimestampTypeDescriptor extends TimestampTypeDescriptor {
 
-        private static final long serialVersionUID = 1L;
-
         public static final UtcTimestampTypeDescriptor INSTANCE = new UtcTimestampTypeDescriptor();
-
+        private static final long serialVersionUID = 1L;
         private static final TimeZone UTC = TimeZone.getTimeZone("UTC");
 
         @Override
@@ -41,6 +79,11 @@ public class UtcTimestampType extends AbstractSingleColumnStandardBasicType<Date
                 @Override
                 protected void doBind(PreparedStatement st, X value, int index, WrapperOptions options) throws SQLException {
                     st.setTimestamp(index, javaTypeDescriptor.unwrap(value, Timestamp.class, options), Calendar.getInstance(UTC));
+                }
+
+                @Override
+                protected void doBind(CallableStatement callableStatement, X value, String paramName, WrapperOptions wrapperOptions) throws SQLException {
+                    callableStatement.setTimestamp(paramName, javaTypeDescriptor.unwrap(value, Timestamp.class, wrapperOptions), Calendar.getInstance(UTC));
                 }
             };
         }
@@ -67,44 +110,4 @@ public class UtcTimestampType extends AbstractSingleColumnStandardBasicType<Date
             };
         }
     }
-
-    public UtcTimestampType() {
-        super(UtcTimestampTypeDescriptor.INSTANCE, JdbcTimestampTypeDescriptor.INSTANCE);
-    }
-
-    @Override
-    public String getName() {
-        return TimestampType.INSTANCE.getName();
-    }
-
-    @Override
-    public String[] getRegistrationKeys() {
-        return TimestampType.INSTANCE.getRegistrationKeys();
-    }
-
-    @Override
-    public Date next(Date current, SessionImplementor session) {
-        return TimestampType.INSTANCE.next(current, session);
-    }
-
-    @Override
-    public Date seed(SessionImplementor session) {
-        return TimestampType.INSTANCE.seed(session);
-    }
-
-    @Override
-    public Comparator<Date> getComparator() {
-        return TimestampType.INSTANCE.getComparator();
-    }
-
-    @Override
-    public String objectToSQLString(Date value, Dialect dialect) throws Exception {
-        return TimestampType.INSTANCE.objectToSQLString(value, dialect);
-    }
-
-    @Override
-    public Date fromStringValue(String xml) throws HibernateException {
-        return TimestampType.INSTANCE.fromStringValue(xml);
-    }
 }
-

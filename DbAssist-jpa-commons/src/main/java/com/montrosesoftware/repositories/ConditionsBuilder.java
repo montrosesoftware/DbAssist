@@ -128,11 +128,11 @@ public class ConditionsBuilder extends BaseBuilder<ConditionsBuilder> {
     }
 
     public static HierarchyCondition and(HierarchyCondition hcLeft, HierarchyCondition hcRight) {
-        return new ParentCondition(hcLeft, hcRight, ParentCondition.LogicalOperator.AND);
+        return new LogicalCondition.AndCondition(hcLeft, hcRight);
     }
 
     public static HierarchyCondition or(HierarchyCondition hcLeft, HierarchyCondition hcRight) {
-        return new ParentCondition(hcLeft, hcRight, ParentCondition.LogicalOperator.OR);
+        return new LogicalCondition.OrCondition(hcLeft, hcRight);
     }
 
     public static HierarchyCondition and(List<HierarchyCondition> conditions) {

@@ -5,7 +5,7 @@ import javax.persistence.criteria.From;
 import javax.persistence.criteria.Predicate;
 
 /**
- * The class implements composite design patterns and is intended to
+ * The class implements composite design pattern and is intended to
  * store the hierarchy of logical and/or operations on the single conditions (leafs)
  */
 public abstract class HierarchyCondition {

@@ -1,6 +1,9 @@
 package com.montrosesoftware.repositories;
 
-public abstract class BaseJoinPair {
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.From;
+
+public abstract class BaseJoinPair<T> {
     protected ConditionsBuilder joinBuilder;
     protected String attributeName;
 
@@ -16,4 +19,7 @@ public abstract class BaseJoinPair {
     public String getAttributeName() {
         return attributeName;
     }
+
+    public abstract T apply(CriteriaBuilder criteriaBuilder, ConditionsBuilder rootBuilder, From<?, ?> root);
 }
+
