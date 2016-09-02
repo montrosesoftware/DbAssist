@@ -1,6 +1,5 @@
 package com.montrosesoftware;
 
-import javax.persistence.Column;
 import java.sql.Timestamp;
 import java.util.Date;
 
