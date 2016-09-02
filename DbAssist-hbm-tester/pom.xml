@@ -42,11 +42,6 @@
                     <projectNames>
                         <param>DbAssist-hbm-3.3.2.GA</param>
                         <param>DbAssist-hbm-3.6.10</param>
-                        <param>DbAssist-hbm-4.2.21</param>
-                        <param>DbAssist-hbm-4.3.11</param>
-                        <param>DbAssist-hbm-5.0.10</param>
-                        <param>DbAssist-hbm-5.1.1</param>
-                        <param>DbAssist-hbm-5.2.2</param>
                     </projectNames>
                 </configuration>
             </plugin>
@@ -58,7 +53,7 @@
         <dependency>
             <groupId>com.montrosesoftware</groupId>
             <artifactId>${montrosesoftware.version}</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <version>RELEASE</version>
         </dependency>
 
         <dependency>

@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.montrosesoftware</groupId>
-    <artifactId>DbAssist-jpa-4.3.11</artifactId>
+    <artifactId>DbAssist-4.3.11</artifactId>
     <version>1.0-RELEASE</version>
 
     <build>

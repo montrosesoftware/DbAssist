@@ -13,18 +13,13 @@ def callCleanInstall(path){
 //Montrose Software's HBM libs
 callCleanInstall("DbAssist-hbm-3.3.2.GA")
 callCleanInstall("DbAssist-hbm-3.6.10")
-callCleanInstall("DbAssist-hbm-4.2.21")
-callCleanInstall("DbAssist-hbm-4.3.11")
-callCleanInstall("DbAssist-hbm-5.0.10")
-callCleanInstall("DbAssist-hbm-5.1.1")
-callCleanInstall("DbAssist-hbm-5.2.2")
 
-//Montrose Software's JPA libs
-callCleanInstall("DbAssist-jpa-4.2.21")
-callCleanInstall("DbAssist-jpa-4.3.11")
-callCleanInstall("DbAssist-jpa-5.0.10")
-callCleanInstall("DbAssist-jpa-5.1.1")
-callCleanInstall("DbAssist-jpa-5.2.2")
+//Montrose Software's JPA & HBM libs
+callCleanInstall("DbAssist-4.2.21")
+callCleanInstall("DbAssist-4.3.11")
+callCleanInstall("DbAssist-5.0.10")
+callCleanInstall("DbAssist-5.1.1")
+callCleanInstall("DbAssist-5.2.2")
 
 //Montrose Software's JPA query building libs
 callCleanInstall("DbAssist-jpa-commons")
