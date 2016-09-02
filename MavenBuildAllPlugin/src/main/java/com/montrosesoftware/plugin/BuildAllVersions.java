@@ -20,13 +20,16 @@ public class BuildAllVersions extends AbstractMojo {
     @Parameter(property = "buildAll.projectNames")
     private List<String> projectNames;
 
+    @Parameter(property = "buildAll.directory")
+    private String directory;
+
     public void execute() throws MojoExecutionException {
         if (projectNames == null || projectNames.isEmpty()) {
             return;
         }
 
         InvocationRequest request = new DefaultInvocationRequest();
-        request.setPomFile(new File("pom.xml"));
+        request.setPomFile(new File(directory + "/pom.xml"));
         request.setGoals(Arrays.asList("clean", "test"));
 
         for (String name : projectNames) {
