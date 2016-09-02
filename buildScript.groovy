@@ -29,5 +29,6 @@ callCleanInstall("DbAssist-test-commons")
 callCleanInstall("MavenTestAll")
 callCleanInstall("DbAssist-jpa-commons")
 
+//Run tests against all of the fix libs
 callMaven("DbAssist-jpa-tester", "MavenTestAll:testAll")
 callMaven("DbAssist-hbm-tester", "MavenTestAll:testAll")

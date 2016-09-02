@@ -11,7 +11,7 @@
     <properties>
         <!--This property will be overwritten by MavenTestAll plugin-->
         <!--The property is used as a placeholder for debugging the particular version-->
-        <!--The value below does not impact the main testing module-->
+        <!--The value below does not impact the main testing com.montrosesoftware.MavenTestAll plugin-->
         <montrosesoftware.version>DbAssist-hbm-3.3.2</montrosesoftware.version>
     </properties>
 
