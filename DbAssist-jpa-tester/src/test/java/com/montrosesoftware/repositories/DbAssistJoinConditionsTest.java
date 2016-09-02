@@ -6,7 +6,6 @@ import com.montrosesoftware.entities.Provider;
 import com.montrosesoftware.entities.User;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.xml.DocumentDefaultsDefinition;
 
 import javax.persistence.EntityManager;
 import javax.persistence.Tuple;
@@ -24,12 +23,11 @@ import static org.junit.Assert.*;
 
 public class DbAssistJoinConditionsTest extends BaseTest {
 
+    private static final double Delta = 1e-15;
     @Autowired
     private UserRepo uRepo;
-
     @Autowired
     private CertificateRepo cRepo;
-
     @Autowired
     private ProviderRepo pRepo;
 
@@ -387,8 +385,6 @@ public class DbAssistJoinConditionsTest extends BaseTest {
         assertEquals(namesRead.get(1), "Java Cert");
         assertEquals(namesRead.get(2), "BHP");
     }
-
-    private static final double Delta = 1e-15;
 
     @Test
     public void findAttributesWithGroupByAndJoinedEntities() {
