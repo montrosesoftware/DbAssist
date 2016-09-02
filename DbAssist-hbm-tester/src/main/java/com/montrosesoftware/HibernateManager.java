@@ -47,13 +47,6 @@ public class HibernateManager implements AutoCloseable {
         query.executeUpdate();
     }
 
-//    public void commit(){
-//        if(transaction != null && transaction.isActive()){
-//            transaction.commit();
-//        }
-//    }
-
-    //TODO rethink
     public void rollbackTransaction(){
         if(transaction != null){
             transaction.rollback();

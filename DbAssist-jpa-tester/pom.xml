@@ -5,12 +5,14 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.montrosesoftware</groupId>
-    <artifactId>DbAssist-jpa-testcases</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <artifactId>DbAssist-jpa-tester</artifactId>
+    <version>1.0-RELEASE</version>
 
     <properties>
-        <!--This property will be overwritten by MavenBuildAll plugin-->
-        <montrosesoftware.version>empty</montrosesoftware.version>
+        <!--This property will be overwritten by MavenTestAll plugin-->
+        <!--The property is used as a placeholder for debugging the particular version-->
+        <!--The value below does not impact the main testing module-->
+        <montrosesoftware.version>DbAssist-5.2.2</montrosesoftware.version>
     </properties>
 
     <dependencyManagement>
@@ -39,13 +41,13 @@
 
             <plugin>
                 <groupId>com.montrosesoftware</groupId>
-                <artifactId>MavenBuildAllPlugin</artifactId>
-                <version>1.0-SNAPSHOT</version>
+                <artifactId>MavenTestAll</artifactId>
+                <version>1.0-RELEASE</version>
                 <executions>
                     <execution>
                         <phase>install</phase>
                         <goals>
-                            <goal>buildAll</goal>
+                            <goal>testAll</goal>
                         </goals>
                     </execution>
                 </executions>
@@ -68,7 +70,7 @@
         <dependency>
             <groupId>com.montrosesoftware</groupId>
             <artifactId>DbAssist-jpa-commons</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <version>1.0-RELEASE</version>
         </dependency>
 
         <dependency>
@@ -79,8 +81,8 @@
 
         <dependency>
             <groupId>com.montrosesoftware</groupId>
-            <artifactId>DbAssist-commons</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <artifactId>DbAssist-test-commons</artifactId>
+            <version>1.0-RELEASE</version>
         </dependency>
 
         <dependency>

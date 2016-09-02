@@ -6,11 +6,13 @@
 
     <groupId>com.montrosesoftware</groupId>
     <artifactId>DbAssist-hbm-tester</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0-RELEASE</version>
 
     <properties>
-        <!--This property will be overwritten by MavenBuildAll plugin-->
-        <montrosesoftware.version>empty</montrosesoftware.version>
+        <!--This property will be overwritten by MavenTestAll plugin-->
+        <!--The property is used as a placeholder for debugging the particular version-->
+        <!--The value below does not impact the main testing module-->
+        <montrosesoftware.version>DbAssist-hbm-3.3.2</montrosesoftware.version>
     </properties>
 
     <build>
@@ -27,21 +29,26 @@
 
             <plugin>
                 <groupId>com.montrosesoftware</groupId>
-                <artifactId>MavenBuildAllPlugin</artifactId>
-                <version>1.0-SNAPSHOT</version>
+                <artifactId>MavenTestAll</artifactId>
+                <version>1.0-RELEASE</version>
                 <executions>
                     <execution>
                         <phase>install</phase>
                         <goals>
-                            <goal>buildAll</goal>
+                            <goal>testAll</goal>
                         </goals>
                     </execution>
                 </executions>
                 <configuration>
                     <directory>${project.basedir}</directory>
                     <projectNames>
-                        <param>DbAssist-hbm-3.3.2.GA</param>
+                        <param>DbAssist-hbm-3.3.2</param>
                         <param>DbAssist-hbm-3.6.10</param>
+                        <param>DbAssist-4.2.21</param>
+                        <param>DbAssist-4.3.11</param>
+                        <param>DbAssist-5.0.10</param>
+                        <param>DbAssist-5.1.1</param>
+                        <param>DbAssist-5.2.2</param>
                     </projectNames>
                 </configuration>
             </plugin>
@@ -64,8 +71,8 @@
 
         <dependency>
             <groupId>com.montrosesoftware</groupId>
-            <artifactId>DbAssist-commons</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <artifactId>DbAssist-test-commons</artifactId>
+            <version>1.0-RELEASE</version>
         </dependency>
 
     </dependencies>

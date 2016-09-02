@@ -16,7 +16,7 @@ Installation can be done by changing the .jar name to sqljdbc4-4.0.jar and copyi
 <dependency>
     <groupId>com.montrosesoftware</groupId>
     <artifactId>DbAssist-jpa</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0-RELEASE</version>
 </dependency>
 ```
 
@@ -25,7 +25,7 @@ Installation can be done by changing the .jar name to sqljdbc4-4.0.jar and copyi
 <dependency>
     <groupId>com.montrosesoftware</groupId>
     <artifactId>DbAssist-hbm</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0-RELEASE</version>
 </dependency>
 ```
 

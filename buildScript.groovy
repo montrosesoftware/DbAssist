@@ -11,7 +11,7 @@ def callCleanInstall(path){
 }
 
 //Montrose Software's HBM libs
-callCleanInstall("DbAssist-hbm-3.3.2.GA")
+callCleanInstall("DbAssist-hbm-3.3.2")
 callCleanInstall("DbAssist-hbm-3.6.10")
 
 //Montrose Software's JPA & HBM libs
@@ -25,12 +25,9 @@ callCleanInstall("DbAssist-5.2.2")
 callCleanInstall("DbAssist-jpa-commons")
 
 //Montrose Software's testing framework
-callCleanInstall("DbAssist-Commons")
-callCleanInstall("MavenBuildAllPlugin")
+callCleanInstall("DbAssist-test-commons")
+callCleanInstall("MavenTestAll")
 callCleanInstall("DbAssist-jpa-commons")
 
-callMaven("DbAssist-jpa-testcases", "MavenBuildAllPlugin:buildAll")
-callMaven("DbAssist-hbm-tester", "MavenBuildAllPlugin:buildAll")
-
-
-
+callMaven("DbAssist-jpa-tester", "MavenTestAll:testAll")
+callMaven("DbAssist-hbm-tester", "MavenTestAll:testAll")
