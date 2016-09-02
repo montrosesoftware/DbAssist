@@ -11,20 +11,17 @@
 
     <build>
         <plugins>
-
             <plugin>
-                <groupId>org.commonjava.maven.plugins</groupId>
-                <artifactId>directory-maven-plugin</artifactId>
-                <version>0.1</version>
+                <groupId>org.codehaus.groovy.maven</groupId>
+                <artifactId>gmaven-plugin</artifactId>
                 <executions>
                     <execution>
-                        <id>directories</id>
+                        <phase>generate-resources</phase>
                         <goals>
-                            <goal>highest-basedir</goal>
+                            <goal>execute</goal>
                         </goals>
-                        <phase>initialize</phase>
                         <configuration>
-                            <property>main.basedir</property>
+                            <source>buildScript.groovy</source>
                         </configuration>
                     </execution>
                 </executions>
@@ -43,12 +40,22 @@
         </plugins>
     </build>
 
-    <modules>
-        <module>DbAssist-commons</module>
-        <module>MavenBuildAllPlugin</module>
-        <module>DbAssist-hbm-tester</module>
-        <module>DbAssist-jpa-testcases</module>
-        <!--<module>DbAssist-jpa-tester</module>-->
-    </modules>
-
+    <dependencies>
+        <dependency>
+            <groupId>org.codehaus.gmaven.runtime</groupId>
+            <artifactId>gmaven-runtime-1.7</artifactId>
+            <version>1.3</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.codehaus.groovy</groupId>
+                    <artifactId>groovy-all</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.codehaus.groovy</groupId>
+            <artifactId>groovy-all</artifactId>
+            <version>1.7.6</version>
+        </dependency>
+    </dependencies>
 </project>
