@@ -8,7 +8,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.persistence.Tuple;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -96,7 +95,7 @@ public class DbAssistOrderByGroupByTest extends BaseTest {
     }
 
     @Test
-    public void groupByMultipleColumns(){
+    public void groupByMultipleColumns() {
         saveUsersData(uRepo, new ArrayList<User>() {{
             add(new User(1, "Mont", ExampleDate, 14.5, "worker"));
             add(new User(2, "Mont", ExampleDate, 10.1, "worker"));

@@ -5,13 +5,12 @@ Project also introduces `ConditionsBuilder` class which enables the user to easi
 
 ## Installation
 
-* Install Microsoft JDBC Driver 4.0 from link `https://www.microsoft.com/en-us/download/details.aspx?id=11774`
+### Add dependency
 
-Installation can be done by changing the .jar name to `sqljdbc4-4.0.jar` and copying that file into Maven local repository `\.m2\repository\com\microsoft\sqlserver\sqljdbc4\4.0\`
+In order to fix the issue with date shift, you need to determine first if you want to use JPA annotations or .hbm files. Depending on your choice, use one of the following:
 
-* Install the fix by adding the following dependency into your project's .pom file (for correct versions look up the table in the Compatibility section)
+#### For JPA Annotations:
 
-### For JPA Annotations:
 ```xml
 <dependency>
     <groupId>com.montrosesoftware</groupId>
@@ -20,7 +19,8 @@ Installation can be done by changing the .jar name to `sqljdbc4-4.0.jar` and cop
 </dependency>
 ```
 
-### For HBM files:
+#### For HBM files:
+
 ```xml
 <dependency>
     <groupId>com.montrosesoftware</groupId>
@@ -28,22 +28,20 @@ Installation can be done by changing the .jar name to `sqljdbc4-4.0.jar` and cop
     <version>1.0-RELEASE</version>
 </dependency>
 ```
-
 ## Compatibility
 
 ### Hibernate
+The list of supported Hibernate versions and their fix counterparts is in the table below:
 
-The table shows what version of fix to use depending on the Hibernate version we use and the entity mapping method (.hbm files or JPA annotations):
-
-| Hibernate version   | HBM                  | JPA    |
-| :------------------ |:--------------------:| :-----:|
-| `3.3.2.GA`          | `DbAssist-hbm-3.3.2` | N/A |
-| `3.6.10.Final`      | `DbAssist-hbm-3.6.10`| N/A |
-| `4.2.21.Final`      | `DbAssist-4.2.21`    | `DbAssist-4.2.21`|
-| `4.3.11.Final`      | `DbAssist-4.3.11`    | `DbAssist-4.3.11`|
-| `5.0.10.Final`      | `DbAssist-5.0.10`    | `DbAssist-5.0.10`|
-| `5.1.1.Final`       | `DbAssist-5.1.1`     | `DbAssist-5.1.1` |
-| `5.2.2.Final`       | `DbAssist-5.2.2`     | `DbAssist-5.2.2` |
+| Hibernate version | HBM                  | JPA    |
+| :---------------- |:--------------------:| :-----:|
+| 3.3.2.GA          | `DbAssist-hbm-3.3.2` | N/A |
+| 3.6.10.Final      | `DbAssist-hbm-3.6.10`| N/A |
+| 4.2.21.Final      | `DbAssist-4.2.21`    | `DbAssist-4.2.21`|
+| 4.3.11.Final      | `DbAssist-4.3.11`    | `DbAssist-4.3.11`|
+| 5.0.10.Final      | `DbAssist-5.0.10`    | `DbAssist-5.0.10`|
+| 5.1.1.Final       | `DbAssist-5.1.1`     | `DbAssist-5.1.1` |
+| 5.2.2.Final       | `DbAssist-5.2.2`     | `DbAssist-5.2.2` |
 
 ### JDBC SQL Driver
 * `4.0`
@@ -54,7 +52,7 @@ The table shows what version of fix to use depending on the Hibernate version we
 * `1.2.2.RELEASE`
 * `1.4.0.RELEASE`
 
-## Usage
+## Usage of `DbAssist-jpa-commons` library
 
 ```java
 ConditionsBuilder cb = new ConditionsBuilder();
@@ -94,16 +92,11 @@ More examples and the tutorial for DbAssist library is available on the wiki pag
 
 ## License
 
-Copyright 2016 Montrose Software
+The MIT License (MIT)
+Copyright (c) 2016 Montrose Software
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
-`http://www.apache.org/licenses/LICENSE-2.0`
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
