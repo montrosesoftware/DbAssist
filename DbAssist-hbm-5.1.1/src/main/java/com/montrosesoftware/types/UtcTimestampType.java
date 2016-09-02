@@ -1,4 +1,4 @@
-package com.montrosesoftware.hbm;
+package com.montrosesoftware.types;
 
 import org.hibernate.HibernateException;
 import org.hibernate.dialect.Dialect;

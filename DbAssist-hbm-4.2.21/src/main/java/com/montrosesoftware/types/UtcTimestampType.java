@@ -1,8 +1,8 @@
-package com.montrosesoftware.hbm;
+package com.montrosesoftware.types;
 
 import org.hibernate.HibernateException;
 import org.hibernate.dialect.Dialect;
-import org.hibernate.engine.SessionImplementor;
+import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.type.AbstractSingleColumnStandardBasicType;
 import org.hibernate.type.LiteralType;
 import org.hibernate.type.TimestampType;
@@ -26,6 +26,40 @@ import java.util.Date;
 import java.util.TimeZone;
 
 public class UtcTimestampType extends AbstractSingleColumnStandardBasicType<Date> implements VersionType<Date>, LiteralType<Date> {
+
+    private static final long serialVersionUID = 1L;
+
+    public static class UtcTimestampTypeDescriptor extends TimestampTypeDescriptor {
+
+        private static final long serialVersionUID = 1L;
+
+        public static final UtcTimestampTypeDescriptor INSTANCE = new UtcTimestampTypeDescriptor();
+
+        private static final TimeZone UTC = TimeZone.getTimeZone("UTC");
+
+        @Override
+        public <X> ValueBinder<X> getBinder(final JavaTypeDescriptor<X> javaTypeDescriptor) {
+            return new BasicBinder<X>(javaTypeDescriptor, this) {
+
+                @Override
+                protected void doBind(PreparedStatement st, X value, int index, WrapperOptions options) throws SQLException {
+                    st.setTimestamp(index, javaTypeDescriptor.unwrap(value, Timestamp.class, options), Calendar.getInstance(UTC));
+                }
+            };
+        }
+
+        @Override
+        public <X> ValueExtractor<X> getExtractor(final JavaTypeDescriptor<X> javaTypeDescriptor) {
+            return new BasicExtractor<X>(javaTypeDescriptor, this) {
+
+                @Override
+                protected X doExtract(ResultSet rs, String name, WrapperOptions options) throws SQLException {
+                    return javaTypeDescriptor.wrap(rs.getTimestamp(name, Calendar.getInstance(UTC)), options);
+                }
+
+            };
+        }
+    }
 
     public UtcTimestampType() {
         super(UtcTimestampTypeDescriptor.INSTANCE, JdbcTimestampTypeDescriptor.INSTANCE);
@@ -64,35 +98,5 @@ public class UtcTimestampType extends AbstractSingleColumnStandardBasicType<Date
     @Override
     public Date fromStringValue(String xml) throws HibernateException {
         return TimestampType.INSTANCE.fromStringValue(xml);
-    }
-
-    public static class UtcTimestampTypeDescriptor extends TimestampTypeDescriptor {
-
-        public static final UtcTimestampTypeDescriptor INSTANCE = new UtcTimestampTypeDescriptor();
-        private static final long serialVersionUID = 1L;
-        private static final TimeZone UTC = TimeZone.getTimeZone("UTC");
-
-        @Override
-        public <X> ValueBinder<X> getBinder(final JavaTypeDescriptor<X> javaTypeDescriptor) {
-            return new BasicBinder<X>(javaTypeDescriptor, this) {
-
-                @Override
-                protected void doBind(PreparedStatement st, X value, int index, WrapperOptions options) throws SQLException {
-                    st.setTimestamp(index, javaTypeDescriptor.unwrap(value, Timestamp.class, options), Calendar.getInstance(UTC));
-                }
-            };
-        }
-
-        @Override
-        public <X> ValueExtractor<X> getExtractor(final JavaTypeDescriptor<X> javaTypeDescriptor) {
-            return new BasicExtractor<X>(javaTypeDescriptor, this) {
-
-                @Override
-                protected X doExtract(ResultSet rs, String name, WrapperOptions options) throws SQLException {
-                    return javaTypeDescriptor.wrap(rs.getTimestamp(name, Calendar.getInstance(UTC)), options);
-                }
-
-            };
-        }
     }
 }

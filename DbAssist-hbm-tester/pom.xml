@@ -31,8 +31,8 @@
 
         <dependency>
             <groupId>com.montrosesoftware</groupId>
-            <artifactId>DbAssist-hbm-4.2.21</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <artifactId>DbAssist-hbm-3.6.10</artifactId>
+            <version>1.0-RELEASE</version>
         </dependency>
 
         <dependency>

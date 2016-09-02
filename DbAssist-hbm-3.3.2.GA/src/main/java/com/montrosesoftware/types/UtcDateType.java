@@ -1,4 +1,4 @@
-package com.montrosesoftware.hbm;
+package com.montrosesoftware.types;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -10,7 +10,7 @@ import java.util.TimeZone;
 
 import org.hibernate.type.TimestampType;
 
-public class UtcTimestampType extends TimestampType {
+public class UtcDateType extends TimestampType {
 
     private static final long serialVersionUID = 8077663283676934687L;
     private static final TimeZone UTC = TimeZone.getTimeZone("UTC");

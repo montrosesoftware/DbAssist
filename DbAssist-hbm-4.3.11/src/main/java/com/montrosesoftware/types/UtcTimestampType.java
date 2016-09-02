@@ -1,4 +1,4 @@
-package com.montrosesoftware.hbm;
+package com.montrosesoftware.types;
 
 import org.hibernate.HibernateException;
 import org.hibernate.dialect.Dialect;
@@ -16,10 +16,7 @@ import org.hibernate.type.descriptor.sql.BasicBinder;
 import org.hibernate.type.descriptor.sql.BasicExtractor;
 import org.hibernate.type.descriptor.sql.TimestampTypeDescriptor;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Timestamp;
+import java.sql.*;
 import java.util.Calendar;
 import java.util.Comparator;
 import java.util.Date;
@@ -53,8 +50,18 @@ public class UtcTimestampType extends AbstractSingleColumnStandardBasicType<Date
             return new BasicExtractor<X>(javaTypeDescriptor, this) {
 
                 @Override
+                protected X doExtract(CallableStatement statement, String name, WrapperOptions options) throws SQLException {
+                    return javaTypeDescriptor.wrap(statement.getTimestamp(name, Calendar.getInstance(UTC)), options);
+                }
+
+                @Override
                 protected X doExtract(ResultSet rs, String name, WrapperOptions options) throws SQLException {
                     return javaTypeDescriptor.wrap(rs.getTimestamp(name, Calendar.getInstance(UTC)), options);
+                }
+
+                @Override
+                protected X doExtract(CallableStatement statement, int index, WrapperOptions options) throws SQLException {
+                    return javaTypeDescriptor.wrap(statement.getTimestamp(index, Calendar.getInstance(UTC)), options);
                 }
 
             };
@@ -100,3 +107,4 @@ public class UtcTimestampType extends AbstractSingleColumnStandardBasicType<Date
         return TimestampType.INSTANCE.fromStringValue(xml);
     }
 }
+
