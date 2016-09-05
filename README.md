@@ -1,15 +1,13 @@
 # DbAssist
 
-DbAssist provides the fix for the unexpected date time shift, occuring in case of JVM and DB set up in different time zones.
-Project also introduces `ConditionsBuilder` class which enables the user to easily create complex logical combinations of conditions in the SQL query.
+DbAssist provides the fix for the unexpected date time shift, occuring in case of JVM and DB set up in a time zone other than UTC0.
+The project also introduces `ConditionsBuilder` class which enables the user to easily create complex logical combinations of conditions in the SQL query.
 
-## Installation
+## Installation of the fix
 
-### Add dependency
+### Add the dependency
 
-In order to fix the issue with date shift, you need to determine first if you want to use JPA annotations or .hbm files. Depending on your choice, use one of the following:
-
-#### For JPA Annotations:
+In order to fix the issue with date shift, you need to determine first if you want to use JPA annotations or .hbm files to map your entities. Depending on your choice, add the following dependency to your project's pom file and pick the correct version from the table in Compatibility section.
 
 ```xml
 <dependency>
@@ -19,15 +17,37 @@ In order to fix the issue with date shift, you need to determine first if you wa
 </dependency>
 ```
 
-#### For HBM files:
+### Apply the fix
 
+The fix is slightly different for both entity mapping methods:
+
+#### For HBM case:
+
+You do **not** modify the `java.util.Date` type of dates fields in your entity class. However, you need to change the way how they are mapped in the `.hbm` file of your entities. You can do it by using our custom type, `UtcDateType`:
+
+`ExampleEntity.hbm.xml`
 ```xml
-<dependency>
-    <groupId>com.montrosesoftware</groupId>
-    <artifactId>DbAssist-hbm-3.6.10</artifactId>
-    <version>1.0-RELEASE</version>
-</dependency>
+<property name="createdAt" type="com.montrosesoftware.types.UtcDateType" column="created_at"/>
 ```
+
+`ExampleEntity.java` (not modified)
+```java
+public class ExampleEntity {
+
+    private int id;
+    private String name;
+    private Date createdAt;
+   
+    //setters and getters
+}
+```
+
+#### For JPA case:
+
+In case of JPA Annotations, the fix works instantly after adding the correct fix dependency.
+
+The exception is when we are using Hibernate's `Specification` class to specify `WHERE` conditions. In order to fix it we have two options, which are described in details on the [wiki page](https://github.com/montrosesoftware/DbAssist/wiki)
+
 ## Compatibility
 
 ### Hibernate
@@ -80,7 +100,7 @@ Result:
 WHERE (c1 AND c2) OR c3 OR (c4 AND c5)
 ```
 
-More examples and the tutorial for DbAssist library is available on the wiki page.
+More examples and the tutorial for DbAssist library is available on the [wiki page](https://github.com/montrosesoftware/DbAssist/wiki)
 
 ## Contributing
 
