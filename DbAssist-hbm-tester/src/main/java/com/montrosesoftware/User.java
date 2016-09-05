@@ -7,18 +7,18 @@ public class User {
 
     private int id;
     private String name;
-    private Date createdAt;
-    private Timestamp updatedAt;
-    private Date lastLoggedAt;
+    private Date createdAtUtc;
+    private Timestamp updatedAtUtc;
+    private Date lastLoggedAtUtc;
 
     public User(){}
 
-    public User(int id, String name, Date createdAt, Timestamp updatedAt, Date lastLoggedAt) {
+    public User(int id, String name, Date createdAtUtc, Timestamp updatedAtUtc, Date lastLoggedAtUtc) {
         this.id = id;
         this.name = name;
-        this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
-        this.lastLoggedAt = lastLoggedAt;
+        this.createdAtUtc = createdAtUtc;
+        this.updatedAtUtc = updatedAtUtc;
+        this.lastLoggedAtUtc = lastLoggedAtUtc;
     }
 
     public int getId() {
@@ -37,27 +37,27 @@ public class User {
         this.name = name;
     }
 
-    public Date getCreatedAt() {
-        return createdAt;
+    public Date getCreatedAtUtc() {
+        return createdAtUtc;
     }
 
-    public void setCreatedAt(Date createdAt) {
-        this.createdAt = createdAt;
+    public void setCreatedAtUtc(Date createdAtUtc) {
+        this.createdAtUtc = createdAtUtc;
     }
 
-    public Timestamp getUpdatedAt() {
-        return updatedAt;
+    public Timestamp getUpdatedAtUtc() {
+        return updatedAtUtc;
     }
 
-    public void setUpdatedAt(Timestamp updatedAt) {
-        this.updatedAt = updatedAt;
+    public void setUpdatedAtUtc(Timestamp updatedAtUtc) {
+        this.updatedAtUtc = updatedAtUtc;
     }
 
-    public Date getLastLoggedAt() {
-        return lastLoggedAt;
+    public Date getLastLoggedAtUtc() {
+        return lastLoggedAtUtc;
     }
 
-    public void setLastLoggedAt(Date lastLoggedAt) {
-        this.lastLoggedAt = lastLoggedAt;
+    public void setLastLoggedAtUtc(Date lastLoggedAtUtc) {
+        this.lastLoggedAtUtc = lastLoggedAtUtc;
     }
 }

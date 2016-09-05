@@ -17,14 +17,14 @@ public class User {
     @Column(name = "name")
     private String name;
 
-    @Column(name = "created_at")
-    private Date createdAt;
+    @Column(name = "created_at_utc")
+    private Date createdAtUtc;
 
-    @Column(name = "updated_at")
-    private Timestamp updatedAt;
+    @Column(name = "updated_at_utc")
+    private Timestamp updatedAtUtc;
 
-    @Column(name = "last_logged_at")
-    private Date lastLoggedAt;
+    @Column(name = "last_logged_at_utc")
+    private Date lastLoggedAtUtc;
 
     @Column(name = "salary")
     private Double salary;
@@ -46,26 +46,26 @@ public class User {
 
     public User(){}
 
-    public User(int id, String name, Date createdAt){
+    public User(int id, String name, Date createdAtUtc){
         this.id = id;
         this.name = name;
-        this.createdAt = createdAt;
-        this.updatedAt = new Timestamp(createdAt.getTime());
-        this.lastLoggedAt = new Date(createdAt.getTime());
+        this.createdAtUtc = createdAtUtc;
+        this.updatedAtUtc = new Timestamp(createdAtUtc.getTime());
+        this.lastLoggedAtUtc = new Date(createdAtUtc.getTime());
     }
 
-    public User(int id, String name, Date createdAt, Timestamp updatedAt, Date lastLoggedAt) {
+    public User(int id, String name, Date createdAtUtc, Timestamp updatedAtUtc, Date lastLoggedAtUtc) {
         this.id = id;
         this.name = name;
-        this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
-        this.lastLoggedAt = lastLoggedAt;
+        this.createdAtUtc = createdAtUtc;
+        this.updatedAtUtc = updatedAtUtc;
+        this.lastLoggedAtUtc = lastLoggedAtUtc;
     }
 
-    public User(int id, String name, Date createdAt, Double salary, String category) {
+    public User(int id, String name, Date createdAtUtc, Double salary, String category) {
         this.id = id;
         this.name = name;
-        this.createdAt = createdAt;
+        this.createdAtUtc = createdAtUtc;
         this.salary = salary;
         this.category = category;
     }
@@ -86,28 +86,28 @@ public class User {
         this.name = name;
     }
 
-    public Date getCreatedAt() {
-        return createdAt;
+    public Date getCreatedAtUtc() {
+        return createdAtUtc;
     }
 
-    public void setCreatedAt(Date createdAt) {
-        this.createdAt = createdAt;
+    public void setCreatedAtUtc(Date createdAtUtc) {
+        this.createdAtUtc = createdAtUtc;
     }
 
-    public Timestamp getUpdatedAt() {
-        return updatedAt;
+    public Timestamp getUpdatedAtUtc() {
+        return updatedAtUtc;
     }
 
-    public void setUpdatedAt(Timestamp updatedAt) {
-        this.updatedAt = updatedAt;
+    public void setUpdatedAtUtc(Timestamp updatedAtUtc) {
+        this.updatedAtUtc = updatedAtUtc;
     }
 
-    public Date getLastLoggedAt() {
-        return lastLoggedAt;
+    public Date getLastLoggedAtUtc() {
+        return lastLoggedAtUtc;
     }
 
-    public void setLastLoggedAt(Date lastLoggedAt) {
-        this.lastLoggedAt = lastLoggedAt;
+    public void setLastLoggedAtUtc(Date lastLoggedAtUtc) {
+        this.lastLoggedAtUtc = lastLoggedAtUtc;
     }
 
     public Double getSalary() { return salary; }

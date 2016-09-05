@@ -41,9 +41,9 @@ public class DbAssistDateShiftTest extends BaseTest {
     private void assertTimeInDatesNotShifted(User userExpected, User userActual) {
         assertNotNull(userActual);
         assertEquals("Names are not the same", userExpected.getName(), userActual.getName());
-        assertEquals("Datetimes are not the same", userExpected.getCreatedAt(), userActual.getCreatedAt());
-        assertEquals("Timestamps are not the same", userExpected.getUpdatedAt(), userActual.getUpdatedAt());
-        assertEquals("Dates are not the same", userExpected.getLastLoggedAt(), userActual.getLastLoggedAt());
+        assertEquals("Datetimes are not the same", userExpected.getCreatedAtUtc(), userActual.getCreatedAtUtc());
+        assertEquals("Timestamps are not the same", userExpected.getUpdatedAtUtc(), userActual.getUpdatedAtUtc());
+        assertEquals("Dates are not the same", userExpected.getLastLoggedAtUtc(), userActual.getLastLoggedAtUtc());
     }
 
     @Test
@@ -66,7 +66,7 @@ public class DbAssistDateShiftTest extends BaseTest {
     public void dataInsertedByPlainSQLAndReadUsingSpecificationIsEqual() {
         User userExpected = getExampleUserData();
         uRepo.saveAsPlainSQL(userExpected);
-        User userActual = uRepo.getUsingSpecification(userExpected.getCreatedAt());
+        User userActual = uRepo.getUsingSpecification(userExpected.getCreatedAtUtc());
         assertTimeInDatesNotShifted(userExpected, userActual);
     }
 
@@ -74,7 +74,7 @@ public class DbAssistDateShiftTest extends BaseTest {
     public void dataInsertedByPlainSQLAndReadUsingDbAssistConditions() {
         User userExpected = getExampleUserData();
         uRepo.saveAsPlainSQL(userExpected);
-        User userActual = uRepo.getUsingConditionsBuilder(userExpected.getCreatedAt());
+        User userActual = uRepo.getUsingConditionsBuilder(userExpected.getCreatedAtUtc());
         assertTimeInDatesNotShifted(userExpected, userActual);
     }
 
@@ -131,7 +131,7 @@ public class DbAssistDateShiftTest extends BaseTest {
         Certificate certExpectedB = certsRead.stream().filter(c -> c.getId() == 2).findFirst().get();
 
         assertTimeInDatesNotShifted(userExpected, userActual);
-        assertEquals("Certificate A dates are not the same", certActualA.getExpirationDate(), certExpectedA.getExpirationDate());
-        assertEquals("Certificate A dates are not the same", certActualB.getExpirationDate(), certExpectedB.getExpirationDate());
+        assertEquals("Certificate A dates are not the same", certActualA.getExpirationDateUtc(), certExpectedA.getExpirationDateUtc());
+        assertEquals("Certificate A dates are not the same", certActualB.getExpirationDateUtc(), certExpectedB.getExpirationDateUtc());
     }
 }

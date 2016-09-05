@@ -25,7 +25,7 @@ public class HibernateManager implements AutoCloseable {
     }
 
     public List<Object[]> getDataByPlainSQL(){
-        SQLQuery query = session.createSQLQuery("SELECT name, created_at, updated_at, last_logged_at FROM hbm.users");
+        SQLQuery query = session.createSQLQuery("SELECT name, created_at_utc, updated_at_utc, last_logged_at_utc FROM hbm.users");
         List list = query.list();
         return list;
     }
@@ -36,12 +36,12 @@ public class HibernateManager implements AutoCloseable {
     }
 
     public void writeUserDataByPlainSQL(User user){
-        String sql = "INSERT INTO hbm.users (id, name, created_at, updated_at, last_logged_at) VALUES ("
+        String sql = "INSERT INTO hbm.users (id, name, created_at_utc, updated_at_utc, last_logged_at_utc) VALUES ("
                 + user.getId() +", '"
                 + user.getName() + "', '"
-                + DateUtils.getUtc(user.getCreatedAt()) + "', '"
-                + DateUtils.getUtc(user.getUpdatedAt()) + "', '"
-                + DateUtils.getUtc(user.getLastLoggedAt())
+                + DateUtils.getUtc(user.getCreatedAtUtc()) + "', '"
+                + DateUtils.getUtc(user.getUpdatedAtUtc()) + "', '"
+                + DateUtils.getUtc(user.getLastLoggedAtUtc())
                 + "')";
         Query query = session.createSQLQuery(sql);
         query.executeUpdate();

@@ -27,7 +27,7 @@ You do **not** modify the `java.util.Date` type of dates fields in your entity c
 
 `ExampleEntity.hbm.xml`
 ```xml
-<property name="createdAt" type="com.montrosesoftware.types.UtcDateType" column="created_at"/>
+<property name="createdAtUtc" type="com.montrosesoftware.types.UtcDateType" column="created_at_utc"/>
 ```
 
 `ExampleEntity.java` (not modified)
@@ -36,7 +36,7 @@ public class ExampleEntity {
 
     private int id;
     private String name;
-    private Date createdAt;
+    private Date createdAtUtc;
    
     //setters and getters
 }

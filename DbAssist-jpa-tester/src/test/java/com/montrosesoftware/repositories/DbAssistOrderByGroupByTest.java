@@ -37,7 +37,7 @@ public class DbAssistOrderByGroupByTest extends BaseTest {
         OrderBy orderBy = new OrderBy();
         orderBy
                 .asc(cb, "name")
-                .desc(cb, "createdAt");
+                .desc(cb, "createdAtUtc");
 
         List<User> results = uRepo.find(cb, orderBy);
 
@@ -143,7 +143,7 @@ public class DbAssistOrderByGroupByTest extends BaseTest {
         }});
 
         ConditionsBuilder cb = new ConditionsBuilder();
-        HierarchyCondition hc = cb.equal("createdAt", date);
+        HierarchyCondition hc = cb.equal("createdAtUtc", date);
         cb.apply(hc);
 
         //sort

@@ -26,9 +26,9 @@
             <column name="name" type="varchar(100)">
                 <constraints nullable="false"/>
             </column>
-            <column name="created_at" type="datetime"/>
-            <column name="updated_at" type="timestamp"/>
-            <column name="last_logged_at" type="date"/>
+            <column name="created_at_utc" type="datetime"/>
+            <column name="updated_at_utc" type="timestamp"/>
+            <column name="last_logged_at_utc" type="date"/>
         </createTable>
     </changeSet>
 
@@ -40,7 +40,7 @@
             <column name="name" type="varchar(100)">
                 <constraints nullable="false"/>
             </column>
-            <column name="created_at" type="datetime"></column>
+            <column name="created_at_utc" type="datetime"></column>
         </createTable>
     </changeSet>
 
@@ -52,7 +52,7 @@
             <column name="name" type="varchar(100)">
                 <constraints nullable="false"/>
             </column>
-            <column name="expiration_date" type="datetime"></column>
+            <column name="expiration_date_utc" type="datetime"></column>
         </createTable>
     </changeSet>
 

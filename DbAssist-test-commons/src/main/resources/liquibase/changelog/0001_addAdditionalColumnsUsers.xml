@@ -8,13 +8,13 @@
 
     <changeSet id="ee9c49a9-44f5-4d0e-88d7-1db936821671" author="MontroseSoftware">
         <addColumn schemaName="jpa" tableName="users">
-            <column name="updated_at" type="timestamp"/>
+            <column name="updated_at_utc" type="timestamp"/>
         </addColumn>
     </changeSet>
 
     <changeSet id="6de3858c-15a2-4a59-9236-1941e66f08f5" author="MontroseSoftware">
         <addColumn schemaName="jpa" tableName="users">
-            <column name="last_logged_at" type="date"/>
+            <column name="last_logged_at_utc" type="date"/>
         </addColumn>
     </changeSet>
 

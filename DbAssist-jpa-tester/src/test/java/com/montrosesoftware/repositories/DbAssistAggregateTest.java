@@ -70,21 +70,21 @@ public class DbAssistAggregateTest extends BaseTest {
             add(new User(5, "Rose", dateAnother));
         }});
 
-        // SELECT SUM(id) FROM users WHERE created_at = date
+        // SELECT SUM(id) FROM users WHERE created_at_utc = date
         ConditionsBuilder cA = new ConditionsBuilder();
-        HierarchyCondition hcA = cA.equal("createdAt", date);
+        HierarchyCondition hcA = cA.equal("createdAtUtc", date);
         cA.apply(hcA);
         Integer sum = uRepo.sum(cA, "id");
         assertEquals(sum.intValue(), 20);
 
         ConditionsBuilder cB = new ConditionsBuilder();
-        HierarchyCondition hcB = cB.equal("createdAt", date);
+        HierarchyCondition hcB = cB.equal("createdAtUtc", date);
         cB.apply(hcB);
         Integer min = uRepo.min(cB, "id");
         assertEquals(min.intValue(), 7);
 
         ConditionsBuilder cC = new ConditionsBuilder();
-        HierarchyCondition hcC = cC.equal("createdAt", date);
+        HierarchyCondition hcC = cC.equal("createdAtUtc", date);
         cC.apply(hcC);
         Integer max = uRepo.max(cC, "id");
         assertEquals(max.intValue(), 13);
@@ -174,10 +174,10 @@ public class DbAssistAggregateTest extends BaseTest {
             add(new User(3, "CC", date3));
         }});
 
-        Date dateMinRead = uRepo.least(new ConditionsBuilder(), "createdAt");
+        Date dateMinRead = uRepo.least(new ConditionsBuilder(), "createdAtUtc");
         assertTrue(dateMinRead.compareTo(date2) == 0);
 
-        Date dateMaxRead = uRepo.greatest(new ConditionsBuilder(), "createdAt");
+        Date dateMaxRead = uRepo.greatest(new ConditionsBuilder(), "createdAtUtc");
         assertTrue(dateMaxRead.compareTo(date3) == 0);
 
         String nameMinRead = uRepo.least(new ConditionsBuilder(), "name");

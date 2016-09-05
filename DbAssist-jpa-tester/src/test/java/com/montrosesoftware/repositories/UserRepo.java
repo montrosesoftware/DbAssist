@@ -35,7 +35,7 @@ public class UserRepo extends AbstractRepository<User> {
     }
 
     public List getDataByPlainSQL() {
-        String sql = "SELECT name, created_at, updated_at, last_logged_at FROM jpa.users";
+        String sql = "SELECT name, created_at_utc, updated_at_utc, last_logged_at_utc FROM jpa.users";
         Query query = entityManager.createNativeQuery(sql);
         List users = query.getResultList();
         return users;
@@ -51,12 +51,12 @@ public class UserRepo extends AbstractRepository<User> {
     }
 
     public void saveAsPlainSQL(User user) {
-        String sql = "INSERT INTO jpa.users (id, name, created_at, updated_at, last_logged_at) VALUES ("
+        String sql = "INSERT INTO jpa.users (id, name, created_at_utc, updated_at_utc, last_logged_at_utc) VALUES ("
                 + user.getId() + ", '"
                 + user.getName() + "', '"
-                + DateUtils.getUtc(user.getCreatedAt()) + "', '"
-                + DateUtils.getUtc(user.getUpdatedAt()) + "', '"
-                + DateUtils.getUtc(user.getLastLoggedAt()) + "')";
+                + DateUtils.getUtc(user.getCreatedAtUtc()) + "', '"
+                + DateUtils.getUtc(user.getUpdatedAtUtc()) + "', '"
+                + DateUtils.getUtc(user.getLastLoggedAtUtc()) + "')";
         Query query = entityManager.createNativeQuery(sql);
         query.executeUpdate();
     }
@@ -81,7 +81,7 @@ public class UserRepo extends AbstractRepository<User> {
 
         String paramName = "pn";
         Specification<User> specs = (root, query, cb) ->
-                cb.equal(root.get("createdAt"), cb.parameter(Date.class, paramName));
+                cb.equal(root.get("createdAtUtc"), cb.parameter(Date.class, paramName));
 
         Predicate predicate = specs.toPredicate(userRoot, criteriaQuery, criteriaBuilder);
         criteriaQuery.where(predicate);
@@ -96,7 +96,7 @@ public class UserRepo extends AbstractRepository<User> {
     public User getUsingConditionsBuilder(Date utcDate) {
 
         ConditionsBuilder conditionsBuilder = new ConditionsBuilder();
-        HierarchyCondition hc = conditionsBuilder.equal("createdAt", utcDate);
+        HierarchyCondition hc = conditionsBuilder.equal("createdAtUtc", utcDate);
         conditionsBuilder.apply(hc);
         List<User> results = find(conditionsBuilder, null, null);
         return results.isEmpty() ? null : results.get(0);

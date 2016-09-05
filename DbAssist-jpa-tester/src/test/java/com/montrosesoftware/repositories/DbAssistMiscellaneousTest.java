@@ -52,17 +52,17 @@ public class DbAssistMiscellaneousTest extends BaseTest {
         uRepo.save(u2);
         uRepo.clearPersistenceContext();
 
-        //WHERE created_at IS NULL
+        //WHERE created_at_utc IS NULL
         ConditionsBuilder condDateNull = new ConditionsBuilder();
-        HierarchyCondition hcDateNull = condDateNull.isNull("createdAt");
+        HierarchyCondition hcDateNull = condDateNull.isNull("createdAtUtc");
         condDateNull.apply(hcDateNull);
         List<String> resultsDateNull = uRepo.findAttribute("name", condDateNull);
         assertEquals(1, resultsDateNull.size());
         assertEquals("Mont", resultsDateNull.get(0));
 
-        //WHERE created_at IS NOT NULL
+        //WHERE created_at_utc IS NOT NULL
         ConditionsBuilder condDateNotNull = new ConditionsBuilder();
-        HierarchyCondition hcDateNotNull = condDateNotNull.isNotNull("createdAt");
+        HierarchyCondition hcDateNotNull = condDateNotNull.isNotNull("createdAtUtc");
         condDateNotNull.apply(hcDateNotNull);
         List<String> resultsDateNotNull = uRepo.findAttribute("name", condDateNotNull);
         assertEquals(1, resultsDateNotNull.size());

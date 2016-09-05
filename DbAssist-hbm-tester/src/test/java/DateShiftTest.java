@@ -26,9 +26,9 @@ public class DateShiftTest {
     private void assertTimeInDatesNotShifted(User userExpected, User userActual) {
         assertNotNull(userActual);
         assertEquals("Names are not the same", userExpected.getName(), userActual.getName());
-        assertEquals("Datetimes are not the same", userExpected.getCreatedAt(), userActual.getCreatedAt());
-        assertEquals("Timestamps are not the same", userExpected.getUpdatedAt(), userActual.getUpdatedAt());
-        assertEquals("Dates are not the same", userExpected.getLastLoggedAt(), userActual.getLastLoggedAt());
+        assertEquals("Datetimes are not the same", userExpected.getCreatedAtUtc(), userActual.getCreatedAtUtc());
+        assertEquals("Timestamps are not the same", userExpected.getUpdatedAtUtc(), userActual.getUpdatedAtUtc());
+        assertEquals("Dates are not the same", userExpected.getLastLoggedAtUtc(), userActual.getLastLoggedAtUtc());
     }
 
     @Test

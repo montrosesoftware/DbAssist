@@ -10,9 +10,9 @@
         </id>
 
         <property name="name" type="string" length="100" column="name"/>
-        <property name="createdAt" type="com.montrosesoftware.types.UtcDateType" column="created_at"/>
-        <property name="updatedAt" type="com.montrosesoftware.types.UtcDateType" column="updated_at"/>
-        <property name="lastLoggedAt" type="com.montrosesoftware.types.UtcDateType" column="last_logged_at"/>
+        <property name="createdAtUtc" type="com.montrosesoftware.types.UtcDateType" column="created_at_utc"/>
+        <property name="updatedAtUtc" type="com.montrosesoftware.types.UtcDateType" column="updated_at_utc"/>
+        <property name="lastLoggedAtUtc" type="com.montrosesoftware.types.UtcDateType" column="last_logged_at_utc"/>
 
     </class>
 </hibernate-mapping>

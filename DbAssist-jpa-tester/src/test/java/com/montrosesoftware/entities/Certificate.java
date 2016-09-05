@@ -16,8 +16,8 @@ public class Certificate {
     @Column(name = "name")
     private String name;
 
-    @Column(name = "expiration_date")
-    private Date expirationDate;
+    @Column(name = "expiration_date_utc")
+    private Date expirationDateUtc;
 
     @ManyToMany(mappedBy="certificates")
     private Set<User> users = new HashSet<>();
@@ -31,10 +31,10 @@ public class Certificate {
 
     public Certificate () {}
 
-    public Certificate(int id, String name, Date expirationDate) {
+    public Certificate(int id, String name, Date expirationDateUtc) {
         this.id = id;
         this.name = name;
-        this.expirationDate = expirationDate;
+        this.expirationDateUtc = expirationDateUtc;
     }
 
     public int getId() {
@@ -53,12 +53,12 @@ public class Certificate {
         this.name = name;
     }
 
-    public Date getExpirationDate() {
-        return expirationDate;
+    public Date getExpirationDateUtc() {
+        return expirationDateUtc;
     }
 
-    public void setExpirationDate(Date expirationDate) {
-        this.expirationDate = expirationDate;
+    public void setExpirationDateUtc(Date expirationDateUtc) {
+        this.expirationDateUtc = expirationDateUtc;
     }
 
     public Set<User> getUsers() {
@@ -109,14 +109,14 @@ public class Certificate {
 
         if (id != that.id) return false;
         if (!name.equals(that.name)) return false;
-        return expirationDate != null ? expirationDate.equals(that.expirationDate) : that.expirationDate == null;
+        return expirationDateUtc != null ? expirationDateUtc.equals(that.expirationDateUtc) : that.expirationDateUtc == null;
     }
 
     @Override
     public int hashCode() {
         int result = id;
         result = 31 * result + name.hashCode();
-        result = 31 * result + (expirationDate != null ? expirationDate.hashCode() : 0);
+        result = 31 * result + (expirationDateUtc != null ? expirationDateUtc.hashCode() : 0);
         return result;
     }
 }

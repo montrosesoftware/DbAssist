@@ -36,18 +36,18 @@ public class DbAssistLogicalOperationsTest extends BaseTest {
         uRepo.save(userToInsert);
         uRepo.clearPersistenceContext();
 
-        // WHERE created_at > dateBefore AND created_at < dateAfter
+        // WHERE created_at_utc > dateBefore AND created_at < dateAfter
         ConditionsBuilder cA = new ConditionsBuilder();
-        HierarchyCondition hcA = and(cA.greaterThan("createdAt", dateBefore), cA.lessThan("createdAt", dateAfter));
+        HierarchyCondition hcA = and(cA.greaterThan("createdAtUtc", dateBefore), cA.lessThan("createdAtUtc", dateAfter));
         cA.apply(hcA);
         List<User> resultsA = uRepo.find(cA);
         assertEquals(1, resultsA.size());
 
-        // WHERE created_at > dateAfter AND created_at < dateBefore
+        // WHERE created_at_utc > dateAfter AND created_at_utc < dateBefore
         ConditionsBuilder cB = new ConditionsBuilder();
         HierarchyCondition hcB = and(
-                cB.greaterThan("createdAt", dateAfter),
-                cB.lessThan("createdAt", dateBefore)
+                cB.greaterThan("createdAtUtc", dateAfter),
+                cB.lessThan("createdAtUtc", dateBefore)
         );
         cB.apply(hcB);
         List<User> resultsB = uRepo.find(cB);
@@ -89,20 +89,20 @@ public class DbAssistLogicalOperationsTest extends BaseTest {
             add(new User(4, "User 4", date4));
         }});
 
-        // WHERE created_at >= ? AND created_at <= ?
+        // WHERE created_at_utc >= ? AND created_at_utc <= ?
         ConditionsBuilder conditionsA = new ConditionsBuilder();
-        HierarchyCondition hcA = conditionsA.inRangeCondition("createdAt", date2, addMinutes(date3, 1));
+        HierarchyCondition hcA = conditionsA.inRangeCondition("createdAtUtc", date2, addMinutes(date3, 1));
         conditionsA.apply(hcA);
         List<User> resultsA = uRepo.find(conditionsA);
         assertEquals(2, resultsA.size());
-        assertTrue(resultsA.get(0).getCreatedAt().compareTo(date2) == 0);
-        assertTrue(resultsA.get(1).getCreatedAt().compareTo(date3) == 0);
+        assertTrue(resultsA.get(0).getCreatedAtUtc().compareTo(date2) == 0);
+        assertTrue(resultsA.get(1).getCreatedAtUtc().compareTo(date3) == 0);
 
         //we cannot reuse the previous conditions (find(...) was already executed)
-        // WHERE (created_at >= ? AND created_at <= ?) AND (id >= ? AND id <= ?)
+        // WHERE (created_at_utc >= ? AND created_at_utc <= ?) AND (id >= ? AND id <= ?)
         ConditionsBuilder conditionsB = new ConditionsBuilder();
         HierarchyCondition hcB = and(
-                conditionsB.inRangeCondition("createdAt", date2, addMinutes(date3, 1)),
+                conditionsB.inRangeCondition("createdAtUtc", date2, addMinutes(date3, 1)),
                 conditionsB.inRangeCondition("id", 3, 4));
         conditionsB.apply(hcB);
         List<User> resultsB = uRepo.find(conditionsB);
@@ -111,7 +111,7 @@ public class DbAssistLogicalOperationsTest extends BaseTest {
 
         //incorrect boundaries
         ConditionsBuilder conditionsC = new ConditionsBuilder();
-        HierarchyCondition hcC = conditionsC.inRangeCondition("createdAt", date3, date2);
+        HierarchyCondition hcC = conditionsC.inRangeCondition("createdAtUtc", date3, date2);
         conditionsC.apply(hcC);
         List<User> resultsC = uRepo.find(conditionsC);
         assertEquals(0,resultsC.size());

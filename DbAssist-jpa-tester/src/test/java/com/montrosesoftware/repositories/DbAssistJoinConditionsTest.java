@@ -310,7 +310,7 @@ public class DbAssistJoinConditionsTest extends BaseTest {
                 .asc(rootBuilder, "name")
                 .desc(rootBuilder, "id")
                 .asc(builderCerts, "id")
-                .desc(rootBuilder, "createdAt");
+                .desc(rootBuilder, "createdAtUtc");
 
         List<User> results = uRepo.find(rootBuilder, orderBy);
 
@@ -336,7 +336,7 @@ public class DbAssistJoinConditionsTest extends BaseTest {
         orderList.add(cb.asc(root.get("name")));
         orderList.add(cb.desc(root.get("id")));
         orderList.add(cb.asc(joinCert.get("id")));
-        orderList.add(cb.desc(root.get("createdAt")));
+        orderList.add(cb.desc(root.get("createdAtUtc")));
 
         cq.orderBy(orderList);
 
