@@ -78,13 +78,14 @@ The list of supported Hibernate versions and their fix counterparts is in the ta
 ConditionsBuilder cb = new ConditionsBuilder();
 
 //prepare conditions
-HierarchyCondition c1 = cb.lessThan("id", 15);
-HierarchyCondition c2 = cb.equal("name", "Mont");
+Condition c1 = cb.lessThan("id", 15);
+Condition c2 = cb.equal("name", "Mont");
 ...
-HierarchyCondition c5 = ...
+Condition c5 = ...
 
 //construct logical expression
-HierarchyCondition hc = or(
+Condition hc =
+or(
         and(c1, c2),
         or(c3, and(c4, c5))
 );
