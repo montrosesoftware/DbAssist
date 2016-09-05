@@ -90,8 +90,8 @@ public abstract class AbstractRepository<T> {
      * @param selectionList     specifies which entity attributes to read or which aggregate methods to use
      * @param conditionsBuilder class containing conditions to apply on the query
      * @param fetchesBuilder    class containing fetch callbacks to apply on the query
-     * @param orderBy            list specifying sorting of the result
-     * @param groupBy           list of lambdas specifying grouping
+     * @param orderBy           list specifying sorting of the result
+     * @param groupBy           list specifying grouping
      * @return list of tuples containing values corresponding to columns/aggregates specified in the selection list
      */
     protected List<Tuple> findAttributes(SelectionList selectionList,
@@ -151,7 +151,7 @@ public abstract class AbstractRepository<T> {
      * @param selectDistinct    specify whether duplicate query results will be eliminated
      * @param conditionsBuilder class containing conditions to apply on the query
      * @param fetchesBuilder    class containing fetch callbacks to apply on the query
-     * @param orderBy            list specifying sorting of the result
+     * @param orderBy           list specifying sorting of the result
      * @param selectCallback
      * @param <A>               the attribute class
      * @return list of the values read from the DB

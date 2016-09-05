@@ -8,6 +8,35 @@
     <groupId>com.montrosesoftware</groupId>
     <artifactId>DbAssist-hbm-3.3.2</artifactId>
     <version>1.0-RELEASE</version>
+    <packaging>jar</packaging>
+
+    <name>${project.groupId}:${project.artifactId}</name>
+    <description>The project provides a fix for the improper time zone shift when reading from or writing to a DB, when
+        we use Hibernate 3.3.2 with .hbm files.
+    </description>
+    <url>https://github.com/montrosesoftware/DbAssist</url>
+
+    <licenses>
+        <license>
+            <name>MIT License</name>
+            <url>http://www.opensource.org/licenses/mit-license.php</url>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <name>Montrose Software</name>
+            <email>dbassist@montrosesoftware.com</email>
+            <organization>Montrose Software</organization>
+            <organizationUrl>http://montrosesoftware.com/</organizationUrl>
+        </developer>
+    </developers>
+
+    <scm>
+        <url>https://github.com/montrosesoftware/DbAssist</url>
+        <connection>scm:git:git://github.com/montrosesoftware/DbAssist.git</connection>
+        <developerConnection>scm:git:git://github.com/montrosesoftware/DbAssist.git</developerConnection>
+    </scm>
 
     <build>
         <plugins>
