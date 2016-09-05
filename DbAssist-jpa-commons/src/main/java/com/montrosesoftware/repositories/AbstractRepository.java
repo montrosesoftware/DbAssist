@@ -110,7 +110,6 @@ public abstract class AbstractRepository<T> {
 
         criteriaQuery.multiselect(selectionList.getAll(criteriaBuilder, conditionsBuilder, root));
 
-        //TODO verify if conditionsBuilder is not empty (it is needed for selection list)
         conditionsBuilder = applyConditions(conditionsBuilder, criteriaBuilder, criteriaQuery, root);
 
         if(orderBy != null){

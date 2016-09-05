@@ -19,6 +19,9 @@ import java.util.List;
 @Repository
 public class UserRepo extends AbstractRepository<User> {
 
+    @PersistenceContext
+    protected EntityManager entityManager;
+
     public UserRepo() {
         super(User.class);
     }
@@ -27,32 +30,29 @@ public class UserRepo extends AbstractRepository<User> {
         return entityManager;
     }
 
-    @PersistenceContext
-    protected EntityManager entityManager;
-
-    public User get(int id){
+    public User get(int id) {
         return entityManager.find(User.class, id);
     }
 
-    public List getDataByPlainSQL(){
+    public List getDataByPlainSQL() {
         String sql = "SELECT name, created_at, updated_at, last_logged_at FROM jpa.users";
         Query query = entityManager.createNativeQuery(sql);
         List users = query.getResultList();
         return users;
     }
 
-    public void save(User user){
+    public void save(User user) {
         entityManager.persist(user);
         entityManager.flush();
     }
 
-    public void clearPersistenceContext(){
+    public void clearPersistenceContext() {
         entityManager.clear();
     }
 
-    public void saveAsPlainSQL(User user){
+    public void saveAsPlainSQL(User user) {
         String sql = "INSERT INTO jpa.users (id, name, created_at, updated_at, last_logged_at) VALUES ("
-                + user.getId() +", '"
+                + user.getId() + ", '"
                 + user.getName() + "', '"
                 + DateUtils.getUtc(user.getCreatedAt()) + "', '"
                 + DateUtils.getUtc(user.getUpdatedAt()) + "', '"
@@ -61,7 +61,7 @@ public class UserRepo extends AbstractRepository<User> {
         query.executeUpdate();
     }
 
-    public User getUsingCriteria(){
+    public User getUsingCriteria() {
         CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
         CriteriaQuery<User> criteriaQuery = criteriaBuilder.createQuery(User.class);
         Root<User> root = criteriaQuery.from(User.class);
@@ -74,7 +74,7 @@ public class UserRepo extends AbstractRepository<User> {
         return results.isEmpty() ? null : results.get(0);
     }
 
-    public User getUsingSpecification(Date utcDate){
+    public User getUsingSpecification(Date utcDate) {
         CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
         CriteriaQuery<User> criteriaQuery = criteriaBuilder.createQuery(User.class);
         Root<User> userRoot = criteriaQuery.from(User.class);
@@ -83,7 +83,7 @@ public class UserRepo extends AbstractRepository<User> {
         Specification<User> specs = (root, query, cb) ->
                 cb.equal(root.get("createdAt"), cb.parameter(Date.class, paramName));
 
-        Predicate predicate = specs.toPredicate(userRoot,criteriaQuery, criteriaBuilder);
+        Predicate predicate = specs.toPredicate(userRoot, criteriaQuery, criteriaBuilder);
         criteriaQuery.where(predicate);
 
         TypedQuery<User> typedQuery = entityManager.createQuery(criteriaQuery);
@@ -93,7 +93,7 @@ public class UserRepo extends AbstractRepository<User> {
         return results.isEmpty() ? null : results.get(0);
     }
 
-    public User getUsingConditionsBuilder(Date utcDate){
+    public User getUsingConditionsBuilder(Date utcDate) {
 
         ConditionsBuilder conditionsBuilder = new ConditionsBuilder();
         HierarchyCondition hc = conditionsBuilder.equal("createdAt", utcDate);

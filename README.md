@@ -80,7 +80,7 @@ Result:
 WHERE (c1 AND c2) OR c3 OR (c4 AND c5)
 ```
 
-More examples and the tutorial for DbAssist library is available on the wiki page: TODO
+More examples and the tutorial for DbAssist library is available on the wiki page.
 
 ## Contributing
 

@@ -12,7 +12,7 @@
         <!--This property will be overwritten by MavenTestAll plugin-->
         <!--The property is used as a placeholder for debugging the particular version-->
         <!--The value below does not impact the main testing module-->
-        <montrosesoftware.version>DbAssist-5.2.2</montrosesoftware.version>
+        <montrosesoftware.version>DbAssist-4.3.11</montrosesoftware.version>
     </properties>
 
     <dependencyManagement>
@@ -83,12 +83,6 @@
             <groupId>com.montrosesoftware</groupId>
             <artifactId>DbAssist-test-commons</artifactId>
             <version>1.0-RELEASE</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.microsoft.sqlserver</groupId>
-            <artifactId>sqljdbc4</artifactId>
-            <version>4.0</version>
         </dependency>
 
         <dependency>
