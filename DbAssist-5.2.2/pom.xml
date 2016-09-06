@@ -7,6 +7,35 @@
     <groupId>com.montrosesoftware</groupId>
     <artifactId>DbAssist-5.2.2</artifactId>
     <version>1.0-RELEASE</version>
+    <packaging>jar</packaging>
+
+    <name>${project.groupId}:${project.artifactId}</name>
+    <description>The project provides the fix for the unexpected date time shift, occuring in Hibernate 5.2.2 in case of
+        JVM and database set up in a time zone other than UTC0.
+    </description>
+    <url>https://github.com/montrosesoftware/DbAssist</url>
+
+    <licenses>
+        <license>
+            <name>MIT License</name>
+            <url>http://www.opensource.org/licenses/mit-license.php</url>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <name>Montrose Software</name>
+            <email>dbassist@montrosesoftware.com</email>
+            <organization>Montrose Software</organization>
+            <organizationUrl>http://montrosesoftware.com/</organizationUrl>
+        </developer>
+    </developers>
+
+    <scm>
+        <url>https://github.com/montrosesoftware/DbAssist</url>
+        <connection>scm:git:git://github.com/montrosesoftware/DbAssist.git</connection>
+        <developerConnection>scm:git:git://github.com/montrosesoftware/DbAssist.git</developerConnection>
+    </scm>
 
     <build>
         <plugins>
@@ -19,6 +48,46 @@
                     <target>1.8</target>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <version>2.2.1</version>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <goals>
+                            <goal>jar-no-fork</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>2.9.1</version>
+                <executions>
+                    <execution>
+                        <id>attach-javadocs</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <!--<plugin>-->
+                <!--<groupId>org.apache.maven.plugins</groupId>-->
+                <!--<artifactId>maven-gpg-plugin</artifactId>-->
+                <!--<version>1.5</version>-->
+                <!--<executions>-->
+                    <!--<execution>-->
+                        <!--<id>sign-artifacts</id>-->
+                        <!--<phase>verify</phase>-->
+                        <!--<goals>-->
+                            <!--<goal>sign</goal>-->
+                        <!--</goals>-->
+                    <!--</execution>-->
+                <!--</executions>-->
+            <!--</plugin>-->
         </plugins>
     </build>
 

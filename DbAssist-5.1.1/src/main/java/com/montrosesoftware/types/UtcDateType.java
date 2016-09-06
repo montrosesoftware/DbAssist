@@ -22,47 +22,11 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.TimeZone;
 
+/**
+ * The class overrides appropriate methods of Hibernate's AbstractSingleColumnStandardBasicType
+ * so that the dates are treated as UTC dates when writing to/reading from the DB
+ */
 public class UtcDateType extends AbstractSingleColumnStandardBasicType<Date> implements VersionType<Date>, LiteralType<Date> {
-
-    public static class UtcTimestampTypeDescriptor extends TimestampTypeDescriptor {
-
-        public static final UtcTimestampTypeDescriptor INSTANCE = new UtcTimestampTypeDescriptor();
-
-        private static final TimeZone UTC = TimeZone.getTimeZone("UTC");
-
-        @Override
-        public <X> ValueBinder<X> getBinder(final JavaTypeDescriptor<X> javaTypeDescriptor) {
-            return new BasicBinder<X>(javaTypeDescriptor, this) {
-
-                @Override
-                protected void doBind(PreparedStatement st, X value, int index, WrapperOptions options) throws SQLException {
-                    st.setTimestamp(index, javaTypeDescriptor.unwrap(value, Timestamp.class, options), Calendar.getInstance(UTC));
-                }
-            };
-        }
-
-        @Override
-        public <X> ValueExtractor<X> getExtractor(final JavaTypeDescriptor<X> javaTypeDescriptor) {
-            return new BasicExtractor<X>(javaTypeDescriptor, this) {
-
-                @Override
-                protected X doExtract(CallableStatement statement, String name, WrapperOptions options) throws SQLException {
-                    return javaTypeDescriptor.wrap(statement.getTimestamp(name, Calendar.getInstance(UTC)), options);
-                }
-
-                @Override
-                protected X doExtract(ResultSet rs, String name, WrapperOptions options) throws SQLException {
-                    return javaTypeDescriptor.wrap(rs.getTimestamp(name, Calendar.getInstance(UTC)), options);
-                }
-
-                @Override
-                protected X doExtract(CallableStatement statement, int index, WrapperOptions options) throws SQLException {
-                    return javaTypeDescriptor.wrap(statement.getTimestamp(index, Calendar.getInstance(UTC)), options);
-                }
-
-            };
-        }
-    }
 
     public UtcDateType() {
         super(UtcTimestampTypeDescriptor.INSTANCE, JdbcTimestampTypeDescriptor.INSTANCE);
@@ -101,5 +65,50 @@ public class UtcDateType extends AbstractSingleColumnStandardBasicType<Date> imp
     @Override
     public Date fromStringValue(String xml) throws HibernateException {
         return TimestampType.INSTANCE.fromStringValue(xml);
+    }
+
+    public static class UtcTimestampTypeDescriptor extends TimestampTypeDescriptor {
+
+        public static final UtcTimestampTypeDescriptor INSTANCE = new UtcTimestampTypeDescriptor();
+
+        private static final TimeZone UTC = TimeZone.getTimeZone("UTC");
+
+        @Override
+        public <X> ValueBinder<X> getBinder(final JavaTypeDescriptor<X> javaTypeDescriptor) {
+            return new BasicBinder<X>(javaTypeDescriptor, this) {
+
+                @Override
+                protected void doBind(PreparedStatement st, X value, int index, WrapperOptions options) throws SQLException {
+                    st.setTimestamp(index, javaTypeDescriptor.unwrap(value, Timestamp.class, options), Calendar.getInstance(UTC));
+                }
+
+                @Override
+                protected void doBind(CallableStatement callableStatement, X value, String paramName, WrapperOptions wrapperOptions) throws SQLException {
+                    callableStatement.setTimestamp(paramName, javaTypeDescriptor.unwrap(value, Timestamp.class, wrapperOptions), Calendar.getInstance(UTC));
+                }
+            };
+        }
+
+        @Override
+        public <X> ValueExtractor<X> getExtractor(final JavaTypeDescriptor<X> javaTypeDescriptor) {
+            return new BasicExtractor<X>(javaTypeDescriptor, this) {
+
+                @Override
+                protected X doExtract(CallableStatement statement, String name, WrapperOptions options) throws SQLException {
+                    return javaTypeDescriptor.wrap(statement.getTimestamp(name, Calendar.getInstance(UTC)), options);
+                }
+
+                @Override
+                protected X doExtract(ResultSet rs, String name, WrapperOptions options) throws SQLException {
+                    return javaTypeDescriptor.wrap(rs.getTimestamp(name, Calendar.getInstance(UTC)), options);
+                }
+
+                @Override
+                protected X doExtract(CallableStatement statement, int index, WrapperOptions options) throws SQLException {
+                    return javaTypeDescriptor.wrap(statement.getTimestamp(index, Calendar.getInstance(UTC)), options);
+                }
+
+            };
+        }
     }
 }

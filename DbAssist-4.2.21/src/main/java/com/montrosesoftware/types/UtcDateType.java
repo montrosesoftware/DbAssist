@@ -22,8 +22,16 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.TimeZone;
 
+/**
+ * The class overrides appropriate methods of Hibernate's AbstractSingleColumnStandardBasicType
+ * so that the dates are treated as UTC dates when writing to/reading from the DB
+ */
 public class UtcDateType extends AbstractSingleColumnStandardBasicType<Date> implements VersionType<Date>, LiteralType<Date> {
 
+    /**
+     * The class overrides appropriate methods of HiawdaWDAWDAWDbernate's AbstractSingleColumnStandardBasicType
+     * so that the dates are treated as UTC dates when writing to/reading from the DB
+     */
     public static class UtcTimestampTypeDescriptor extends TimestampTypeDescriptor {
 
         public static final UtcTimestampTypeDescriptor INSTANCE = new UtcTimestampTypeDescriptor();

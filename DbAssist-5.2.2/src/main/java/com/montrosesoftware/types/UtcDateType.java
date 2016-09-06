@@ -2,7 +2,7 @@ package com.montrosesoftware.types;
 
 import org.hibernate.HibernateException;
 import org.hibernate.dialect.Dialect;
-import org.hibernate.engine.spi.SessionImplementor;
+import org.hibernate.engine.spi.SharedSessionContractImplementor;
 import org.hibernate.type.AbstractSingleColumnStandardBasicType;
 import org.hibernate.type.LiteralType;
 import org.hibernate.type.TimestampType;
@@ -22,6 +22,10 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.TimeZone;
 
+/**
+ * The class overrides appropriate methods of Hibernate's AbstractSingleColumnStandardBasicType
+ * so that the dates are treated as UTC dates when writing to/reading from the DB
+ */
 public class UtcDateType extends AbstractSingleColumnStandardBasicType<Date> implements VersionType<Date>, LiteralType<Date> {
 
     public UtcDateType() {
@@ -39,13 +43,13 @@ public class UtcDateType extends AbstractSingleColumnStandardBasicType<Date> imp
     }
 
     @Override
-    public Date next(Date current, SessionImplementor session) {
-        return TimestampType.INSTANCE.next(current, session);
+    public Date seed(SharedSessionContractImplementor sharedSessionContractImplementor) {
+        return TimestampType.INSTANCE.seed(sharedSessionContractImplementor);
     }
 
     @Override
-    public Date seed(SessionImplementor session) {
-        return TimestampType.INSTANCE.seed(session);
+    public Date next(Date date, SharedSessionContractImplementor sharedSessionContractImplementor) {
+        return TimestampType.INSTANCE.next(date, sharedSessionContractImplementor);
     }
 
     @Override
