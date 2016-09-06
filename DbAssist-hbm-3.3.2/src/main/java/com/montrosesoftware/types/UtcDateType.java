@@ -10,9 +10,12 @@ import java.util.TimeZone;
 
 import org.hibernate.type.TimestampType;
 
+/**
+ * The class overrides appropriate methods of Hibernate's TimestampType
+ * so that the dates are treated as UTC dates when writing to/reading from the DB
+ */
 public class UtcDateType extends TimestampType {
 
-    private static final long serialVersionUID = 8077663283676934687L;
     private static final TimeZone UTC = TimeZone.getTimeZone("UTC");
 
     @Override
