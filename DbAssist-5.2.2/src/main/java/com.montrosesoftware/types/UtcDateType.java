@@ -24,8 +24,6 @@ import java.util.TimeZone;
 
 public class UtcDateType extends AbstractSingleColumnStandardBasicType<Date> implements VersionType<Date>, LiteralType<Date> {
 
-    private static final long serialVersionUID = 1L;
-
     public UtcDateType() {
         super(UtcTimestampTypeDescriptor.INSTANCE, JdbcTimestampTypeDescriptor.INSTANCE);
     }
@@ -68,7 +66,7 @@ public class UtcDateType extends AbstractSingleColumnStandardBasicType<Date> imp
     public static class UtcTimestampTypeDescriptor extends TimestampTypeDescriptor {
 
         public static final UtcTimestampTypeDescriptor INSTANCE = new UtcTimestampTypeDescriptor();
-        private static final long serialVersionUID = 1L;
+
         private static final TimeZone UTC = TimeZone.getTimeZone("UTC");
 
         @Override

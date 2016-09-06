@@ -24,11 +24,7 @@ import java.util.TimeZone;
 
 public class UtcDateType extends AbstractSingleColumnStandardBasicType<Date> implements VersionType<Date>, LiteralType<Date> {
 
-    private static final long serialVersionUID = 1L;
-
     public static class UtcTimestampTypeDescriptor extends TimestampTypeDescriptor {
-
-        private static final long serialVersionUID = 1L;
 
         public static final UtcTimestampTypeDescriptor INSTANCE = new UtcTimestampTypeDescriptor();
 
