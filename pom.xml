@@ -21,7 +21,7 @@
                             <goal>execute</goal>
                         </goals>
                         <configuration>
-                            <source>buildScript.groovy</source>
+                            <source>buildAllAndTest.groovy</source>
                         </configuration>
                     </execution>
                 </executions>
