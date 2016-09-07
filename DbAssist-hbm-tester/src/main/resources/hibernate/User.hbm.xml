@@ -4,15 +4,15 @@
         "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
 
 <hibernate-mapping>
-    <class name="com.montrosesoftware.User" table="hbm.Users">
+    <class name="com.montrosesoftware.dbassist.User" table="hbm.Users">
         <id name="id" type="integer">
             <column name="id" />
         </id>
 
         <property name="name" type="string" length="100" column="name"/>
-        <property name="createdAtUtc" type="com.montrosesoftware.types.UtcDateType" column="created_at_utc"/>
-        <property name="updatedAtUtc" type="com.montrosesoftware.types.UtcDateType" column="updated_at_utc"/>
-        <property name="lastLoggedAtUtc" type="com.montrosesoftware.types.UtcDateType" column="last_logged_at_utc"/>
+        <property name="createdAtUtc" type="com.montrosesoftware.dbassist.types.UtcDateType" column="created_at_utc"/>
+        <property name="updatedAtUtc" type="com.montrosesoftware.dbassist.types.UtcDateType" column="updated_at_utc"/>
+        <property name="lastLoggedAtUtc" type="com.montrosesoftware.dbassist.types.UtcDateType" column="last_logged_at_utc"/>
 
     </class>
 </hibernate-mapping>

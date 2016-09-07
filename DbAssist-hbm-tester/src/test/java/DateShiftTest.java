@@ -1,6 +1,6 @@
-import com.montrosesoftware.DateUtils;
-import com.montrosesoftware.HibernateManager;
-import com.montrosesoftware.User;
+import com.montrosesoftware.dbassist.DateUtils;
+import com.montrosesoftware.dbassist.HibernateManager;
+import com.montrosesoftware.dbassist.User;
 import org.junit.Test;
 
 import java.sql.Timestamp;

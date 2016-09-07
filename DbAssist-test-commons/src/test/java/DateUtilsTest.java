@@ -1,4 +1,4 @@
-import com.montrosesoftware.DateUtils;
+import com.montrosesoftware.dbassist.DateUtils;
 import org.junit.Test;
 
 import java.util.Date;
