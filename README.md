@@ -4,6 +4,10 @@ DbAssist provides the fix for the unexpected date time shift. This issue does no
 
 The project also introduces `ConditionsBuilder` class which enables the user to easily create complex logical combinations of conditions in the SQL query.
 
+For more information about the issue and the detailed explanation of the problem you can refer to the following sources:
+* the article on this [blog](TODO link to blog).
+* DbAssist project [wiki page](https://github.com/montrosesoftware/DbAssist/wiki) 
+
 ## Installation of the fix
 
 ### Add the dependency
