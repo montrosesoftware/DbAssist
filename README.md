@@ -1,7 +1,12 @@
 # DbAssist
 
-DbAssist provides the fix for the unexpected date time shift, occuring in case of JVM and DB set up in a time zone other than UTC0.
+DbAssist provides the fix for the unexpected date time shift. This issue does not occur at all on condition that all the components which are used in the project (servers, clients etc.) are set up in the same time zone. If at least one component has a different time zone (for example, we want to store dates in a database as UTC0, but leave the application servers in local time zone), then the unexpected time shift is experienced whenever read/write operation are performed. 
+
 The project also introduces `ConditionsBuilder` class which enables the user to easily create complex logical combinations of conditions in the SQL query.
+
+For more information about the issue and the detailed explanation of the problem you can refer to the following sources:
+* the article on this [blog](TODO link to blog).
+* DbAssist project [wiki page](https://github.com/montrosesoftware/DbAssist/wiki) 
 
 ## Installation of the fix
 
