@@ -25,5 +25,3 @@ new GroovyShell().parse(new File('callMaven.groovy')).with {
     callMaven("DbAssist-jpa-tester", "MavenTestAll:testAll")
     callMaven("DbAssist-hbm-tester", "MavenTestAll:testAll")
 }
-
-

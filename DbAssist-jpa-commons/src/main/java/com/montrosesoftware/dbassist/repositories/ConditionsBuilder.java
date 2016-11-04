@@ -1,10 +1,7 @@
 package com.montrosesoftware.dbassist.repositories;
 
-import org.hibernate.jpa.criteria.path.AbstractJoinImpl;
-
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.*;
-import javax.persistence.metamodel.Attribute;
 import java.time.LocalDate;
 import java.util.*;
 
@@ -13,13 +10,7 @@ import java.util.*;
  */
 public class ConditionsBuilder extends BaseBuilder<ConditionsBuilder> {
 
-    @FunctionalInterface
-    interface ThreeArgsFunction<A1, A2, A3, R> {
-        R apply(A1 arg1, A2 arg2, A3 arg3);
-    }
-
     private HierarchyCondition.Condition whereConditions = null;
-
     private HashMap<String, Object> parameters = new HashMap<>();
 
     public ConditionsBuilder() {
@@ -27,6 +18,42 @@ public class ConditionsBuilder extends BaseBuilder<ConditionsBuilder> {
 
     private ConditionsBuilder(String joinAttribute, JoinType joinType, ConditionsBuilder parent) {
         super(joinAttribute, joinType, parent);
+    }
+
+    public static HierarchyCondition and(HierarchyCondition hcLeft, HierarchyCondition hcRight) {
+        return new LogicalCondition.AndCondition(hcLeft, hcRight);
+    }
+
+    public static HierarchyCondition or(HierarchyCondition hcLeft, HierarchyCondition hcRight) {
+        return new LogicalCondition.OrCondition(hcLeft, hcRight);
+    }
+
+    public static HierarchyCondition and(List<HierarchyCondition> conditions) {
+
+        if (conditions.size() == 1) {
+            return conditions.get(0);
+        } else if (conditions.size() == 2) {
+            return and(conditions.get(0), conditions.get(1));
+        } else {
+            List<HierarchyCondition> subConditions = new LinkedList<>();
+            subConditions.add(and(conditions.get(0), conditions.get(1)));
+            subConditions.addAll(1, conditions.subList(2, conditions.size()));
+            return and(subConditions);
+        }
+    }
+
+    public static HierarchyCondition or(List<HierarchyCondition> conditions) {
+
+        if (conditions.size() == 1) {
+            return conditions.get(0);
+        } else if (conditions.size() == 2) {
+            return or(conditions.get(0), conditions.get(1));
+        } else {
+            List<HierarchyCondition> subConditions = new LinkedList<>();
+            subConditions.add(or(conditions.get(0), conditions.get(1)));
+            subConditions.addAll(1, conditions.subList(2, conditions.size()));
+            return or(subConditions);
+        }
     }
 
     @Override
@@ -39,7 +66,7 @@ public class ConditionsBuilder extends BaseBuilder<ConditionsBuilder> {
     }
 
     public HierarchyCondition equal(String attributeName, String value) {
-        return  new LeafCondition(this, (cb, root) -> cb.equal(root.get(attributeName), getExpression(cb, value, String.class)));
+        return new LeafCondition(this, (cb, root) -> cb.equal(root.get(attributeName), getExpression(cb, value, String.class)));
     }
 
     public HierarchyCondition equal(String attributeName, Number value) {
@@ -110,8 +137,9 @@ public class ConditionsBuilder extends BaseBuilder<ConditionsBuilder> {
 
     /**
      * Applies passed hierarchy of conditions to this ConditionsBuilder and saves the resultant complex Condition
-     * @param hierarchyCondition    the logical combination (hierarchy) of conditions to be applied
-     * @return                      the result of applying all the HierarchyConditions into one lambda (inside Condition)
+     *
+     * @param hierarchyCondition the logical combination (hierarchy) of conditions to be applied
+     * @return the result of applying all the HierarchyConditions into one lambda (inside Condition)
      */
     public HierarchyCondition.Condition apply(HierarchyCondition hierarchyCondition) {
         whereConditions = hierarchyCondition.apply(this);
@@ -126,45 +154,10 @@ public class ConditionsBuilder extends BaseBuilder<ConditionsBuilder> {
         return getBuilder(joinAttribute, joinType);
     }
 
-    public static HierarchyCondition and(HierarchyCondition hcLeft, HierarchyCondition hcRight) {
-        return new LogicalCondition.AndCondition(hcLeft, hcRight);
-    }
-
-    public static HierarchyCondition or(HierarchyCondition hcLeft, HierarchyCondition hcRight) {
-        return new LogicalCondition.OrCondition(hcLeft, hcRight);
-    }
-
-    public static HierarchyCondition and(List<HierarchyCondition> conditions) {
-
-        if (conditions.size() == 1) {
-            return conditions.get(0);
-        } else if (conditions.size() == 2) {
-            return and(conditions.get(0), conditions.get(1));
-        } else {
-            List<HierarchyCondition> subConditions = new LinkedList<>();
-            subConditions.add(and(conditions.get(0), conditions.get(1)));
-            subConditions.addAll(1, conditions.subList(2, conditions.size()));
-            return and(subConditions);
-        }
-    }
-
-    public static HierarchyCondition or(List<HierarchyCondition> conditions) {
-
-        if (conditions.size() == 1) {
-            return conditions.get(0);
-        } else if (conditions.size() == 2) {
-            return or(conditions.get(0), conditions.get(1));
-        } else {
-            List<HierarchyCondition> subConditions = new LinkedList<>();
-            subConditions.add(or(conditions.get(0), conditions.get(1)));
-            subConditions.addAll(1, conditions.subList(2, conditions.size()));
-            return or(subConditions);
-        }
-    }
-
     /**
      * Method used to logically combine two conditions into one with logical operator (using lambdas)
-     * @return    new combined Condition
+     *
+     * @return new combined Condition
      */
     public HierarchyCondition.Condition applyLogicalOperator(HierarchyCondition.Condition leftOperandCondition,
                                                              HierarchyCondition.Condition rightOperandCondition,
@@ -290,18 +283,29 @@ public class ConditionsBuilder extends BaseBuilder<ConditionsBuilder> {
         FetchParent<?, ?> fetchParent = null;
 
         if (!joinsOrFetches.isEmpty()) {
+            for (Object existing : joinsOrFetches) {
 
-            for (Object existingSingularAttribute : joinsOrFetches) {
-                AbstractJoinImpl<?, ?> existingSingularAttributeJoin = (AbstractJoinImpl<?, ?>) existingSingularAttribute;
-                Attribute<?, ?> joinAttribute = existingSingularAttributeJoin.getAttribute();
-
-                if (joinAttribute.getName().equals(joinCondition.joinAttribute)) {
-                    fetchParent = existingSingularAttributeJoin;
+                String name = "";
+                FetchParent<?, ?> joinOrFetch = null;
+                if (existing instanceof Join<?, ?>) {
+                    joinOrFetch = (Join<?, ?>) existing;
+                    name = ((Join<?, ?>) existing).getAttribute().getName();
+                } else if (existing instanceof Fetch<?, ?>) {
+                    joinOrFetch = (Fetch<?, ?>) existing;
+                    name = ((Fetch<?, ?>) existing).getAttribute().getName();
+                }
+                if (name.equals(joinCondition.joinAttribute)) {
+                    fetchParent = joinOrFetch;
                     break;
                 }
             }
         }
 
         return fetchParent;
+    }
+
+    @FunctionalInterface
+    interface ThreeArgsFunction<A1, A2, A3, R> {
+        R apply(A1 arg1, A2 arg2, A3 arg3);
     }
 }
