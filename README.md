@@ -26,7 +26,7 @@ In order to fix the issue with date shift, you need to determine first if you wa
 
 The fix is slightly different for both entity mapping methods:
 
-#### For HBM case:
+#### In HBM case:
 
 You do **not** modify the `java.util.Date` type of dates fields in your entity class. However, you need to change the way how they are mapped in the `.hbm` file of your entities. You can do it by using our custom type, `UtcDateType`:
 
@@ -47,11 +47,11 @@ public class ExampleEntity {
 }
 ```
 
-#### For JPA case:
+#### In JPA case:
 
-In case of JPA Annotations, the fix works instantly after adding the correct fix dependency.
+In case of JPA Annotations set up with Spring Boot, the fix works instantly after adding the correct fix dependency. If using plain Hibernate with `preferences.xml`, we need to add a single line of code in the [configuration](https://github.com/montrosesoftware/DbAssist/wiki#in-jpa-case) file.
 
-The exception is when we are using Hibernate's `Specification` class to specify `WHERE` conditions. In order to fix it we have two options, which are described in details on the [wiki page](https://github.com/montrosesoftware/DbAssist/wiki)
+The exception is when we are using Hibernate's `Specification` class to specify `WHERE` conditions. In order to fix it we have two options, which are described in details on the [wiki page](https://github.com/montrosesoftware/DbAssist/wiki#in-jpa-case)
 
 ## Compatibility
 
