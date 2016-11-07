@@ -19,7 +19,6 @@ new GroovyShell().parse(new File('callMaven.groovy')).with {
     //Montrose Software's testing framework
     callMaven("DbAssist-test-commons", goals)
     callMaven("MavenTestAll", goals)
-    callMaven("DbAssist-jpa-commons", goals)
 
     //Run tests against all of the fix libs
     callMaven("DbAssist-jpa-tester", "MavenTestAll:testAll")
