@@ -73,10 +73,6 @@ The list of supported Hibernate versions and their fix counterparts is in the ta
 * `4.1`
 * `4.2`
 
-### Spring Boot: 
-* `1.2.2.RELEASE`
-* `1.4.0.RELEASE`
-
 ## Usage of `DbAssist-jpa-commons` library
 
 ```java
