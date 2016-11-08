@@ -53,6 +53,21 @@ In case of JPA Annotations set up with Spring Boot, just add the `@EnableAutoCon
 
 The exception is when we are using Hibernate's `Specification` class to specify `WHERE` conditions. In order to fix it we have two options, which are described in details on the [wiki page](https://github.com/montrosesoftware/DbAssist/wiki#in-jpa-case)
 
+## Maven repository
+
+Please find below the most recent versions of the artifacts of the DbAssist project: 
+
+| Artifact name     | Recent version       | 
+| :---------------- |:--------------------:| 
+| `DbAssist-hbm-3.3.2`  |[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.montrosesoftware/DbAssist-hbm-3.3.2/badge.svg?style=flat)](https://maven-badges.herokuapp.com/maven-central/com.montrosesoftware/DbAssist-hbm-3.3.2) |
+| `DbAssist-hbm-3.6.10` |[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.montrosesoftware/DbAssist-hbm-3.6.10/badge.svg?style=flat)](https://maven-badges.herokuapp.com/maven-central/com.montrosesoftware/DbAssist-hbm-3.6.10) |
+| `DbAssist-4.2.21`     |[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.montrosesoftware/DbAssist-4.2.21/badge.svg?style=flat)](https://maven-badges.herokuapp.com/maven-central/com.montrosesoftware/DbAssist-4.2.21) |
+| `DbAssist-4.3.11`     |[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.montrosesoftware/DbAssist-4.3.11/badge.svg?style=flat)](https://maven-badges.herokuapp.com/maven-central/com.montrosesoftware/DbAssist-4.3.11) |
+| `DbAssist-5.0.10`     |[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.montrosesoftware/DbAssist-5.0.10/badge.svg?style=flat)](https://maven-badges.herokuapp.com/maven-central/com.montrosesoftware/DbAssist-5.0.10) |
+| `DbAssist-5.1.1`      |[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.montrosesoftware/DbAssist-5.1.1/badge.svg?style=flat)](https://maven-badges.herokuapp.com/maven-central/com.montrosesoftware/DbAssist-5.1.1) |
+| `DbAssist-5.2.2`      |[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.montrosesoftware/DbAssist-5.2.2/badge.svg?style=flat)](https://maven-badges.herokuapp.com/maven-central/com.montrosesoftware/DbAssist-5.2.2) |
+| `DbAssist-jpa-commons`|[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.montrosesoftware/DbAssist-jpa-commons/badge.svg?style=flat)](https://maven-badges.herokuapp.com/maven-central/com.montrosesoftware/DbAssist-jpa-commons)|
+
 ## Compatibility
 
 ### Hibernate
