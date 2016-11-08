@@ -49,7 +49,7 @@ public class ExampleEntity {
 
 #### In JPA case:
 
-In case of JPA Annotations set up with Spring Boot, the fix works after adding the correct fix dependency and adding `@EnableAutoConfiguration` annotation before the application class. If using plain Hibernate with `preferences.xml`, we need to add a single line of code in the [configuration](https://github.com/montrosesoftware/DbAssist/wiki#in-jpa-case) file.
+In case of JPA Annotations set up with Spring Boot, just add `@EnableAutoConfiguration` annotation before the application class. If using plain Hibernate with `preferences.xml`, we need to add a single line of code in the [configuration](https://github.com/montrosesoftware/DbAssist/wiki#in-jpa-case) file.
 
 The exception is when we are using Hibernate's `Specification` class to specify `WHERE` conditions. In order to fix it we have two options, which are described in details on the [wiki page](https://github.com/montrosesoftware/DbAssist/wiki#in-jpa-case)
 
