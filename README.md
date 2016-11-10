@@ -1,3 +1,12 @@
+# Overview
+The DbAssist fixes for different versions of Hibernate are contained in the directories named in the following manner:
+
+_DbAssist-[[Core Hibernate O/RM version](https://mvnrepository.com/artifact/org.hibernate/hibernate-core)]_
+
+If the Hibernate version is preceded by `-hbm` prefix, it supports only Hibernate setup with HBM files (the case occurs for older Hibernate versions). If there is no `-hbm` prefix, the DbAssist fix version supports both JPA Annotations (with/without Spring Boot) and HBM files. For more information, refer to this [section](https://github.com/montrosesoftware/DbAssist#compatibility).
+
+[The installation guide](https://github.com/montrosesoftware/DbAssist/wiki#installation-of-the-fix)
+
 # DbAssist
 
 DbAssist provides the fix for the unexpected date time shift. This issue does not occur at all on condition that all the components which are used in the project (servers, clients etc.) are set up in the same time zone. If at least one component has a different time zone (for example, we want to store dates in a database as UTC0, but leave the application servers in local time zone), then the unexpected time shift is experienced whenever read/write operation are performed. 
